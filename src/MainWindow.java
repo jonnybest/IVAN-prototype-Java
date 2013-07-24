@@ -44,14 +44,31 @@ public class MainWindow extends ApplicationWindow {
 			txtn.setEditable(false);
 			txtn.setBounds(10, 10, 38, 390);
 		}
-		final StyledText styledText = new StyledText(container, SWT.BORDER | SWT.WRAP);
+		StyledText styledText = new StyledText(container, SWT.BORDER | SWT.WRAP);
 		styledText.addModifyListener(new ModifyListener() {
+			/**
+			 * This is what happens when the text in the center area gets modified
+			 */
 			public void modifyText(ModifyEvent arg0) {
+				/* Update line numbers in txtn area 
+				 */
+				StyledText text = (StyledText) arg0.getSource();
 				String numbers = "";
-				for (int i = 0; i < styledText.getLineCount(); i++) {
+				for (int i = 0; i < text.getLineCount(); i++) {
 					numbers += i + "\n";
 				}
 				txtn.setText(numbers);
+				
+				/* Recognise modal sentences 
+				 */
+				String lines = text.getText();
+				String[] modalVerbs = {"can", "could", "may", "might", "must", "shall", "should", "will", "would", "have to", "has to", "had to", "need"};
+				for (String string : modalVerbs) {
+					if (lines.contains(string)) {
+						System.out.println("Found bad word: " + string + ".");
+					}
+				}
+				
 			}
 		});
 		styledText.setText("My sample text styled.\nLorem ipsum dolor sit amet,");
