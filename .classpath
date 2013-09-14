@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="src" output="target/classes" path="src">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="C:/MyPrograms/eclipse/plugins/org.eclipse.osgi_3.8.2.v20130124-134944.jar" sourcepath="C:/MyPrograms/eclipse/plugins/org.eclipse.osgi_3.8.2.v20130124-134944.jar"/>
 	<classpathentry kind="lib" path="C:/MyPrograms/eclipse/plugins/org.eclipse.core.commands_3.6.2.v20130123-162658.jar" sourcepath="C:/MyPrograms/eclipse/plugins/org.eclipse.core.commands_3.6.2.v20130123-162658.jar"/>
 	<classpathentry kind="lib" path="C:/MyPrograms/eclipse/plugins/org.eclipse.equinox.common_3.6.100.v20120522-1841.jar" sourcepath="C:/MyPrograms/eclipse/plugins/org.eclipse.equinox.common_3.6.100.v20120522-1841.jar"/>
@@ -14,5 +23,11 @@
 	<classpathentry kind="lib" path="C:/MyPrograms/eclipse/plugins/org.eclipse.ui.workbench_3.104.0.v20130204-164612.jar" sourcepath="C:/MyPrograms/eclipse/plugins/org.eclipse.ui.workbench_3.104.0.v20130204-164612.jar"/>
 	<classpathentry kind="lib" path="C:/MyPrograms/eclipse/plugins/com.ibm.icu_4.4.2.v20110823.jar" sourcepath="C:/MyPrograms/eclipse/plugins/com.ibm.icu_4.4.2.v20110823.jar"/>
 	<classpathentry kind="lib" path="C:/MyPrograms/eclipse/plugins/org.eclipse.ui.forms_3.5.200.v20120705-114351.jar" sourcepath="C:/MyPrograms/eclipse/plugins/org.eclipse.ui.forms_3.5.200.v20120705-114351.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="swingx-1.6.1.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
 </classpath>
