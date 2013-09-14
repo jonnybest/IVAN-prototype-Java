@@ -1,26 +1,37 @@
+import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.Properties;
 
 import javax.swing.BoxLayout;
+import javax.swing.CodeEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.LineNumbersTextPane;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.UndoableEditListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Element;
+import javax.swing.text.Position;
+import javax.swing.text.Segment;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
-import org.eclipse.swt.widgets.DateTime;
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
-import org.joda.time.DateTimeField;
 
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -31,8 +42,10 @@ public class SwingWindow {
 
 	private org.joda.time.DateTime stopwatch;
 	private JXFrame frame;
-	private JXEditorPane txtEditor;
-	private JTextPane txtLineNumbers;
+	private LineNumbersTextPane txtEditor;
+	StyleContext sc = new StyleContext();
+    //final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
+	private Style SetupStyle;
 
 	/**
 	 * Launch the application.
@@ -62,7 +75,7 @@ public class SwingWindow {
 	 */
 	private void initialize() {
 		frame = new JXFrame();
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 536, 300);
 		frame.setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 		
@@ -70,13 +83,12 @@ public class SwingWindow {
 		frame.getContentPane().add(panel);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
-		txtLineNumbers = new JTextPane();
-		txtLineNumbers.setEnabled(false);
-		txtLineNumbers.setText("1\r\n2\r\n3\r\n4\r\n5");
-		panel.add(txtLineNumbers);
-		
-		txtEditor = new JXEditorPane();
+		txtEditor = new LineNumbersTextPane();
+		txtEditor.setDisplayLineNumbers(true);
+		//txtEditor.setDocument(doc);
 		txtEditor.addKeyListener(new KeyAdapter() {
+
+
 
 			@Override
 			public void keyTyped(KeyEvent arg0) {
@@ -156,15 +168,28 @@ public class SwingWindow {
 			    
 			}
 
-			private void markText(int beginPosition, int endPosition) {
-				StyledDocument styled = (StyledDocument) txtEditor.getDocument(); 
-				styled.
+			private void markText(int beginPosition, int endPosition) {		
+				int length = endPosition - beginPosition;
+				StyledDocument doc = (StyledDocument) txtEditor.getDocument();
+				try {
+					//System.out.println(txtEditor.getText(beginPosition, length));
+					System.err.println(doc.getText(beginPosition, length));
+				} catch (BadLocationException e) {
+					System.err.println("Bad location: " + beginPosition + " " +  endPosition);
+				}
+				
+				doc.setCharacterAttributes(beginPosition, length, doc.getStyle("action"), true);								
+				nop();
+			}
+
+			private void nop() {
+				// TODO Auto-generated method stub
 				
 			}
 		});
-		txtEditor.setText("In publishing and graphic design, lorem ipsum is a placeholder text (filler text) commonly "
-				+ "used to demonstrate the graphic elements of a document or visual presentation, such as font, typography, "
-				+ "and layout, by removing the distraction of meaningful content.");
+		txtEditor.setText("In publishing and graphic design, lorem ipsum is a \r\nplaceholder text (filler text) commonly used to demonstrate \r\nthe graphic elements of a document or visual presentation, \r\nsuch as font, typography, and layout, by removing the \r\ndistraction of meaningful content.");
+		
+		addStylesToDocument((StyledDocument) txtEditor.getDocument());
 		
 		panel.add(txtEditor);
 		
@@ -179,6 +204,32 @@ public class SwingWindow {
 		txtpnHi.setEditable(false);
 		txtpnHi.setText("...");
 		frame.getContentPane().add(txtpnHi);
+		
+		
 	}
+	
+	protected void addStylesToDocument(StyledDocument doc) {
+        //Initialize some styles.
+        Style def = StyleContext.getDefaultStyleContext().
+                        getStyle(StyleContext.DEFAULT_STYLE);
+
+        SetupStyle = doc.addStyle("setup", def);
+        StyleConstants.setBackground(SetupStyle, Color.CYAN);
+        StyleConstants.setBold(SetupStyle, true);
+        //StyleConstants.setFontFamily(SetupStyle, "Times New Roman");
+        
+        Style action = doc.addStyle("action", SetupStyle);
+        StyleConstants.setBackground(action, Color.ORANGE);
+        
+        Style event = doc.addStyle("event", SetupStyle);
+        StyleConstants.setBackground(event, Color.MAGENTA);
+        
+        Style time = doc.addStyle("time", SetupStyle);
+        StyleConstants.setBackground(time, Color.YELLOW);
+
+        /* Style s = doc.addStyle("italic", regular);
+        StyleConstants.setItalic(s, true); */
+
+    }
 
 }
