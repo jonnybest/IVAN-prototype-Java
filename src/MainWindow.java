@@ -1,3 +1,5 @@
+import java.util.Properties;
+
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.StatusLineManager;
 import org.eclipse.jface.action.ToolBarManager;
@@ -13,6 +15,12 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.ModifyEvent;
+
+import edu.stanford.nlp.ling.CoreAnnotations.*;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
 
 
 public class MainWindow extends ApplicationWindow {
@@ -59,16 +67,48 @@ public class MainWindow extends ApplicationWindow {
 				}
 				txtn.setText(numbers);
 				
+				processText(text);				
+			}
+
+			/**
+			 * @param text
+			 */
+			private void processText(StyledText text) {
 				/* Recognise modal sentences 
 				 */
 				String lines = text.getText();
 				String[] modalVerbs = {"can", "could", "may", "might", "must", "shall", "should", "will", "would", "have to", "has to", "had to", "need"};
 				for (String string : modalVerbs) {
 					if (lines.contains(string)) {
-						System.out.println("Found bad word: " + string + ".");
+						System.out.println("Found bad word: " + string + ".");						
 					}
 				}
-				
+				/* tag with pos tags */
+				Properties props = new Properties();
+			    props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
+			    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+			    Annotation mydoc = new Annotation(text.getText());
+			    pipeline.annotate(mydoc);
+			    java.util.List<CoreMap> sentences = mydoc.get(SentencesAnnotation.class);
+			    
+			    /*
+			    for(CoreMap sentence: sentences)
+			    {
+			    	// traversing the words in the current sentence
+			    	// a CoreLabel is a CoreMap with additional token-specific labels
+			    	for (CoreLabel item : sentence.get(TokensAnnotation.class)) {
+			    		// this is the text of the token
+			            //String word = item.get(TextAnnotation.class);
+			            // this is the POS tag of the token
+			            //String pos = item.get(PartOfSpeechAnnotation.class);
+			            // this is the NER label of the token
+			            //String ne = item.get(NamedEntityTagAnnotation.class);
+			            
+			            //System.out.println(word);
+					}
+			    }
+			    */
+			    
 			}
 		});
 		styledText.setText("My sample text styled.\nLorem ipsum dolor sit amet,");

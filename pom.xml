@@ -1,0 +1,67 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <artifactId>verify-alicenlp</artifactId>
+  <version>0.5</version>
+  <name>VAN prototype Java</name>
+  <description>A prototype for verifying user input for alicenlp.</description>
+  <developers>
+	<developer>
+		<id>best</id>
+		<name>Jonathan Best</name>
+		<email>jonathan.best@student.kit.edu</email>
+		<url>http://jonathanbest.de/</url>
+		<roles>
+			<role>developer</role>
+		</roles>
+	</developer>	
+</developers>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <dependencies>
+  	<dependency>
+		<groupId>net.sf.extjwnl</groupId>
+		<artifactId>extjwnl</artifactId>
+		<version>1.6.10</version>
+	</dependency>
+  	<dependency>
+		<groupId>org.languagetool</groupId>
+		<artifactId>languagetool-core</artifactId>
+		<version>2.2</version>
+	</dependency>  	
+  	<dependency>
+  		<groupId>edu.stanford.nlp</groupId>
+		<artifactId>stanford-corenlp</artifactId>
+		<version>3.2.0</version>
+	</dependency>
+	<dependency>
+  		<groupId>edu.stanford.nlp</groupId>
+		<artifactId>stanford-corenlp</artifactId>
+		<version>3.2.0</version>
+		<classifier>models</classifier>
+	</dependency>
+  	<dependency>
+  		<groupId>org.swinglabs</groupId>
+  		<artifactId>swingx</artifactId>
+  		<version>1.6.1</version>
+  	</dependency>
+  </dependencies>
+  <url>http://svn.ipd.kit.edu/trac/AliceNLP/</url>
+  <parent>
+  	<relativePath>../parent_pom/trunk/pom.xml</relativePath>
+  	<groupId>edu.kit.ipd.aliceNlp</groupId>
+  	<artifactId>parent-pom</artifactId>
+  	<version>0.0.1-SNAPSHOT</version>
+  </parent>
+  <groupId>edu.kit.ipd.aliceNlp</groupId>
+</project>
