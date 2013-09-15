@@ -25,6 +25,7 @@ import javax.swing.text.StyledDocument;
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXLabel;
+import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
@@ -36,6 +37,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
+import java.awt.FlowLayout;
 
 
 public class SwingWindow {
@@ -79,17 +81,33 @@ public class SwingWindow {
 		frame.setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 		
-		JPanel panel = new JPanel();
-		frame.getContentPane().add(panel);
+		JPanel panel = new JXPanel();
+		frame.getContentPane().add(panel);		
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
-		txtEditor = new LineNumbersTextPane();
+		txtEditor = new CodeEditorPane();
 		txtEditor.setDisplayLineNumbers(true);
 		//txtEditor.setDocument(doc);
+
+		txtEditor.setText("In publishing and graphic design, lorem ipsum is a \nplaceholder text (filler text) commonly used to demonstrate \nthe graphic elements of a document or visual presentation, \nsuch as font, typography, and layout, by removing the \ndistraction of meaningful content.");
+		
+		addStylesToDocument((StyledDocument) txtEditor.getDocument());
+		
+		panel.add(txtEditor.getContainerWithLines());
+		
+		JXTaskPaneContainer taskContainer = new JXTaskPaneContainer();		
+		JXTaskPane taskPane = new JXTaskPane();
+		JXLabel taskLabel = new JXLabel("Nothing to do right now.");
+		taskPane.add(taskLabel);
+		taskContainer.add(taskPane);
+		panel.add(taskContainer);
+		
+		JTextPane txtpnHi = new JTextPane();
+		txtpnHi.setEditable(false);
+		txtpnHi.setText("...");
+		frame.getContentPane().add(txtpnHi);
+		
 		txtEditor.addKeyListener(new KeyAdapter() {
-
-
-
 			@Override
 			public void keyTyped(KeyEvent arg0) {
 				if (arg0.getKeyChar() == '.' || arg0.getKeyChar() == '\n') {				
@@ -187,25 +205,6 @@ public class SwingWindow {
 				
 			}
 		});
-		txtEditor.setText("In publishing and graphic design, lorem ipsum is a \r\nplaceholder text (filler text) commonly used to demonstrate \r\nthe graphic elements of a document or visual presentation, \r\nsuch as font, typography, and layout, by removing the \r\ndistraction of meaningful content.");
-		
-		addStylesToDocument((StyledDocument) txtEditor.getDocument());
-		
-		panel.add(txtEditor);
-		
-		JXTaskPaneContainer taskContainer = new JXTaskPaneContainer();		
-		JXTaskPane taskPane = new JXTaskPane();
-		JXLabel taskLabel = new JXLabel("Nothing to do right now.");
-		taskPane.add(taskLabel);
-		taskContainer.add(taskPane);
-		panel.add(taskContainer);
-		
-		JTextPane txtpnHi = new JTextPane();
-		txtpnHi.setEditable(false);
-		txtpnHi.setText("...");
-		frame.getContentPane().add(txtpnHi);
-		
-		
 	}
 	
 	protected void addStylesToDocument(StyledDocument doc) {
