@@ -58,10 +58,8 @@ public class LineNumbersTextPane extends JXTextPane {
     }
 
     public LineNumbersTextPane() {
-    	this.setBackground(Color.blue);		// FIXME: DEBUG
     	    	
         jScrollPane1 = new JScrollPane(this);
-        jScrollPane1.setBackground(Color.cyan);		// FIXME: DEBUG   
 
         jScrollPane1.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
@@ -71,14 +69,12 @@ public class LineNumbersTextPane extends JXTextPane {
         });
 
         jSplitPane1 = new JSplitPane();
-        jSplitPane1.setBackground(Color.red);		// FIXME: DEBUG
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerSize(0);
         jSplitPane1.setRightComponent(jScrollPane1);
 
         linenumbers = new LineNumbersSidePane(this);
-        linenumbers.setBackground(Color.yellow);		// FIXME: DEBUG
         
         jSplitPane1.setLeftComponent(linenumbers);
 

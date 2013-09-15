@@ -1,15 +1,15 @@
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Font;
+import java.awt.Label;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
 import javax.swing.BoxLayout;
+import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextPane;
 import javax.swing.LineNumbersTextPane;
-import javax.swing.LineNumbersTextPane.LineNumbersSidePane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
@@ -19,10 +19,8 @@ import javax.swing.text.StyledDocument;
 
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXFrame;
-import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTaskPane;
-import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -33,15 +31,30 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
+import org.jdesktop.swingx.JXTaskPaneContainer;
+
+import java.awt.Dimension;
+
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+
+import org.jdesktop.swingx.JXLabel;
+import org.jdesktop.swingx.JXTextField;
+
+import javax.swing.JFormattedTextField;
+import javax.swing.JTextPane;
+import javax.swing.JScrollPane;
+
 public class SwingWindow {
 
 	private org.joda.time.DateTime stopwatch;
-	private JXFrame frame;
+	private JFrame frame;
 	private LineNumbersTextPane txtEditor;
 	StyleContext sc = new StyleContext();
 	// final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
 	private Style SetupStyle;
 	protected AttributeSet DefaultStyle;
+	private JTextPane emitterTextPane;
 
 	/**
 	 * Launch the application.
@@ -70,17 +83,9 @@ public class SwingWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JXFrame();
+		frame = new JFrame();
 		frame.setBounds(100, 100, 612, 511);
-		frame.setDefaultCloseOperation(JXFrame.EXIT_ON_CLOSE);
-		frame.getContentPane().setLayout(
-				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
-
-		JPanel inputareaPanel = new JXPanel();
-		inputareaPanel.setBackground(Color.green);
-		frame.getContentPane().add(inputareaPanel);
-		inputareaPanel
-				.setLayout(new BoxLayout(inputareaPanel, BoxLayout.X_AXIS));
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 
 		txtEditor = new LineNumbersTextPane();
 		txtEditor.setDisplayLineNumbers(true);
@@ -92,22 +97,23 @@ public class SwingWindow {
 				+ "such as font, typography, and layout, by removing the \n"
 				+ "distraction of meaningful content.");
 
-		addStylesToDocument((StyledDocument) txtEditor.getDocument());
+		addStylesToDocument((StyledDocument) txtEditor.getDocument());		
 
-		inputareaPanel.add(txtEditor.getContainerWithLines());
+		frame.getContentPane().add(txtEditor.getContainerWithLines(), BorderLayout.CENTER);
 		
-
-		JXTaskPaneContainer taskContainer = new JXTaskPaneContainer();
-		JXTaskPane taskPane = new JXTaskPane();
-		JXLabel taskLabel = new JXLabel("Nothing to do right now.");
-		taskPane.add(taskLabel);
-		taskContainer.add(taskPane);
-		inputareaPanel.add(taskContainer);
-
-		JTextPane emitterTextField = new JTextPane();
-		emitterTextField.setEditable(false);
-		emitterTextField.setText("...");
-		frame.getContentPane().add(emitterTextField);
+		JXTaskPaneContainer containerTaskPanel = new JXTaskPaneContainer();
+		JXTaskPane starterPain = new JXTaskPane();
+		starterPain.setTitle("Serious problems ");
+		starterPain.add(new Label("None."));
+		containerTaskPanel.add(starterPain);
+		frame.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
+		
+		emitterTextPane = new JTextPane();
+		emitterTextPane.setText("Hello World!");
+		emitterTextPane.setPreferredSize(new Dimension(10, 40));
+		emitterTextPane.setEditable(false);
+		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
+		frame.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
 
 		txtEditor.addKeyListener(new KeyAdapter() {
 			@Override
@@ -130,6 +136,15 @@ public class SwingWindow {
 		// txtEditor.getEditorKit();
 		// mykit.setWrap(true);
 
+		refreshLineNumbersFont();
+	}
+
+	/**
+	 * 
+	 */
+	private void refreshLineNumbersFont() {
+		Font font = txtEditor.getFont();
+		txtEditor.setFont(font);
 	}
 
 	protected void addStylesToDocument(StyledDocument doc) {
@@ -202,8 +217,7 @@ public class SwingWindow {
 				// this is the POS tag of the token
 				String pos = item.get(PartOfSpeechAnnotation.class);
 				if (pos.equals("VBG")) {
-					System.out.println(item.getString(TextAnnotation.class)
-							+ " is a gerund.");
+					tell("\""+ item.getString(TextAnnotation.class) + "\" is a gerund.");
 					markText(item.beginPosition(), item.endPosition());
 				}
 				// this is the NER label of the token
@@ -212,7 +226,17 @@ public class SwingWindow {
 				// System.out.println(word);
 			}
 		}
+		refreshLineNumbersFont();
+	}
 
+	private void tell(String string) {
+		int limit = 300;
+		if (emitterTextPane.getText().length() + string.length() > limit) {
+			emitterTextPane.setText(string);
+		}		
+		else {
+			emitterTextPane.setText(emitterTextPane.getText() + " " + string);
+		}
 	}
 
 	private void clearStyles() {
