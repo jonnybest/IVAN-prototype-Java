@@ -77,6 +77,7 @@ public class SwingWindow {
 				new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
 
 		JPanel inputareaPanel = new JXPanel();
+		inputareaPanel.setBackground(Color.green);
 		frame.getContentPane().add(inputareaPanel);
 		inputareaPanel
 				.setLayout(new BoxLayout(inputareaPanel, BoxLayout.X_AXIS));

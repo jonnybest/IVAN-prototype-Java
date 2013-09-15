@@ -1,5 +1,6 @@
 package javax.swing;
 
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -12,6 +13,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -56,7 +58,10 @@ public class LineNumbersTextPane extends JXTextPane {
     }
 
     public LineNumbersTextPane() {
+    	this.setBackground(Color.blue);		// FIXME: DEBUG
+    	    	
         jScrollPane1 = new JScrollPane(this);
+        jScrollPane1.setBackground(Color.cyan);		// FIXME: DEBUG   
 
         jScrollPane1.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
 
@@ -66,12 +71,15 @@ public class LineNumbersTextPane extends JXTextPane {
         });
 
         jSplitPane1 = new JSplitPane();
+        jSplitPane1.setBackground(Color.red);		// FIXME: DEBUG
 
         jSplitPane1.setBorder(null);
         jSplitPane1.setDividerSize(0);
         jSplitPane1.setRightComponent(jScrollPane1);
 
         linenumbers = new LineNumbersSidePane(this);
+        linenumbers.setBackground(Color.yellow);		// FIXME: DEBUG
+        
         jSplitPane1.setLeftComponent(linenumbers);
 
         addKeyListener(new KeyAdapter() {
