@@ -128,8 +128,7 @@ public class SwingWindow {
 		// LineWrapEditorKit mykit = (LineWrapEditorKit)
 		// txtEditor.getEditorKit();
 		// mykit.setWrap(true);
-		txtEditor.updateLineNumberView();
-		txtEditor.requestFocusInWindow();
+
 	}
 
 	protected void addStylesToDocument(StyledDocument doc) {
