@@ -31,6 +31,10 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PossessionModifierGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -39,29 +43,33 @@ public class StaticDynamicClassifier {
 	private Dictionary dictionary;
 	private StanfordCoreNLP mypipeline = null;
 	
-	private enum Classification {
+	public enum Classification {
 		SetupDescription,
 		ActionDescription,
 		EventDescription,
-		TimeDescription
+		TimeDescription,
+		FaultyDescription
 	}
 	
-	private Classification classifySentence(IndexedWord root, SemanticGraph graph) throws JWNLException
+	public Classification classifySentence(IndexedWord root, SemanticGraph graph) throws JWNLException
 	{
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
-		if(isPassive(root, graph))
+		boolean passive = isPassive(root, graph);
+		if(passive)
 		{
+			System.out.println("This sentence is passive.");
 			//return Classification.SetupDescription; // probably a bad idea?
 		}
 		
 		// classify by lexical file num
-		IndexWord wnetw = dictionary.getIndexWord(POS.VERB, word);
+		IndexWord wnetw = dictionary.lookupIndexWord(POS.VERB, word);
 		wnetw.sortSenses();
 		List<Synset> senses = wnetw.getSenses();
 		Synset mcs = senses.get(0); // most common sense
-		
-		if (mcs.getLexFileNum() == 42)
+		long lexnum = mcs.getLexFileNum();
+
+		if (lexnum == 42)
 		{
 			// stative
 			// TODO: make sure this actually refers to a state; not a changing
@@ -84,14 +92,33 @@ public class StaticDynamicClassifier {
 			}
 			return Classification.SetupDescription;
 		}
-		else if (mcs.getLexFileNum() == 39 || is1stPerson(root, graph))
+		else if (lexnum == 39 || is1stPerson(root, graph))
 		{
 			// "I see a palm tree on the left of the screen."
 			// hypothetical false positive: "I see how the man raises a hand."
 			return Classification.SetupDescription;
 		}
+		else if (lexnum == 36) // verb.creation			
+		{
+			// ex: "The roof of the shed is painted blue, like the sky." 
+			if(passive)
+			{
+				if (!hasAgent(root, graph)) {
+					// ex: The roof is painted by the father.
+					return Classification.ActionDescription;
+				}
+				return Classification.SetupDescription;
+			}
+		}
 
 		return Classification.ActionDescription;
+	}
+
+	private boolean hasAgent(IndexedWord root, SemanticGraph graph) {
+		// implement a check for agent(root, nounphrase)
+		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class);
+		// TODO: verify this 
+		return graph.hasChildWithReln(root, agentrel);
 	}
 
 	/**
@@ -104,8 +131,18 @@ public class StaticDynamicClassifier {
 	}
 	
 	private boolean isPassive(IndexedWord root, SemanticGraph graph) {
+		// Examples: 
+		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
+		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
+		// “That she lied was suspected by everyone” csubjpass(suspected, lied)
+		GrammaticalRelation csubjpass = GrammaticalRelation.getRelation(ClausalPassiveSubjectGRAnnotation.class);
+		// “Kennedy was killed” auxpass(killed, was)
 		GrammaticalRelation auxrel = GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
-		return graph.hasChildWithReln(root, auxrel);
+		Boolean passive = false;
+		passive = passive || graph.hasChildWithReln(root, nsubjpass);
+		passive = passive || graph.hasChildWithReln(root, csubjpass);
+		passive = passive || graph.hasChildWithReln(root, auxrel);
+		return passive;
 	}
 
 	public StaticDynamicClassifier() 

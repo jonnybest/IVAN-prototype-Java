@@ -22,13 +22,18 @@ import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTaskPane;
 
+import edu.stanford.nlp.classify.Classifier;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 import org.jdesktop.swingx.JXTaskPaneContainer;
@@ -209,22 +214,41 @@ public class SwingWindow {
 				.get(SentencesAnnotation.class);
 
 		for (CoreMap sentence : sentences) {
-			// traversing the words in the current sentence
-			// a CoreLabel is a CoreMap with additional token-specific labels
-			for (CoreLabel item : sentence.get(TokensAnnotation.class)) {
-				// this is the text of the token
-				// String word = item.get(TextAnnotation.class);
-				// this is the POS tag of the token
-				String pos = item.get(PartOfSpeechAnnotation.class);
-				if (pos.equals("VBG")) {
-					tell("\""+ item.getString(TextAnnotation.class) + "\" is a gerund.");
-					markText(item.beginPosition(), item.endPosition());
-				}
-				// this is the NER label of the token
-				// String ne = item.get(NamedEntityTagAnnotation.class);
-
-				// System.out.println(word);
+			// traversing the words in the current sentences
+			SemanticGraph depgraph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			IndexedWord root = depgraph.getFirstRoot();
+			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, depgraph);
+			
+			// color the sentence according to classification 
+			switch (sentencetype) {
+			case SetupDescription:
+				markText(root.beginPosition(), root.endPosition());
+				break;
+			case FaultyDescription:
+				// emit error
+				break;
+			case ActionDescription:
+				// fallthrough to default
+			default:				
+				break;
 			}
+			
+			
+			// a CoreLabel is a CoreMap with additional token-specific labels			
+//			for (CoreLabel item : sentence.get(TokensAnnotation.class)) {
+//				// this is the text of the token
+//				// String word = item.get(TextAnnotation.class);
+//				// this is the POS tag of the token
+//				String pos = item.get(PartOfSpeechAnnotation.class);
+//				if (pos.equals("VBG")) {
+//					tell("\""+ item.getString(TextAnnotation.class) + "\" is a gerund.");
+//					markText(item.beginPosition(), item.endPosition());
+//				}
+//				// this is the NER label of the token
+//				// String ne = item.get(NamedEntityTagAnnotation.class);
+//
+//				// System.out.println(word);
+//			}
 		}
 		refreshLineNumbersFont();
 	}
