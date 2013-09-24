@@ -216,7 +216,13 @@ public class SwingWindow {
 		for (CoreMap sentence : sentences) {
 			// traversing the words in the current sentences
 			SemanticGraph depgraph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			if (depgraph.getRoots().isEmpty()) {
+				continue;
+			}
 			IndexedWord root = depgraph.getFirstRoot();
+			if (depgraph.size() < 3) {
+				continue;
+			}
 			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, depgraph);
 			
 			// color the sentence according to classification 
@@ -224,7 +230,7 @@ public class SwingWindow {
 			case SetupDescription:
 				markText(root.beginPosition(), root.endPosition());
 				break;
-			case FaultyDescription:
+			case ErrorDescription:
 				// emit error
 				break;
 			case ActionDescription:
@@ -273,7 +279,7 @@ public class SwingWindow {
 		StyledDocument doc = (StyledDocument) txtEditor.getDocument();
 		try {
 			// System.out.println(txtEditor.getText(beginPosition, length));
-			System.err.println(doc.getText(beginPosition, length));
+			System.out.println(doc.getText(beginPosition, length));
 		} catch (BadLocationException e) {
 			System.err.println("Bad location: " + beginPosition + " "
 					+ endPosition);

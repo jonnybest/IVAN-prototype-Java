@@ -35,6 +35,7 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PossessionModifierGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.SubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -48,7 +49,7 @@ public class StaticDynamicClassifier {
 		ActionDescription,
 		EventDescription,
 		TimeDescription,
-		FaultyDescription
+		ErrorDescription
 	}
 	
 	public Classification classifySentence(IndexedWord root, SemanticGraph graph) throws JWNLException
@@ -64,6 +65,9 @@ public class StaticDynamicClassifier {
 		
 		// classify by lexical file num
 		IndexWord wnetw = dictionary.lookupIndexWord(POS.VERB, word);
+		if (wnetw == null) {
+			return Classification.ErrorDescription;
+		}
 		wnetw.sortSenses();
 		List<Synset> senses = wnetw.getSenses();
 		Synset mcs = senses.get(0); // most common sense
@@ -77,8 +81,8 @@ public class StaticDynamicClassifier {
 			List<Pointer> pointers = mcs.getPointers(PointerType.HYPERNYM);
 			if (pointers.size() > 0) {
 				printHypernymfeedback(word, pointers);
-				System.err.print("Hypernym lexname: ");
-				System.err.println(pointers.get(0).getTargetSynset().getLexFileName());			
+				System.out.print("Hypernym lexname: ");
+				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
 			}
 			return Classification.SetupDescription;
 		}
@@ -87,8 +91,8 @@ public class StaticDynamicClassifier {
 			List<Pointer> pointers = senses.get(1).getPointers(PointerType.HYPERNYM);
 			if (pointers.size() > 0) {
 				printHypernymfeedback(word, pointers);
-				System.err.print("Hypernym lexname: ");
-				System.err.println(pointers.get(0).getTargetSynset().getLexFileName());			
+				System.out.print("Hypernym lexname: ");
+				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
 			}
 			return Classification.SetupDescription;
 		}
@@ -126,7 +130,7 @@ public class StaticDynamicClassifier {
 	 * @param pointers
 	 */
 	private void printHypernymfeedback(String word, List<Pointer> pointers) {		
-		System.err.println("To " + word + " is one way to " + 
+		System.out.println("To " + word + " is one way to " + 
 				pointers.get(0).getTargetSynset().getWords().get(0).getLemma() + ".");
 	}
 	
@@ -473,10 +477,12 @@ public class StaticDynamicClassifier {
 	protected static Boolean is1stPerson(IndexedWord root, SemanticGraph graph)
 	{
 		// not actually always first person, but for our corpus, it's good enough 
-		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
-			return true;
-		}
-		return false;
+//		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
+//			return true;
+//		}
+		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(SubjectGRAnnotation.class);
+		IndexedWord subject = graph.getChildWithReln(root, subjclass);
+		return subject.word().equalsIgnoreCase("I");
 	}
 	
 	protected static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
