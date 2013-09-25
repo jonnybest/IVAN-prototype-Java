@@ -1,19 +1,17 @@
 package edu.kit.ipd.alicenlp.ivan;
 
-import edu.kit.ipd.alicenlp.ivan.StaticDynamicClassifier;
-import edu.kit.ipd.alicenlp.ivan.StaticDynamicClassifier.Classification;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.LineNumbersTextPane;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -23,37 +21,16 @@ import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
 import org.jdesktop.swingx.JXEditorPane;
-import org.jdesktop.swingx.JXFrame;
-import org.jdesktop.swingx.JXPanel;
 import org.jdesktop.swingx.JXTaskPane;
+import org.jdesktop.swingx.JXTaskPaneContainer;
 
-import edu.stanford.nlp.classify.Classifier;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-
-import org.jdesktop.swingx.JXTaskPaneContainer;
-
-import java.awt.Dimension;
-
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-
-import org.jdesktop.swingx.JXLabel;
-import org.jdesktop.swingx.JXTextField;
-
-import javax.swing.JFormattedTextField;
-import javax.swing.JTextPane;
-import javax.swing.JScrollPane;
 
 public class SwingWindow {
 
@@ -262,16 +239,6 @@ public class SwingWindow {
 //			}
 		}
 		refreshLineNumbersFont();
-	}
-
-	private void tell(String string) {
-		int limit = 300;
-		if (emitterTextPane.getText().length() + string.length() > limit) {
-			emitterTextPane.setText(string);
-		}		
-		else {
-			emitterTextPane.setText(emitterTextPane.getText() + " " + string);
-		}
 	}
 
 	private void clearStyles() {

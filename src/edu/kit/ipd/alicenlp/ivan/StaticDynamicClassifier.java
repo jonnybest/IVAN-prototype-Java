@@ -7,13 +7,9 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
-
-import javax.naming.spi.DirObjectFactory;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
-import net.sf.extjwnl.data.LexFileNameLexFileIdMap;
 import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
@@ -23,7 +19,6 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -34,7 +29,6 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PossessionModifierGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.SubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
@@ -445,34 +439,6 @@ public class StaticDynamicClassifier {
 	    }
 	}
 
-	private static String concordance(String sentence, String word) {
-		int lastindex = 100;
-		int alignby = 39;
-		String sestring = sentence;
-		String wordstring = word;
-		int indexof = sestring.indexOf(wordstring);
-		if (indexof < alignby) {
-			// implementiere den fall dass das wort zu weit links liegt
-			// f�ge (alignby - indexof) leerzeichen links ein
-			int offset = alignby - indexof;
-			String aligner = ""; //$NON-NLS-1$
-			for (int i = 0; i < offset; i++) {
-				aligner += " "; //$NON-NLS-1$
-			}
-			sestring = aligner + sestring;
-		}
-		else if (alignby < indexof) {
-			// implementiere den fall dass das wort zu weit rechts liegt
-			int offset = indexof - alignby;
-			sestring = sestring.substring(offset);
-		}
-		// zeichen hintenraus l�schen.
-		if (sestring.length() > lastindex) {
-			sestring = sestring.substring(0, lastindex);
-		}
-		return sestring;
-	}
-
 
 	protected static Boolean is1stPerson(IndexedWord root, SemanticGraph graph)
 	{
@@ -491,10 +457,10 @@ public class StaticDynamicClassifier {
 		return graph.getChildWithReln(word, reln);
 	}
 	
-	private static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}
+//	private static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
+//		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
+//		return graph.hasChildWithReln(word, reln);
+//	}
 
 	private static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
