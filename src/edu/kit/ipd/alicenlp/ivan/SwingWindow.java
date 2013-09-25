@@ -1,3 +1,8 @@
+package edu.kit.ipd.alicenlp.ivan;
+
+import edu.kit.ipd.alicenlp.ivan.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.StaticDynamicClassifier.Classification;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.EventQueue;
