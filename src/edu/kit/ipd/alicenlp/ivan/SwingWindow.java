@@ -205,11 +205,13 @@ public class SwingWindow {
 			if (depgraph.size() < 3) {
 				continue;
 			}
-			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, depgraph);
+			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, sentence);
 			
 			// color the sentence according to classification 
 			switch (sentencetype) {
 			case SetupDescription:
+
+				tell(depgraph.toString());
 				markText(root.beginPosition(), root.endPosition());
 				break;
 			case ErrorDescription:
@@ -239,6 +241,10 @@ public class SwingWindow {
 //			}
 		}
 		refreshLineNumbersFont();
+	}
+
+	private void tell(String output) {
+		this.emitterTextPane.setText(output);
 	}
 
 	private void clearStyles() {

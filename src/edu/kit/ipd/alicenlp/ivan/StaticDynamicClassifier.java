@@ -2,6 +2,7 @@ package edu.kit.ipd.alicenlp.ivan;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -19,17 +20,19 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.SubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -46,8 +49,27 @@ public class StaticDynamicClassifier {
 		ErrorDescription
 	}
 	
-	public Classification classifySentence(IndexedWord root, SemanticGraph graph) throws JWNLException
+	public Classification classifySentence(IndexedWord root, CoreMap sentence) throws JWNLException
 	{
+		// short classification fix for broken sentences (wrong copula)
+		// hint1: root is no verb
+		if (!isPOSFamily(root, "VB")) {
+			// hint 2: there is only one verb
+			List<CoreLabel> verbs = getVerbs(sentence);
+			if (verbs.size() == 1) {
+				String word = verbs.get(0).toString();
+				// hint 3: the only verb is "to be"
+				IndexWord wnetlemma = dictionary.getIndexWord(POS.VERB, word);
+				IndexWord tobe = dictionary.getIndexWord(POS.VERB, "be");
+				if (wnetlemma.equals(tobe)) {
+					// ex: "Henry, Liv and Paddy are dogs."
+					return Classification.SetupDescription;
+				}
+			}
+		}
+		
+		// normal classification rules follow:
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
 		boolean passive = isPassive(root, graph);
@@ -110,6 +132,22 @@ public class StaticDynamicClassifier {
 		}
 
 		return Classification.ActionDescription;
+	}
+
+	private List<CoreLabel> getVerbs(CoreMap sentence) {
+		List<CoreLabel> verbs = new ArrayList<CoreLabel>();
+		List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
+		for (CoreLabel word : labels) {
+			if (isPOSFamily(word, "VB")) {
+				verbs.add(word);
+			}
+		}
+		return verbs;
+	}
+
+	private boolean isPOSFamily(CoreLabel word, String string) {
+		String pos = word.get(PartOfSpeechAnnotation.class).toUpperCase();
+		return pos.startsWith(string.toUpperCase());
 	}
 
 	private boolean hasAgent(IndexedWord root, SemanticGraph graph) {
@@ -327,7 +365,7 @@ public class StaticDynamicClassifier {
 				System.out.println(sentence.get(TextAnnotation.class));
 				if(word != null) {
 					String lemma = expandVerb(word, graph);
-					Classification c = classifySentence(word, graph);
+					Classification c = classifySentence(word, sentence);
 					printLexicographerFileNamesForVerbs(lemma);
 					if (c == Classification.SetupDescription) {
 						System.out.println("Classified as " + c.name());
@@ -446,7 +484,7 @@ public class StaticDynamicClassifier {
 //		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
 //			return true;
 //		}
-		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(SubjectGRAnnotation.class);
+		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
 		IndexedWord subject = graph.getChildWithReln(root, subjclass);
 		return subject.word().equalsIgnoreCase("I");
 	}
