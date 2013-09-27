@@ -8,6 +8,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 
+import org.eclipse.ui.model.IComparableContribution;
+
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -15,6 +17,7 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.DeclarationPositionFinder.DeclarationQuadruple;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -34,11 +37,40 @@ import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinder {
+	/**
+	 * @author Jonny
+	 *
+	 */
+	public class DeclarationQuadruple 
+	{
+		public String Entity;
+		public String Name;
+		public String Location;
+		public String Direction;		
+		
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null) {
+				return false;
+			}
+			else if (obj.getClass().equals(DeclarationQuadruple.class)) {
+				DeclarationQuadruple other = (DeclarationQuadruple) obj;
+				if (Name != null) {
+					return Entity.equalsIgnoreCase(other.Entity);
+				}
+				else {
+					return Name.equalsIgnoreCase(other.Name);
+				}
+			}
+			else {				
+				return false;
+			}
+		}
+	}
+
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
-	
-	private InitialStructure mystructure = new InitialStructure();
 	
 	private boolean hasAgent(IndexedWord root, SemanticGraph graph) {
 		// implement a check for agent(root, nounphrase)
@@ -351,8 +383,10 @@ public class DeclarationPositionFinder {
 		}
 		return myinstance;
 	}
-	
-	public class InitialStructure {
-		
+
+	public DeclarationQuadruple findAll(IndexedWord root, CoreMap sentence) {
+		// TODO Auto-generated method stub
+		//  
+		return null;
 	}
 }
