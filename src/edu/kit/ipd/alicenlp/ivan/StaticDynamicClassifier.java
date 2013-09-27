@@ -70,6 +70,7 @@ public class StaticDynamicClassifier {
 		
 		// normal classification rules follow:
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		System.out.println(graph.toString());
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
 		boolean passive = isPassive(root, graph);
