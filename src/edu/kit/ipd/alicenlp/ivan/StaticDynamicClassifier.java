@@ -59,9 +59,9 @@ public class StaticDynamicClassifier {
 			if (verbs.size() == 1) {
 				String word = verbs.get(0).toString();
 				// hint 3: the only verb is "to be"
-				IndexWord wnetlemma = dictionary.getIndexWord(POS.VERB, word);
+				IndexWord wnetlemma = dictionary.lookupIndexWord(POS.VERB, word);
 				IndexWord tobe = dictionary.getIndexWord(POS.VERB, "be");
-				if (wnetlemma.equals(tobe)) {
+				if (tobe.equals(wnetlemma)) {
 					// ex: "Henry, Liv and Paddy are dogs."
 					return Classification.SetupDescription;
 				}
@@ -486,7 +486,7 @@ public class StaticDynamicClassifier {
 //		}
 		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
 		IndexedWord subject = graph.getChildWithReln(root, subjclass);
-		return subject.word().equalsIgnoreCase("I");
+		return subject == null || subject.word().equalsIgnoreCase("I");
 	}
 	
 	protected static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
