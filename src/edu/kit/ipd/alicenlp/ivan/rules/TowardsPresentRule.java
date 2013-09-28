@@ -19,14 +19,14 @@ public class TowardsPresentRule extends BaseRule implements IGraphRule {
 	/* (non-Javadoc)
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.IGraphRule#apply(edu.stanford.nlp.util.CoreMap)
 	 */
-	private IndexedWord prepositionalModifier;
+	private String prepositionalModifier;
 
 	@Override
 	public boolean apply(CoreMap Sentence) {
 		SemanticGraph graph = Sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		List<IndexedWord> things = getPrepRelations(null, graph, "towards");
 		if (things.size() > 0) {
-			this.prepositionalModifier = things.get(0);				
+			this.prepositionalModifier = getNounPhrase(things.get(0), Sentence);				
 			return true;
 		}
 		return false;
@@ -35,7 +35,7 @@ public class TowardsPresentRule extends BaseRule implements IGraphRule {
 	/**
 	 * @return the prepositionalModifier
 	 */
-	public IndexedWord getPrepositionalModifier() {
+	public String getPrepositionalModifier() {
 		return prepositionalModifier;
 	}
 }
