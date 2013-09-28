@@ -70,6 +70,4 @@ public class WordPrepOnDetRule extends BaseRule implements IGraphRule
 	public String getPrepositionalModifier() {
 		return prepositionalModifier;
 	}
-	
-	
 }
