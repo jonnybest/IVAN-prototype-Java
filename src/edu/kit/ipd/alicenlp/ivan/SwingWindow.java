@@ -2,7 +2,6 @@ package edu.kit.ipd.alicenlp.ivan;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Label;
@@ -26,7 +25,6 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -210,9 +208,9 @@ public class SwingWindow {
 			}
 			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, sentence);
 			if (mydeclarationfinder.hasLocation(sentence)) {
+				mydeclarationfinder.getLocation(sentence);
 				tell("There's a location in \"" + sentence.get(TextAnnotation.class));
 				System.out.println("There's a location in \"" + sentence.get(TextAnnotation.class));
-				System.out.println("Date range: "+ sentence.get(CoreAnnotations.IsDateRangeAnnotation.class));
 			}
 			
 			// color the sentence according to classification 
