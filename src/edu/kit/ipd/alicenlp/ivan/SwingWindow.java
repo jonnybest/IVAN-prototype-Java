@@ -25,6 +25,8 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -207,6 +209,11 @@ public class SwingWindow {
 				continue;
 			}
 			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, sentence);
+			if (mydeclarationfinder.hasLocation(sentence)) {
+				tell("There's a location in \"" + sentence.get(TextAnnotation.class));
+				System.out.println("There's a location in \"" + sentence.get(TextAnnotation.class));
+				System.out.println("Date range: "+ sentence.get(CoreAnnotations.IsDateRangeAnnotation.class));
+			}
 			
 			// color the sentence according to classification 
 			switch (sentencetype) {
@@ -214,7 +221,6 @@ public class SwingWindow {
 				//tell(depgraph.toString());
 				markText(root.beginPosition(), root.endPosition());
 				//DeclarationPositionFinder.DeclarationQuadruple decl = mydeclarationfinder.findAll(root, sentence);
-				System.out.println(mydeclarationfinder.hasLocation(sentence));
 				break;
 			case ErrorDescription:
 				// emit error
