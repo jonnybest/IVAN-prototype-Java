@@ -27,12 +27,17 @@ import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.DeterminerGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.SubjectGRAnnotation;
+import edu.stanford.nlp.trees.GrammaticalRelation.Language;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -330,9 +335,9 @@ public class DeclarationPositionFinder {
 //		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
 //			return true;
 //		}
-		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(SubjectGRAnnotation.class);
+		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
 		IndexedWord subject = graph.getChildWithReln(root, subjclass);
-		return subject.word().equalsIgnoreCase("I");
+		return subject == null || subject.word().equalsIgnoreCase("I");
 	}
 	
 	protected static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
@@ -388,5 +393,66 @@ public class DeclarationPositionFinder {
 		// TODO Auto-generated method stub
 		//  
 		return null;
+	}
+	
+	/***
+	 * This function implements a check for rule "in_foreground".
+	 * It checks for these ternary relations:  root->prep_in->det and nsubj->prep_in->det
+	 * @param sentence
+	 * @return
+	 */
+	public boolean hasLocation(CoreMap sentence)
+	{
+		GrammaticalRelation nsubjreln = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		IndexedWord root = graph.getFirstRoot();
+		if (root == null) {
+			// no root - no grammar!
+			return false;
+		}
+		// look for relations: first root->prep_in->det
+		if(hasPrepinDetRelation(graph, root))
+		{
+			// we've found it! done!
+			return true;
+		}
+		else // look for relations: second root->prep_in->det 
+		{
+			// let's try to find a subject:
+			IndexedWord subject = graph.getChildWithReln(root, nsubjreln);
+			if (subject == null) {
+				// no subject - nothing to attribute anything to it!
+				return false;
+			}
+			// we already have our starting point njsubj. now let's find out if there are
+			// any prep_in->det attached to it:
+			return hasPrepinDetRelation(graph, subject);
+			// done
+		}		
+	}
+
+	/**
+	 * @param graph
+	 * @param startingWord
+	 * @return 
+	 */
+	private boolean hasPrepinDetRelation(SemanticGraph graph,
+			IndexedWord startingWord) {
+		//GrammaticalRelation prepreln = GrammaticalRelation.getRelation(PrepositionalModifierGRAnnotation.class);
+		GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep("in");		
+		GrammaticalRelation detreln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
+		// checking rule: root->prep_in->det
+		List<IndexedWord> listpreps = graph.getChildrenWithReln(startingWord, prepreln);
+		for (IndexedWord indexedWord : listpreps) {			
+			// we have found a relation: root->in
+			// now check for in->det
+			IndexedWord det = graph.getChildWithReln(indexedWord, detreln);
+			if (det != null) {
+				// success! this graph contains the relation root->prep_in->det
+				return true;
+			}			
+		}
+		// found nothing, sorry!
+		return false;
 	}
 }
