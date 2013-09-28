@@ -97,7 +97,7 @@ public class SwingWindow {
 		
 		emitterTextPane = new JTextPane();
 		emitterTextPane.setText("Hello World!");
-		emitterTextPane.setPreferredSize(new Dimension(10, 40));
+		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
 		emitterTextPane.setEditable(false);
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
 		frame.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
@@ -173,6 +173,7 @@ public class SwingWindow {
 		 */
 		StaticDynamicClassifier myclassifier = StaticDynamicClassifier
 				.getInstance();
+		DeclarationPositionFinder mydeclarationfinder = DeclarationPositionFinder.getInstance();
 		String lines = text;
 		/*
 		 * String[] modalVerbs = {"can", "could", "may", "might", "must",
@@ -210,9 +211,10 @@ public class SwingWindow {
 			// color the sentence according to classification 
 			switch (sentencetype) {
 			case SetupDescription:
-
-				tell(depgraph.toString());
+				//tell(depgraph.toString());
 				markText(root.beginPosition(), root.endPosition());
+				//DeclarationPositionFinder.DeclarationQuadruple decl = mydeclarationfinder.findAll(root, sentence);
+				System.out.println(mydeclarationfinder.hasLocation(sentence));
 				break;
 			case ErrorDescription:
 				// emit error
