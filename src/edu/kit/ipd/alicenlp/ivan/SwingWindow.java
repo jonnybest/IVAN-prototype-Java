@@ -23,6 +23,7 @@ import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
+import edu.kit.ipd.alicenlp.ivan.DeclarationPositionFinder.EntityLocationPair;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -208,9 +209,9 @@ public class SwingWindow {
 			}
 			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, sentence);
 			if (mydeclarationfinder.hasLocation(sentence)) {
-				mydeclarationfinder.getLocation(sentence);
+				EntityLocationPair loc = mydeclarationfinder.getLocation(sentence);
 				tell("There's a location in \"" + sentence.get(TextAnnotation.class));
-				System.out.println("There's a location in \"" + sentence.get(TextAnnotation.class));
+				System.out.println("The location \""+ loc +"\" was found in \"" + sentence.get(TextAnnotation.class));
 			}
 			
 			// color the sentence according to classification 

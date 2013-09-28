@@ -6,14 +6,17 @@ package edu.kit.ipd.alicenlp.ivan.rules;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
+import edu.stanford.nlp.util.CoreMap;
 
 /**
  * This is a utility class which provides static methods to rules for easier checking.
@@ -91,7 +94,7 @@ public abstract class BaseRule {
 	}
 
 	protected static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
 	
@@ -115,5 +118,25 @@ public abstract class BaseRule {
 		GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep(preposition);		
 		// checking rule: root->prep_in->det
 		return graph.getChildrenWithReln(startingWord, prepreln);
+	}
+	
+	/**
+	 * Returns the whole noun phrase for words with a determiner. If there is no determiner present, only the word itself is returned.
+	 * @param word
+	 * @param sentence
+	 * @return
+	 */
+	protected static String getNounPhrase(IndexedWord word, CoreMap sentence){
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		IndexedWord det = getDeterminer(word, graph);
+		if(det != null)
+		{
+			int start = det.beginPosition();
+			int end = word.endPosition();
+			return sentence.get(TextAnnotation.class).substring(start, end);
+		}
+		else {
+			return word.originalText();			
+		}
 	}
 }

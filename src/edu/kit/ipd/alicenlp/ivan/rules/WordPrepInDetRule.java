@@ -22,7 +22,7 @@ import edu.stanford.nlp.util.CoreMap;
 public class WordPrepInDetRule extends BaseRule implements IGraphRule
 {
 	private IndexedWord word = null;
-	private IndexedWord prepositionalModifier = null;
+	private String prepositionalModifier = null;
 
 	/** 
 	 * This method tries to find a word that is modified by the preposition in + a determiner. 
@@ -56,7 +56,7 @@ public class WordPrepInDetRule extends BaseRule implements IGraphRule
 		List<IndexedWord> prep_ins = getPrepinRelations(governor, graph);
 		for (IndexedWord iw : prep_ins) {
 			if (hasDeterminer(iw, graph)) {
-				this.prepositionalModifier = iw;
+				this.prepositionalModifier = getNounPhrase(iw, sentence);
 				return true;
 			}
 		}
@@ -67,7 +67,7 @@ public class WordPrepInDetRule extends BaseRule implements IGraphRule
 		return word;
 	}
 
-	public IndexedWord getPrepositionalModifier() {
+	public String getPrepositionalModifier() {
 		return prepositionalModifier;
 	}
 	

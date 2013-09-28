@@ -11,10 +11,14 @@ import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.rules.IGraphRule;
+import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
+import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.tokensregex.SequenceMatchRules.Rule;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -30,10 +34,18 @@ import edu.stanford.nlp.util.CoreMap;
 public class DeclarationPositionFinder {
 	public class EntityLocationPair {
 
-		public EntityLocationPair(String entity, String location) {
-			// TODO Auto-generated constructor stub
-		}
+		private String loc;
+		private String entity;
 
+		public EntityLocationPair(String entity, String location) {
+			this.entity = entity;
+			this.loc = location;
+		}
+		
+		@Override
+		public String toString() {
+			return entity + ": " + loc;
+		}
 	}
 
 	/**
@@ -397,119 +409,36 @@ public class DeclarationPositionFinder {
 	 */
 	public boolean hasLocation(CoreMap sentence)
 	{
-		GrammaticalRelation nsubjreln = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
-		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		IndexedWord root = graph.getFirstRoot();
-		if (root == null) {
-			// no root - no grammar!
-			return false;
-		}
-		// look for relations: first root->prep_in->det
-		if(hasPrepinDetRelation(graph, root))
-		{
-			// we've found it! done!
+		if (new WordPrepInDetRule().apply(sentence)) {
 			return true;
 		}
-		else // look for relations: second root->prep_in->det 
+		else if(new WordPrepOnDetRule().apply(sentence))
 		{
-			// let's try to find a subject:
-			IndexedWord subject = graph.getChildWithReln(root, nsubjreln);
-			if (subject == null) {
-				// no subject - nothing to attribute anything to it!
-				return false;
-			}
-			// we already have our starting point njsubj. now let's find out if there are
-			// any prep_in->det attached to it:
-			return hasPrepinDetRelation(graph, subject);
-			// done
-		}		
-	}
-
-	/**
-	 * @param graph
-	 * @param startingWord
-	 * @return 
-	 */
-	private boolean hasPrepinDetRelation(SemanticGraph graph,
-			IndexedWord startingWord) {
-		//GrammaticalRelation prepreln = GrammaticalRelation.getRelation(PrepositionalModifierGRAnnotation.class);
-		GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep("in");		
-		GrammaticalRelation detreln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
-		// checking rule: root->prep_in->det
-		List<IndexedWord> listpreps = graph.getChildrenWithReln(startingWord, prepreln);
-		for (IndexedWord indexedWord : listpreps) {			
-			// we have found a relation: root->in
-			// now check for in->det
-			IndexedWord det = graph.getChildWithReln(indexedWord, detreln);
-			if (det != null) {
-				// success! this graph contains the relation root->prep_in->det
-				return true;
-			}			
+			return true;			
 		}
-		// found nothing, sorry!
-		return false;
+		else {
+			return false;
+		}
 	}
 
 	public EntityLocationPair getLocation(CoreMap sentence) throws LocationNotFoundException {
 		String entity, location = null;
-		IndexedWord startingword;
-		GrammaticalRelation nsubjreln = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
-		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		IndexedWord root = graph.getFirstRoot();
-		if (root == null) {
-			// no root - no grammar!
-			return null;
-		}
-		if(hasLocation(sentence))
-		{
-			// entity is the subject			
-			// let's try to find a subject:
-			IndexedWord subject = graph.getChildWithReln(root, nsubjreln);
-			if (subject == null) {
-				// no subject - nothing to attribute anything to it!
-				return null;
-			}
-			entity = subject.getString(TextAnnotation.class);
-			
-			// which part of the sentence has the prep_in->det relation?
-			if (hasPrepinDetRelation(graph, root)) {
-				startingword = root;
+		
+		WordPrepInDetRule inRule = new WordPrepInDetRule();
+		if (inRule.apply(sentence)) {
+			entity = inRule.getWord().originalText();
+			location = inRule.getPrepositionalModifier().toString();
+		} else {
+			WordPrepOnDetRule onRule = new WordPrepOnDetRule();
+			if(onRule.apply(sentence))
+			{
+				entity = onRule.getWord().originalText();
+				location = onRule.getPrepositionalModifier().toString();
 			}
 			else {
-				startingword = subject;
+				return null;
 			}
-			
-			// we already have our starting point njsubj. now let's find out if there are
-			// any prep_in->det attached to it:
-			GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep("in");		
-			GrammaticalRelation detreln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
-			// checking rule: root->prep_in->det
-			List<IndexedWord> listpreps = graph.getChildrenWithReln(startingword, prepreln);			
-			for (IndexedWord indexedWord : listpreps) {			
-				// we have found a relation: root->in
-				// now check for in->det
-				IndexedWord det = graph.getChildWithReln(indexedWord, detreln);
-				if (det != null) {
-					// success! this graph contains the relation root->prep_in->det
-					// this means, it's probably our location:
-					location = indexedWord.getString(TextAnnotation.class);
-					break;
-				}	
-			}			
-			// found nothing, sorry!
-			// done
 		}
-		else {
-			// there is no location in this sentence
-			return null;
-		}
-		
-		if (location == null) {
-			// I tried to identify a location but failed
-			throw new LocationNotFoundException("Could not identify location in sentence \"" + sentence.toString());
-		}
-		else {
-			return new EntityLocationPair(entity, location);		
-		}
+		return new EntityLocationPair(entity, location);
 	}
 }
