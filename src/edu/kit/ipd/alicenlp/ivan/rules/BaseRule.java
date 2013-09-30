@@ -3,7 +3,11 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+
+import org.omg.CORBA.Request;
 
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -93,9 +97,27 @@ public abstract class BaseRule {
 		return graph.getChildWithReln(word, reln);
 	}
 
+	/**
+	 * Finds any prepositions relating to {@code word}. Requires a non-collapsed graph.
+	 * @param word The word which is being modified
+	 * @param graph A basic graph (non-collapsed) 
+	 * @return
+	 */
 	protected static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
+	}
+	
+	protected static IndexedWord getAdvMod(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
+		IndexedWord advmod = graph.getChildWithReln(word, reln);
+		if (advmod == null) {
+			GrammaticalRelation reln2 = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdvClauseModifierGRAnnotation.class);
+			return graph.getChildWithReln(word, reln2);
+		}
+		else {
+			return advmod;			
+		}
 	}
 	
 	protected static boolean isPassive(IndexedWord root, SemanticGraph graph) {
@@ -138,5 +160,28 @@ public abstract class BaseRule {
 		else {
 			return word.originalText();			
 		}
+	}
+
+	/**
+	 * Returns any subject or a passive subject of the sentence
+	 * @param graph
+	 * @return
+	 */
+	protected IndexedWord getSubject(SemanticGraph graph) {
+		GrammaticalRelation[] subjects = { 
+				EnglishGrammaticalRelations.NOMINAL_SUBJECT,
+				EnglishGrammaticalRelations.NOMINAL_PASSIVE_SUBJECT,
+				EnglishGrammaticalRelations.CLAUSAL_SUBJECT,
+				EnglishGrammaticalRelations.CLAUSAL_PASSIVE_SUBJECT
+		};		
+		IndexedWord firstRoot = graph.getFirstRoot();
+		if (firstRoot == null) {
+			return null;
+		}
+		List<IndexedWord> children = graph.getChildrenWithRelns(firstRoot, Arrays.asList(subjects));
+		if (children != null && children.size() > 0) {
+			return children.get(0);
+		}
+		return null;
 	}
 }
