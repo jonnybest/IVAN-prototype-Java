@@ -410,7 +410,6 @@ public class DeclarationPositionFinder {
 	 */
 	public boolean hasLocation(CoreMap sentence)
 	{
-		new DirectionKeywordRule().apply(sentence);
 		if (new WordPrepInDetRule().apply(sentence)) {
 			return true;
 		}
