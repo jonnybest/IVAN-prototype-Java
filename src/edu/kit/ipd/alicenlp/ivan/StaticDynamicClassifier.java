@@ -42,10 +42,25 @@ public class StaticDynamicClassifier {
 	private StanfordCoreNLP mypipeline = null;
 	
 	public enum Classification {
+		/**
+		 * A SetupDescription defines the initial state of the scene, like the position of an entity.
+		 */
 		SetupDescription,
+		/**
+		 * An ActionDescription relates to an entity on the scene doing something specific, like a person taking a step.
+		 */
 		ActionDescription,
+		/**
+		 * An EventDescription relates to an observable event in the scene, like a ball dropping onto the scene from out of view.
+		 */
 		EventDescription,
+		/**
+		 * This sentence describes that time is passing.
+		 */
 		TimeDescription,
+		/**
+		 * This sentence contains something that we don't want users to write. (The ErrorDescription is not intended to replace exceptions.)
+		 */
 		ErrorDescription
 	}
 	
