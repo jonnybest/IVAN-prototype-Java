@@ -410,19 +410,11 @@ public class DeclarationPositionFinder {
 	 */
 	public boolean hasLocation(CoreMap sentence)
 	{
-		if (new WordPrepInDetRule().apply(sentence)) {
-			return true;
-		}
-		else if(new WordPrepOnDetRule().apply(sentence))
-		{
-			return true;			
-		}
-		else {
-			return false;
-		}
+		return getLocation(sentence) != null; 
 	}
 
-	public EntityLocationPair getLocation(CoreMap sentence) throws LocationNotFoundException {
+	public EntityLocationPair getLocation(CoreMap sentence) 
+	{
 		String entity, location = null;
 		
 		WordPrepInDetRule inRule = new WordPrepInDetRule();
