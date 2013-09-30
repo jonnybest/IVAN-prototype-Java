@@ -13,7 +13,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class NounRootRule extends BaseRule implements IGraphRule {
+public class NounRootRule implements IGraphRule {
 
 	private IndexedWord noun;
 	/* (non-Javadoc)
