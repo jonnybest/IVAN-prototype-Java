@@ -417,10 +417,6 @@ public class DeclarationPositionFinder {
 		{
 			return true;			
 		}
-		else if(new DirectionKeywordRule().apply(sentence))
-		{
-			return true;
-		}
 		else {
 			return false;
 		}
