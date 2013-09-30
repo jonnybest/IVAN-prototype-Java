@@ -4,10 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-
-import org.omg.CORBA.Request;
 
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -187,24 +184,31 @@ public abstract class BaseRule {
 	}
 
 	/**
-	 * Prints the part of the sentence which contains the {@code startingWord} all the verteces below it.
-	 * TODO: implement real DFS to find the bounds. 
+	 * Prints the part of the sentence which contains the {@code startingWord}
+	 * all the verteces below it. TODO: implement real DFS to find the bounds.
+	 * 
 	 * @param startingWord
 	 * @param graph
 	 * @return
 	 */
 	protected String printSubGraph(IndexedWord startingWord, SemanticGraph graph) {
-			Iterable<SemanticGraphEdge> outiter = graph.outgoingEdgeIterable(startingWord);
-	
-			int start = startingWord.beginPosition(), end = startingWord.endPosition();
-			for (SemanticGraphEdge edge : outiter) {
-	//			System.out.println("out:" + edge.toString());
-	//			System.out.println("gov: " + edge.getGovernor());
-	//			System.out.println("dep: " + edge.getDependent());
-				start = Math.min(start, edge.getGovernor().beginPosition());
-				end = Math.max(end, edge.getDependent().endPosition());			
-			}
-			
-			return graph.toRecoveredSentenceString().substring(start, end);
+		Iterable<SemanticGraphEdge> outiter = graph.outgoingEdgeIterable(startingWord);
+
+		// set the default bounds to the startingWord 
+		int start = startingWord.beginPosition();
+		int end = startingWord.endPosition();
+		
+		// search the next level for larger bounds
+		// assume that everything in between the bounds belongs to the sub-graph of the startingWord
+		for (SemanticGraphEdge edge : outiter) {
+//			System.out.println("out:" + edge.toString());
+			start = Math.min(start, edge.getGovernor().beginPosition());
+			start = Math.min(start, edge.getDependent().beginPosition());
+			end = Math.max(end, edge.getGovernor().endPosition());
+			end = Math.max(end, edge.getDependent().endPosition());
 		}
+
+		System.out.println(graph.toRecoveredSentenceString().substring(start, end));
+		return graph.toRecoveredSentenceString().substring(start, end);
+	}
 }
