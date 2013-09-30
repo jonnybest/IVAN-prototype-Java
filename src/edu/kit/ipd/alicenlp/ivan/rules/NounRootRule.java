@@ -26,10 +26,22 @@ public class NounRootRule extends BaseRule implements IGraphRule {
 		if (root != null) {
 			String pos = root.get(PartOfSpeechAnnotation.class);
 			if (pos != null && pos.startsWith("NN")) {
-				noun = root;
+				setNoun(root);
 				return true;
 			}
 		}
 		return false;
+	}
+	/**
+	 * @return the noun
+	 */
+	public IndexedWord getNoun() {
+		return noun;
+	}
+	/**
+	 * @param noun the noun to set
+	 */
+	private void setNoun(IndexedWord noun) {
+		this.noun = noun;
 	}
 }
