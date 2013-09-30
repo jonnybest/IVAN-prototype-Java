@@ -15,6 +15,7 @@ import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
@@ -184,4 +185,26 @@ public abstract class BaseRule {
 		}
 		return null;
 	}
+
+	/**
+	 * Prints the part of the sentence which contains the {@code startingWord} all the verteces below it.
+	 * TODO: implement real DFS to find the bounds. 
+	 * @param startingWord
+	 * @param graph
+	 * @return
+	 */
+	protected String printSubGraph(IndexedWord startingWord, SemanticGraph graph) {
+			Iterable<SemanticGraphEdge> outiter = graph.outgoingEdgeIterable(startingWord);
+	
+			int start = startingWord.beginPosition(), end = startingWord.endPosition();
+			for (SemanticGraphEdge edge : outiter) {
+	//			System.out.println("out:" + edge.toString());
+	//			System.out.println("gov: " + edge.getGovernor());
+	//			System.out.println("dep: " + edge.getDependent());
+				start = Math.min(start, edge.getGovernor().beginPosition());
+				end = Math.max(end, edge.getDependent().endPosition());			
+			}
+			
+			return graph.toRecoveredSentenceString().substring(start, end);
+		}
 }

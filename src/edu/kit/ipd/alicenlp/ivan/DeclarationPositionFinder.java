@@ -11,6 +11,7 @@ import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IGraphRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
@@ -409,12 +410,17 @@ public class DeclarationPositionFinder {
 	 */
 	public boolean hasLocation(CoreMap sentence)
 	{
+		new DirectionKeywordRule().apply(sentence);
 		if (new WordPrepInDetRule().apply(sentence)) {
 			return true;
 		}
 		else if(new WordPrepOnDetRule().apply(sentence))
 		{
 			return true;			
+		}
+		else if(new DirectionKeywordRule().apply(sentence))
+		{
+			return true;
 		}
 		else {
 			return false;
