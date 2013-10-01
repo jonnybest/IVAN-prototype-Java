@@ -204,9 +204,18 @@ public class SwingWindow {
 				continue;
 			}
 			IndexedWord root = depgraph.getFirstRoot();
-			if (depgraph.size() < 3) {
-				continue;
-			}
+			// probably not a good idea. Counter-example of a valid sentence with 2 words: Henry appears.
+//			if (depgraph.size() < 3) {
+//				continue;
+//			}
+			
+			/*** Requirement 1: Check subject for entity or name and extract name, position and direction if possible
+			 * 		Also, save name in name list and save position and direction in EntityInfo.
+			 */
+			// TODO: implement problem1
+			
+			/*** Requirement 2: Classify sentence into Setup descriptions and non-setup descriptions  
+			 */
 			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, sentence);
 			if (mydeclarationfinder.hasLocation(sentence)) {
 				EntityLocationPair loc = mydeclarationfinder.getLocation(sentence);
@@ -230,6 +239,8 @@ public class SwingWindow {
 				break;
 			}
 			
+			/*** Requirement 3: 
+			 */
 			
 			// a CoreLabel is a CoreMap with additional token-specific labels			
 //			for (CoreLabel item : sentence.get(TokensAnnotation.class)) {
