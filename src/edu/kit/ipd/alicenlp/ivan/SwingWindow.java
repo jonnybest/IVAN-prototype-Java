@@ -19,6 +19,8 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
 
+import net.sf.extjwnl.dictionary.Dictionary;
+
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
@@ -185,6 +187,15 @@ public class SwingWindow {
 		 */
 		/* tag with pos tags */
 
+		Dictionary dictionary = null;
+		try {
+			dictionary = myclassifier.getDictionary();
+		} 
+		catch(Exception e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		StanfordCoreNLP pipeline = null;
 		try {
 			pipeline = myclassifier.getPipeline();
@@ -213,6 +224,7 @@ public class SwingWindow {
 			 * 		Also, save name in name list and save position and direction in EntityInfo.
 			 */
 			// TODO: implement problem1
+			new DeclarationPositionFinder(pipeline, dictionary);
 			
 			/*** Requirement 2: Classify sentence into Setup descriptions and non-setup descriptions  
 			 */
@@ -239,7 +251,7 @@ public class SwingWindow {
 				break;
 			}
 			
-			/*** Requirement 3: 
+			/*** Requirement 3: Check this sentence for co-reference
 			 */
 			
 			// a CoreLabel is a CoreMap with additional token-specific labels			
