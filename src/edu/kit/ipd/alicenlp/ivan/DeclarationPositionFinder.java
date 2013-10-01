@@ -3,6 +3,7 @@ package edu.kit.ipd.alicenlp.ivan;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -13,6 +14,7 @@ import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.DeclarationPositionFinder.MissingEntityInfoFlag;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IGraphRule;
@@ -38,6 +40,7 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinder {
 	
+
 	private InitialState mystate = null;
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
@@ -424,5 +427,18 @@ public class DeclarationPositionFinder {
 		}
 		// hope those are all
 		return names;
+	}
+
+	/***
+	 * This method decides whether the given names are already declared in the state.
+	 * @param names
+	 * @return False, if at least one of the names is not declared yet
+	 */
+	public boolean isDeclared(List<String> names) {
+		return mystate.containsAllNames(names);
+	}
+
+	public boolean isDeclared(String name) {
+		return mystate.containsName(name);
 	}
 }

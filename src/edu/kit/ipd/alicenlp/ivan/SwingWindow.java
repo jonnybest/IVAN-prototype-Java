@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.JFrame;
@@ -26,6 +27,7 @@ import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
+import edu.kit.ipd.alicenlp.ivan.DeclarationPositionFinder.MissingEntityInfoFlag;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -227,10 +229,14 @@ public class SwingWindow {
 			// 1. check for names
 			List<String> names = mydeclarationfinder.recogniseNames(sentence); // recognises named und unnamed entities in this sentence
 			// 2. are they declared already?
+			boolean everythingdeclared = mydeclarationfinder.isDeclared(names);
 			// -- for each name: 
-			// 		3. if this sentence contains declarations, get the declaration position for each name 
-			// 		4. while we're at it (iterating), check if there is any info missing for this name
-			//		5. create a display for the missing info?
+			for (String n : names) {					
+				// 		4. while we're at it (iterating), check if there is any info missing for this name
+								
+				//		5. create a display for the missing info?
+				
+			}
 			
 			/*** Requirement 2: Classify sentence into Setup descriptions and non-setup descriptions  
 			 */

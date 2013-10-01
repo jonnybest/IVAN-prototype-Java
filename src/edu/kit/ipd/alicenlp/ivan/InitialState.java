@@ -119,4 +119,30 @@ public class InitialState extends HashSet<EntityInfo>
 			return true;
 		}
 	}
+
+	public boolean containsName(String n) {
+		return nameset.containsKey(n);
+	}
+	
+	public boolean containsAllNames(Collection<String> names)
+	{
+		for (String name : names) {
+			if (!containsName(name)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public EntityInfo getSingle(String name)
+	{
+		List<EntityInfo> infos = nameset.get(name);
+		assert infos.size() == 1;
+		return infos.get(0);
+	}
+	
+	public ArrayList<EntityInfo> get(String name)
+	{
+		return nameset.get(name);
+	}
 }
