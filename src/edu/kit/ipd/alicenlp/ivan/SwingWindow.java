@@ -224,10 +224,13 @@ public class SwingWindow {
 			 * 		Also, save name in name list and save position and direction in EntityInfo.
 			 */
 			// TODO: implement problem1
-			// check for names
+			// 1. check for names
 			List<String> names = mydeclarationfinder.recogniseNames(sentence); // recognises named und unnamed entities in this sentence
-			// check if there is any info missing for this name
-					  
+			// 2. are they declared already?
+			// -- for each name: 
+			// 		3. if this sentence contains declarations, get the declaration position for each name 
+			// 		4. while we're at it (iterating), check if there is any info missing for this name
+			//		5. create a display for the missing info?
 			
 			/*** Requirement 2: Classify sentence into Setup descriptions and non-setup descriptions  
 			 */

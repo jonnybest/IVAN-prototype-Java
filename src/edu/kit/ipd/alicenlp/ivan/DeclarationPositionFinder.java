@@ -411,7 +411,18 @@ public class DeclarationPositionFinder {
 		ArrayList<String> names = new ArrayList<String>();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord subj = BaseRule.getSubject(graph);
-		// TODO: finish implementation
-		return null;
+		// adding this subject
+		names.add(subj.word());
+		// check for more!
+		// more names can be reached with "and". Get us an "and":
+		GrammaticalRelation andrel = EnglishGrammaticalRelations.getConj("and");
+		// ask the graph for everything that is connected by "and":
+		List<IndexedWord> ands = graph.getChildrenWithReln(subj, andrel);
+		for (IndexedWord w : ands) {
+			// add 'em
+			names.add(w.word());
+		}
+		// hope those are all
+		return names;
 	}
 }
