@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -25,7 +26,6 @@ import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
-import edu.kit.ipd.alicenlp.ivan.DeclarationPositionFinder.EntityLocationPair;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -224,13 +224,16 @@ public class SwingWindow {
 			 * 		Also, save name in name list and save position and direction in EntityInfo.
 			 */
 			// TODO: implement problem1
-			new DeclarationPositionFinder(pipeline, dictionary);
+			// check for names
+			List<String> names = mydeclarationfinder.recogniseNames(sentence); // recognises named und unnamed entities in this sentence
+			// check if there is any info missing for this name
+					  
 			
 			/*** Requirement 2: Classify sentence into Setup descriptions and non-setup descriptions  
 			 */
 			StaticDynamicClassifier.Classification sentencetype = myclassifier.classifySentence(root, sentence);
 			if (mydeclarationfinder.hasLocation(sentence)) {
-				EntityLocationPair loc = mydeclarationfinder.getLocation(sentence);
+				EntityInfo loc = mydeclarationfinder.getLocation(sentence);
 				tell("There's a location in \"" + sentence.get(TextAnnotation.class));
 				System.out.println("The location \""+ loc +"\" was found in \"" + sentence.get(TextAnnotation.class));
 			}

@@ -165,7 +165,7 @@ public abstract class BaseRule {
 	 * @param graph
 	 * @return
 	 */
-	protected IndexedWord getSubject(SemanticGraph graph) {
+	public static IndexedWord getSubject(SemanticGraph graph) {
 		GrammaticalRelation[] subjects = { 
 				EnglishGrammaticalRelations.NOMINAL_SUBJECT,
 				EnglishGrammaticalRelations.NOMINAL_PASSIVE_SUBJECT,
@@ -178,6 +178,8 @@ public abstract class BaseRule {
 		}
 		List<IndexedWord> children = graph.getChildrenWithRelns(firstRoot, Arrays.asList(subjects));
 		if (children != null && children.size() > 0) {
+			assert children.size() == 1; // not really dangerous. But we need to change our implementation to return a list, if there are more than one subject.
+			
 			return children.get(0);
 		}
 		return null;

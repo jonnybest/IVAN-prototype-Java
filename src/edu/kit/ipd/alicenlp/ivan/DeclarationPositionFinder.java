@@ -2,8 +2,10 @@ package edu.kit.ipd.alicenlp.ivan;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
@@ -11,6 +13,7 @@ import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IGraphRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
@@ -23,6 +26,7 @@ import edu.stanford.nlp.ling.tokensregex.SequenceMatchRules.Rule;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
@@ -33,53 +37,8 @@ import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinder {
-	public class EntityLocationPair {
-
-		private String loc;
-		private String entity;
-
-		public EntityLocationPair(String entity, String location) {
-			this.entity = entity;
-			this.loc = location;
-		}
-		
-		@Override
-		public String toString() {
-			return entity + ": " + loc;
-		}
-	}
-
-	/**
-	 * @author Jonny
-	 *
-	 */
-	public class DeclarationQuadruple 
-	{
-		public String Entity;
-		public String Name;
-		public String Location;
-		public String Direction;		
-		
-		@Override
-		public boolean equals(Object obj) {
-			if (obj == null) {
-				return false;
-			}
-			else if (obj.getClass().equals(DeclarationQuadruple.class)) {
-				DeclarationQuadruple other = (DeclarationQuadruple) obj;
-				if (Name != null) {
-					return Entity.equalsIgnoreCase(other.Entity);
-				}
-				else {
-					return Name.equalsIgnoreCase(other.Name);
-				}
-			}
-			else {				
-				return false;
-			}
-		}
-	}
-
+	
+	private InitialState mystate = null;
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
@@ -122,18 +81,27 @@ public class DeclarationPositionFinder {
 		// this creates the corenlp pipeline
 		setupCoreNLP();
 		
+		// static reference for no real reason
 		if (myinstance == null) {
 			myinstance = this;
 		}
+		
+		// this class is also in charge of keeping a state, so here it is:
+		this.mystate = new InitialState();
 	}
 
 	public DeclarationPositionFinder(StanfordCoreNLP pipeline, Dictionary wordnet)
 	{
+		// this creates the corenlp pipeline
 		mypipeline = pipeline;
+		// this creates a wordnet dictionary
 		mydictionary = wordnet;
+		// static reference for no real reason
 		if (myinstance == null) {
 			myinstance = this;
 		}
+		// this class is also in charge of keeping a state, so here it is:
+		this.mystate = new InitialState();
 	}
 
 	private Boolean printLexicographerFileNamesForVerbs(String token) throws JWNLException {
@@ -396,24 +364,28 @@ public class DeclarationPositionFinder {
 		return myinstance;
 	}
 
-	public DeclarationQuadruple findAll(IndexedWord root, CoreMap sentence) {
+	public EntityInfo findAll(String name, IndexedWord root, CoreMap sentence) {
 		// TODO Auto-generated method stub
 		//  
-		return null;
+		return new EntityInfo(name);
 	}
 	
-	/***
-	 * This function implements a check for rule "in_foreground".
-	 * It checks for these ternary relations:  root->prep_in->det and nsubj->prep_in->det
+	/**
+	 * Indicates whether this sentence contains a location.
 	 * @param sentence
-	 * @return
+	 * @return True, if a location has been recognised.
 	 */
 	public boolean hasLocation(CoreMap sentence)
 	{
 		return getLocation(sentence) != null; 
 	}
 
-	public EntityLocationPair getLocation(CoreMap sentence) 
+	/**
+	 * Attempts to find a location in the given sentence. 
+	 * @param sentence A CoreMap to look inside
+	 * @return An EntityInfo containing the location and the word it refers to. Or {@code null} if none was found.
+	 */
+	public EntityInfo getLocation(CoreMap sentence) 
 	{
 		String entity, location = null;
 		
@@ -432,6 +404,14 @@ public class DeclarationPositionFinder {
 				return null;
 			}
 		}
-		return new EntityLocationPair(entity, location);
+		return new EntityInfo(entity, location);
+	}
+
+	public List<String> recogniseNames(CoreMap sentence) {
+		ArrayList<String> names = new ArrayList<String>();
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		IndexedWord subj = BaseRule.getSubject(graph);
+		// TODO: finish implementation
+		return null;
 	}
 }
