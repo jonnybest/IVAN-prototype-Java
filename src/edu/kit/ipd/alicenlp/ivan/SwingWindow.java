@@ -9,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -176,12 +177,18 @@ public class SwingWindow {
 	 */
 	private void processText(String text) throws Exception {
 		clearStyles();
-		/*
-		 * Recognise modal sentences
+		
+		/** Until I come up with something better, I need to scrub the state of everything each time the analysis runs 
 		 */
+		// FIXME: This part is a setup for memory leaks. 
+		problemSetMissingDirection.clear();
+		problemSetMissingLocation.clear();
+		DeclarationPositionFinder mydeclarationfinder = DeclarationPositionFinder.getInstance();
+		mydeclarationfinder.reset(); // this component is stateful, so we have to reset it
+		
+		// Get an instance of the classifier for setup sentences
 		StaticDynamicClassifier myclassifier = StaticDynamicClassifier
 				.getInstance();
-		DeclarationPositionFinder mydeclarationfinder = DeclarationPositionFinder.getInstance();
 		String lines = text;
 		/*
 		 * String[] modalVerbs = {"can", "could", "may", "might", "must",
@@ -242,12 +249,19 @@ public class SwingWindow {
 				 * problem type and later call a method for each problem type which displays a compact list of missing things.
 				 * I chose 2.
 				 */
-				ArrayList<EntityInfo> declarednames = mydeclarationfinder.getCurrentState().get(n);
+				List<EntityInfo> declarednames = mydeclarationfinder.getCurrentState().get(n);
 				
 				if (declarednames == null) {
 					// there are no declarations with this name (at all)
 					// TODO: does this sentence qualify as a declaration? if yes, declare now and try to get declared names again. if not, skip these.
 					List<EntityInfo> decls = mydeclarationfinder.getDeclarations(sentence);
+					if (decls.size() > 0) {
+						mydeclarationfinder.getCurrentState().addAll(decls);
+						declarednames = decls;
+					}
+					else {
+						continue;
+					}
 				}
 				for (EntityInfo infoOnName : declarednames) {
 					
@@ -256,7 +270,7 @@ public class SwingWindow {
 						EntityInfo moreinfo = mydeclarationfinder.getLocation(sentence);
 						if (moreinfo == null || !moreinfo.hasLocation()) {
 							// Bad! This sentence contains no location info and we are still missing location info
-							this.problemSetMissingLocation.add(infoOnName);
+							problemSetMissingLocation.add(infoOnName);
 						}
 						else {
 							// fixme: the info may not relate to the proper name
@@ -266,7 +280,7 @@ public class SwingWindow {
 							infoOnName.setLocation(moreinfo.getLocation());
 							// and remove the problem entry if we had one
 							@SuppressWarnings("unused")
-							boolean success = this.problemSetMissingLocation.remove(infoOnName);
+							boolean success = problemSetMissingLocation.remove(infoOnName);
 						}
 					}
 					if (!infoOnName.hasDirection()) 
@@ -275,14 +289,14 @@ public class SwingWindow {
 						EntityInfo moreinfo = mydeclarationfinder.getDirection(sentence);
 						if (moreinfo == null || !moreinfo.hasDirection()) {
 							// Bad! This sentence contains no location info and we are still missing location info
-							this.problemSetMissingDirection.add(infoOnName);
+							problemSetMissingDirection.add(infoOnName);
 						}
 						else {
 							// good! this sentence contains info, so lets merge the two
 							infoOnName.setDirection(moreinfo.getDirection());
 							// and remove the problem entry if we had one
 							@SuppressWarnings("unused")
-							boolean success = this.problemSetMissingDirection.remove(infoOnName);
+							boolean success = problemSetMissingDirection.remove(infoOnName);
 						}						
 					}
 				}

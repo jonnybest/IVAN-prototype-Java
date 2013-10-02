@@ -24,6 +24,26 @@ import org.eclipse.core.runtime.Assert;
 public class InitialState extends HashSet<EntityInfo>
 {
 	private HashMap<String,ArrayList<EntityInfo>> nameset = new HashMap<String, ArrayList<EntityInfo>>();
+
+	/** Clears ALL the state!
+	 * 
+	 */
+	@Override
+	public void clear() {
+		// don't forget to pop the nameset
+		nameset.clear();
+		super.clear();
+	}
+
+	/** Do not use this method.
+	 */
+	@Override
+	public boolean remove(Object o) 
+	{
+		// nop
+		System.err.println("The implementation of this set does not support removal by value.");
+		return false;
+	}
 	
 	/**
 	 * Writes the information in the given {@code value} into the {@link InitialState}. 
@@ -64,6 +84,18 @@ public class InitialState extends HashSet<EntityInfo>
 		elist.add(e);
 		nameset.put(e.getEntity(), elist);
 		return true;
+	}
+	
+	/**
+	 * This method attempts to add all the EntityInfos into this InitialState. It will not update any existing entries.
+	 */
+	@Override
+	public boolean addAll(Collection<? extends EntityInfo> c) {
+		boolean haschanged = false;
+		for (EntityInfo entityInfo : c) {
+			haschanged = haschanged | this.add(entityInfo);
+		}
+		return haschanged;
 	}
 
 	/**
