@@ -298,6 +298,20 @@ public class SwingWindow {
 //			}
 		}
 		refreshLineNumbersFont();
+		diplayWarnings();
+	}
+
+	private void diplayWarnings() {
+		// TODO This method manipulates the right-hand actionpanel for displaying errors and warnings
+		// create a missing-stuff display
+		
+		for (EntityInfo info : problemSetMissingLocation) {
+			// TODO: add this entity to the missinglocation problem
+		}		
+		
+		for (EntityInfo info : problemSetMissingDirection) {
+			// TODO: add this entity to the missingdirection problem
+		}
 	}
 
 	private void tell(String output) {
