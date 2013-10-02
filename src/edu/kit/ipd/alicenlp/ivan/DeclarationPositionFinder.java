@@ -433,4 +433,13 @@ public class DeclarationPositionFinder {
 	public boolean isDeclared(String name) {
 		return mystate.containsName(name);
 	}
+	
+	/**
+	 * Returns the internal state of the declarations
+	 * @return
+	 */
+	public InitialState getCurrentState()
+	{
+		return mystate;
+	}
 }
