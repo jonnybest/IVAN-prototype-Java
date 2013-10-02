@@ -51,36 +51,36 @@ public class DirectionKeywordRule extends BaseRule implements IGraphRule {
 				List<IndexedWord> towlistsubj = getPrepRelations(getSubject(), graph, "towards");
 				List<IndexedWord> towlistroot = getPrepRelations(root, graph, "towards");
 				if (towlistsubj.size() > 0) {
-					setDirection(getNounPhrase(towlistsubj.get(0), Sentence));
+					setDirection(printSubGraph(towlistsubj.get(0), Sentence));
 					return true;
 				} 
 				else if(towlistroot.size() > 0)
 				{
-					setDirection(getNounPhrase(towlistroot.get(0), Sentence));
+					setDirection(printSubGraph(towlistroot.get(0), Sentence));
 					return true;
 				}
 				// 2. check for and extract adverbial modifier
 				IndexedWord advmod = getAdvMod(root, graph);
 				if (advmod != null) {
-					setDirection(printSubGraph(advmod, graph));
+					setDirection(printSubGraph(advmod, Sentence));
 					return true;
 				}
 				// 3. check for and extract "to"
 				List<IndexedWord> tolistsubj = getPrepRelations(getSubject(), graph, "to");
 				List<IndexedWord> tolistroot = getPrepRelations(root, graph, "to");
 				if (tolistsubj.size() > 0) {
-					setDirection(getNounPhrase(tolistsubj.get(0), Sentence));
+					setDirection(printSubGraph(tolistsubj.get(0), Sentence));
 					return true;
 				} 
 				else if(tolistroot.size() > 0)
 				{
-					setDirection(getNounPhrase(tolistroot.get(0), Sentence));
+					setDirection(printSubGraph(tolistroot.get(0), Sentence));
 					return true;
 				}
 				// 4. check for and extract direct object
 				IndexedWord dobj = getDirectObject(root, graph);
 				if (dobj != null) {
-					setDirection(printSubGraph(dobj, graph));
+					setDirection(printSubGraph(dobj, Sentence));
 					return true;
 				}
 				// stop after the first match

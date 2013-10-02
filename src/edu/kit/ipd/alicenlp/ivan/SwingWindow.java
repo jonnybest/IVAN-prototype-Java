@@ -243,6 +243,9 @@ public class SwingWindow {
 //			if (depgraph.size() < 3) {
 //				continue;
 //			}
+			if (depgraph.isEmpty()) {
+				continue;
+			}
 			
 			/*** Requirement 1: Check subject for entity or name and extract name, position and direction if possible
 			 * 		Also, save name in name list and save position and direction in EntityInfo.
