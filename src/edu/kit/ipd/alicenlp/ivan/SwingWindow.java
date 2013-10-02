@@ -9,6 +9,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -27,7 +28,6 @@ import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
-import edu.kit.ipd.alicenlp.ivan.DeclarationPositionFinder.MissingEntityInfoFlag;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -47,6 +47,8 @@ public class SwingWindow {
 	private Style SetupStyle;
 	protected AttributeSet DefaultStyle;
 	private JTextPane emitterTextPane;
+	private Set<EntityInfo> problemSetMissingLocation;
+	private Set<EntityInfo> problemSetMissingDirection;
 
 	/**
 	 * Launch the application.
@@ -233,9 +235,22 @@ public class SwingWindow {
 			// -- for each name: 
 			for (String n : names) {					
 				// 		4. while we're at it (iterating), check if there is any info missing for this name
-								
+				/*
+				 * I have two options: 1. retrieve the entityinfo, check for missing data, display a warning to the user
+				 * or 2. retrieve entityinfo, check for missing data, store the entityinfo in a list corresponding with the
+				 * problem type and later call a method for each problem type which displays a compact list of missing things.
+				 */
+				for (EntityInfo infoOnName : mydeclarationfinder.getCurrentState().get(n)) {
+					if (!infoOnName.hasLocation()) {
+						this.problemSetMissingLocation.add(infoOnName);
+					}
+					if (!infoOnName.hasDirection()) 
+					{
+						this.problemSetMissingDirection.add(infoOnName);
+					}
+				}
 				//		5. create a display for the missing info?
-				
+				// see above
 			}
 			
 			/*** Requirement 2: Classify sentence into Setup descriptions and non-setup descriptions  
