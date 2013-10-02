@@ -202,16 +202,18 @@ public class DeclarationPositionFinder {
 	public EntityInfo getLocation(CoreMap sentence) 
 	{
 		String entity, location = null;
+		// the entity is most likely the subject(s) of the sentence
+		entity = BaseRule.getSubject(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)).word();
 		
 		WordPrepInDetRule inRule = new WordPrepInDetRule();
 		if (inRule.apply(sentence)) {
-			entity = inRule.getWord().originalText();
+//			entity = inRule.getWord().originalText(); // the entity is most likely not the word, but the subject(s) of the sentence
 			location = inRule.getPrepositionalModifier().toString();
 		} else {
 			WordPrepOnDetRule onRule = new WordPrepOnDetRule();
 			if(onRule.apply(sentence))
 			{
-				entity = onRule.getWord().originalText();
+//				entity = onRule.getWord().originalText(); // the entity is most likely not the word, but the subject(s) of the sentence
 				location = onRule.getPrepositionalModifier().toString();
 			}
 			else {
