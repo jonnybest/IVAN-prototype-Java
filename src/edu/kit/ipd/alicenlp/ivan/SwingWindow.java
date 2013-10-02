@@ -111,6 +111,9 @@ public class SwingWindow {
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
 		frame.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
 
+		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
+		setupFeedback();
+		
 		txtEditor.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyTyped(KeyEvent arg0) {
@@ -133,6 +136,15 @@ public class SwingWindow {
 		// mykit.setWrap(true);
 
 		refreshLineNumbersFont();
+	}
+
+	/** Prepares the problems list for the task pane. 
+	 * If I decide to do inital stuff with the taskpane and the emitter, that code goes here as well.
+	 */
+	private void setupFeedback() {
+		// prepare a list for the problems
+		this.problemSetMissingDirection = new HashSet<EntityInfo>();
+		this.problemSetMissingLocation = new HashSet<EntityInfo>();
 	}
 
 	/**
