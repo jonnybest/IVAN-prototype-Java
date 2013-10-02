@@ -14,6 +14,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
+import edu.kit.ipd.alicenlp.ivan.rules.NounRootRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -421,6 +422,15 @@ public class DeclarationPositionFinder {
 			return null;			
 		}
 	}
+	
+
+	public List<EntityInfo> getDeclarations(CoreMap sentence) {
+		NounRootRule nrrule = new NounRootRule();
+		if (nrrule.apply(sentence)) {
+			
+		}
+		return null;
+	}
 
 	public List<String> recogniseNames(CoreMap sentence) {
 		ArrayList<String> names = new ArrayList<String>();
@@ -462,4 +472,5 @@ public class DeclarationPositionFinder {
 	{
 		return mystate;
 	}
+
 }

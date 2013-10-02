@@ -247,6 +247,7 @@ public class SwingWindow {
 				if (declarednames == null) {
 					// there are no declarations with this name (at all)
 					// TODO: does this sentence qualify as a declaration? if yes, declare now and try to get declared names again. if not, skip these.
+					List<EntityInfo> decls = mydeclarationfinder.getDeclarations(sentence);
 				}
 				for (EntityInfo infoOnName : declarednames) {
 					
