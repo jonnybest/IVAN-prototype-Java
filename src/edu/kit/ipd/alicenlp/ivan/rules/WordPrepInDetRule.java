@@ -56,7 +56,7 @@ public class WordPrepInDetRule extends BaseRule implements IGraphRule
 		List<IndexedWord> prep_ins = getPrepinRelations(governor, graph);
 		for (IndexedWord iw : prep_ins) {
 			if (hasDeterminer(iw, graph)) {
-				this.prepositionalModifier = getNounPhrase(iw, sentence);
+				this.prepositionalModifier = "in " + printSubGraph(iw, sentence);
 				return true;
 			}
 		}

@@ -56,7 +56,7 @@ public class WordPrepOnDetRule extends BaseRule implements IGraphRule
 		List<IndexedWord> prep_ons = getPrepRelations(governor, graph, "on");
 		for (IndexedWord iw : prep_ons) {
 			if (hasDeterminer(iw, graph)) {
-				this.prepositionalModifier = printSubGraph(iw, sentence);
+				this.prepositionalModifier = "on " + printSubGraph(iw, sentence);
 				return true;
 			}
 		}
