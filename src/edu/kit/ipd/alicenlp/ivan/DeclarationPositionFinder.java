@@ -20,6 +20,7 @@ import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -29,6 +30,7 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NounCompoundModifierGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -39,37 +41,6 @@ public class DeclarationPositionFinder {
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
-	
-	private boolean hasAgent(IndexedWord root, SemanticGraph graph) {
-		// implement a check for agent(root, nounphrase)
-		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class);
-		// TODO: verify this 
-		return graph.hasChildWithReln(root, agentrel);
-	}
-
-	/**
-	 * @param word
-	 * @param pointers
-	 */
-	private void printHypernymfeedback(String word, List<Pointer> pointers) {		
-		System.out.println("To " + word + " is one way to " + 
-				pointers.get(0).getTargetSynset().getWords().get(0).getLemma() + ".");
-	}
-	
-	private boolean isPassive(IndexedWord root, SemanticGraph graph) {
-		// Examples: 
-		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
-		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
-		// “That she lied was suspected by everyone” csubjpass(suspected, lied)
-		GrammaticalRelation csubjpass = GrammaticalRelation.getRelation(ClausalPassiveSubjectGRAnnotation.class);
-		// “Kennedy was killed” auxpass(killed, was)
-		GrammaticalRelation auxrel = GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
-		Boolean passive = false;
-		passive = passive || graph.hasChildWithReln(root, nsubjpass);
-		passive = passive || graph.hasChildWithReln(root, csubjpass);
-		passive = passive || graph.hasChildWithReln(root, auxrel);
-		return passive;
-	}
 
 	public DeclarationPositionFinder() 
 	{
@@ -101,21 +72,6 @@ public class DeclarationPositionFinder {
 		this.mystate = new InitialState();
 	}
 
-	private Boolean printLexicographerFileNamesForVerbs(String token) throws JWNLException {
-		IndexWord word = mydictionary.getIndexWord(POS.VERB, token);
-		if (word == null) {
-			word = mydictionary.lookupIndexWord(POS.VERB, token);
-			if (word == null) {
-				// skip
-				System.err.println("-- Cannot find word \"" + token + "\" in WordNet dictionary."); //$NON-NLS-1$ //$NON-NLS-2$
-				System.err.println();
-				return false;
-			}
-		}
-		printLexicographerFileNames(word);
-		return true;
-	}
-
 	protected Annotation annotate(String text) {
 		// create an empty Annotation just with the given text
 	    Annotation document = new Annotation(text);
@@ -126,35 +82,12 @@ public class DeclarationPositionFinder {
 		return document;
 	}
 
-	private void printLexicographerFileNames(IndexWord word) {
-		word.sortSenses();
-		List<Synset> senses = word.getSenses();
-		System.out.print("to " + word.getLemma() + ": "); //$NON-NLS-1$ //$NON-NLS-2$
-		for (Synset synset : senses) {
-			if (senses.indexOf(synset) > 2) {
-				break;
-			}
-			System.out.print(synset.getLexFileName() + "(" + synset.getLexFileNum() + ") "); //$NON-NLS-1$ //$NON-NLS-2$
-		}
-		System.out.println();
-	}
-
-	private IndexedWord getDeterminer(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
-		return graph.getChildWithReln(word, reln);
-	}
-
 	/* (non-Javadoc)
 	 * @see edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#getDictionary()
 	 */
 	
 	public Dictionary getDictionary() {
 		return mydictionary;
-	}
-	
-	private IndexedWord getDirectObject(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
-		return graph.getChildWithReln(word, reln);
 	}
 	
 	/* (non-Javadoc)
@@ -164,74 +97,6 @@ public class DeclarationPositionFinder {
 		return mypipeline;
 	}
 
-	private CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
-		return graph.getChildWithReln(word, reln);
-	}
-	
-	protected Boolean hasWordNetEntry(String verb) throws JWNLException {
-		IndexWord word = mydictionary.getIndexWord(POS.VERB, verb);
-		if (word == null) {
-			word = mydictionary.lookupIndexWord(POS.VERB, verb);
-			if (word == null || !word.getLemma().equals(verb)) {
-				// skip
-				//System.err.println("-- Cannot find word \"" + verb + "\" in WordNet dictionary."); //$NON-NLS-1$ //$NON-NLS-2$
-				//System.err.println();
-				return false;
-			}
-			else 
-				return true;
-		}
-		else
-			return true;
-	}
-	
-	/** Finds whole word to multi-word verbs like phrasal verbs
-	 * @param graph The sentence this word occurs in
-	 * @param word The word to find parts for
-	 * @return The whole verb (in base form) as it exists in WordNet 
-	 * @throws JWNLException
-	 */
-	protected String expandVerb(IndexedWord word, SemanticGraph graph)
-			throws JWNLException {
-		String lemma = word.lemma();
-		if (hasParticle(word, graph)) {
-			String particle = null;
-			particle = getParticle(word, graph).word();
-			//System.err.println(particle);
-			String combinedword = lemma + " " + particle;
-			if (hasWordNetEntry(combinedword)) {
-				lemma = combinedword;							
-			}
-		}
-		else if(hasPrepMod(word, graph)) {
-			String prepmod = null;
-			prepmod = getPrepMod(word, graph).word();
-			//System.err.println(prepmod);
-			String combinedword = lemma + " " + prepmod;
-			if (hasWordNetEntry(combinedword)) {
-				lemma = combinedword;							
-			}
-		}
-		else if(hasDirectObjectNP(word, graph)) {
-			String dirobstr = null;
-			IndexedWord direObj = null;
-			direObj = getDirectObject(word, graph);
-			CoreLabel det = getDeterminer(direObj, graph);
-			if (det != null) {
-				dirobstr = det.word() + " " + direObj.word();
-			}
-			else {
-				dirobstr = direObj.word();
-			}
-			//System.err.println(direObj);
-			String combinedword = lemma + " " + dirobstr;
-			if (hasWordNetEntry(combinedword)) {
-				lemma = combinedword;
-			}
-		}
-		return lemma;
-	}
 
 	/* (non-Javadoc)
 	 * @see edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#setDictionary(net.sf.extjwnl.dictionary.Dictionary)
@@ -298,54 +163,6 @@ public class DeclarationPositionFinder {
 	    	e.printStackTrace();
 	    	System.exit(-1);
 	    }
-	}
-
-
-	protected static Boolean is1stPerson(IndexedWord root, SemanticGraph graph)
-	{
-		// not actually always first person, but for our corpus, it's good enough 
-//		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
-//			return true;
-//		}
-		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
-		IndexedWord subject = graph.getChildWithReln(root, subjclass);
-		return subject == null || subject.word().equalsIgnoreCase("I");
-	}
-	
-	protected static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
-	{
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
-		return graph.getChildWithReln(word, reln);
-	}
-	
-	private static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}
-
-	private static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
-		if (graph.hasChildWithReln(word, reln)) {
-			String pos = graph.getChildWithReln(word, reln).get(PartOfSpeechAnnotation.class);
-			if (pos.equalsIgnoreCase("NN")) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	protected static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}
-	
-    private static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}
-    
-    private static void nop() {
-		// nop		
 	}
 	
 	/** Set the instance for this class
@@ -424,31 +241,81 @@ public class DeclarationPositionFinder {
 	}
 	
 
+	/** Returns entityinfos which make up the subject of {@code sentence}
+	 * @param sentence
+	 * @return
+	 */
 	public List<EntityInfo> getDeclarations(CoreMap sentence) {
-		NounRootRule nrrule = new NounRootRule();
-		if (nrrule.apply(sentence)) {
-			// TODO : get declared names and maybe map names to entities if possible or maybe even more
+//		NounRootRule nrrule = new NounRootRule();
+//		if (nrrule.apply(sentence)) {
+//			// TODO : get declared names and maybe map names to entities if possible or maybe even more
+//		}
+		// assuming that this method only gets called when no previous declarations were found, 
+		// it's probably safe to simply get everything that's in the subject
+		// TODO: name -> entity mapping
+		List<EntityInfo> infos = new ArrayList<EntityInfo>();
+		List<String> names = recogniseNames(sentence);
+		for (String n : names) {
+			if (!mystate.containsName(n)) {
+				infos.add(new EntityInfo(n));				
+			}
+			else {
+				infos.add(mystate.getSingle(n));
+			}
 		}
-		return null;
+		return infos;
 	}
 
 	public List<String> recogniseNames(CoreMap sentence) {
-		ArrayList<String> names = new ArrayList<String>();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord subj = BaseRule.getSubject(graph);
+		ArrayList<String> names = resolveCc(subj, graph);
+		return names;
+	}
+
+	/** This method attempts to resolve noun phrases and conjunction. 
+	 * More precisely, it looks for nn and con_and dependencies below {@code head} and creates a list of entities.
+	 * @param head The head of the noun phrase
+	 * @param graph The sentence to look in.
+	 * @return A list of distinct words or names, grouped by "and"
+	 */
+	protected ArrayList<String> resolveCc(IndexedWord head,
+			SemanticGraph graph) {
+		// list of names
+		ArrayList<String> names = new ArrayList<String>();
 		// adding this subject
-		names.add(subj.word());
+		names.add(resolveNN(head, graph));
 		// check for more!
 		// more names can be reached with "and". Get us an "and":
 		GrammaticalRelation andrel = EnglishGrammaticalRelations.getConj("and");
 		// ask the graph for everything that is connected by "and":
-		List<IndexedWord> ands = graph.getChildrenWithReln(subj, andrel);
+		List<IndexedWord> ands = graph.getChildrenWithReln(head, andrel);
 		for (IndexedWord w : ands) {
 			// add 'em
-			names.add(w.word());
+			names.add(resolveNN(w, graph));
 		}
 		// hope those are all
 		return names;
+	}
+
+	/** This method attempts to resolve noun phrases which consist of more than one word.
+	 * More precisely, it looks for nn dependencies below {@code head} and creates an entity.
+	 * @param head The head of the noun phrase
+	 * @param graph The sentence to look in.
+	 * @return A distinct word
+	 */
+	private String resolveNN(IndexedWord head, SemanticGraph graph) {
+		List<IndexedWord> nns = graph.getChildrenWithReln(head, EnglishGrammaticalRelations.NOUN_COMPOUND_MODIFIER);
+		String name = "";
+		// check for nulls. if there is nothing here, we have nothing to do.
+		if (nns != null) {
+			for (IndexedWord part : nns) {
+				name += part.word();
+				name += " ";
+			}
+		}
+		name += head.word();
+		return name;
 	}
 
 	/***
@@ -471,6 +338,13 @@ public class DeclarationPositionFinder {
 	public InitialState getCurrentState()
 	{
 		return mystate;
+	}
+
+	/** Resets this classes' state to starting conditions.
+	 */
+	public void reset() {	
+		// FIXME: I really hope the entities don't leak
+		mystate.clear();
 	}
 
 }
