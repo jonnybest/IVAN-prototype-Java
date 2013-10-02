@@ -13,6 +13,7 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
+import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -400,6 +401,25 @@ public class DeclarationPositionFinder {
 			}
 		}
 		return new EntityInfo(entity, location);
+	}
+	
+	/**
+	 * Attempts to find a direction in the given sentence. 
+	 * @param sentence A CoreMap to look inside
+	 * @return An EntityInfo containing the direction and the word it refers to. Or {@code null} if none was found.
+	 */
+	public EntityInfo getDirection(CoreMap sentence) {
+		String entity, direction = null;
+		
+		DirectionKeywordRule dRule = new DirectionKeywordRule();
+		if (dRule.apply(sentence)) {
+			entity = dRule.getSubject().word();
+			direction = dRule.getDirection();
+			return new EntityInfo(entity, null, direction);
+		}
+		else {
+			return null;			
+		}
 	}
 
 	public List<String> recogniseNames(CoreMap sentence) {

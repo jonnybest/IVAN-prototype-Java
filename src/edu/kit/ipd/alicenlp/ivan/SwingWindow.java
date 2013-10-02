@@ -7,6 +7,7 @@ import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -239,14 +240,49 @@ public class SwingWindow {
 				 * I have two options: 1. retrieve the entityinfo, check for missing data, display a warning to the user
 				 * or 2. retrieve entityinfo, check for missing data, store the entityinfo in a list corresponding with the
 				 * problem type and later call a method for each problem type which displays a compact list of missing things.
+				 * I chose 2.
 				 */
-				for (EntityInfo infoOnName : mydeclarationfinder.getCurrentState().get(n)) {
+				ArrayList<EntityInfo> declarednames = mydeclarationfinder.getCurrentState().get(n);
+				
+				if (declarednames == null) {
+					// there are no declarations with this name (at all)
+					// TODO: does this sentence qualify as a declaration? if yes, declare now and try to get declared names again. if not, skip these.
+				}
+				for (EntityInfo infoOnName : declarednames) {
+					
 					if (!infoOnName.hasLocation()) {
-						this.problemSetMissingLocation.add(infoOnName);
+						// try to get a loc from the current sentence. if not, add to problems. if yes, remove from problems
+						EntityInfo moreinfo = mydeclarationfinder.getLocation(sentence);
+						if (moreinfo == null || !moreinfo.hasLocation()) {
+							// Bad! This sentence contains no location info and we are still missing location info
+							this.problemSetMissingLocation.add(infoOnName);
+						}
+						else {
+							// fixme: the info may not relate to the proper name
+							assert infoOnName.getEntity().equals(moreinfo.getEntity());
+							
+							// good! this sentence contains info, so lets merge the two
+							infoOnName.setLocation(moreinfo.getLocation());
+							// and remove the problem entry if we had one
+							@SuppressWarnings("unused")
+							boolean success = this.problemSetMissingLocation.remove(infoOnName);
+						}
 					}
 					if (!infoOnName.hasDirection()) 
 					{
-						this.problemSetMissingDirection.add(infoOnName);
+						// try to get a dir from the current sentence. if not, add to problems. if yes, remove from problems
+						EntityInfo moreinfo = mydeclarationfinder.getDirection(sentence);
+						if (moreinfo == null || !moreinfo.hasDirection()) {
+							// Bad! This sentence contains no location info and we are still missing location info
+							this.problemSetMissingDirection.add(infoOnName);
+						}
+						else {
+							// good! this sentence contains info, so lets merge the two
+							infoOnName.setDirection(moreinfo.getDirection());
+							// and remove the problem entry if we had one
+							@SuppressWarnings("unused")
+							boolean success = this.problemSetMissingDirection.remove(infoOnName);
+						}						
 					}
 				}
 				//		5. create a display for the missing info?

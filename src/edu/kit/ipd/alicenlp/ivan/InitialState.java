@@ -134,6 +134,10 @@ public class InitialState extends HashSet<EntityInfo>
 		return true;
 	}
 	
+	/**
+	 * Returns the singleton value to which the specified name is mapped, or null if this map contains no mapping for the name.
+	 * It will break, if there is more than one match for the name, so use {@code get(String)} instead.
+	 */
 	public EntityInfo getSingle(String name)
 	{
 		List<EntityInfo> infos = nameset.get(name);
@@ -141,6 +145,13 @@ public class InitialState extends HashSet<EntityInfo>
 		return infos.get(0);
 	}
 	
+	/**
+	 * Returns the values to which the specified name is mapped, or null if this map contains no mapping for the name. 
+	 * Use {@code getSingle(String)} if you want to assert a singleton result. 
+	 * 
+	 * @param name The given name or the entity name to look for
+	 * @returns all the entities found under this name 
+	 */
 	public ArrayList<EntityInfo> get(String name)
 	{
 		return nameset.get(name);
