@@ -3,6 +3,7 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -213,4 +214,51 @@ public abstract class BaseRule {
 		System.out.println(graph.toRecoveredSentenceString().substring(start, end));
 		return graph.toRecoveredSentenceString().substring(start, end);
 	}
+	
+
+	/** This method attempts to resolve noun phrases which consist of more than one word.
+	 * More precisely, it looks for nn dependencies below {@code head} and creates an entity.
+	 * @param head The head of the noun phrase
+	 * @param graph The sentence to look in.
+	 * @return A distinct word
+	 */
+	public static String resolveNN(IndexedWord head, SemanticGraph graph) {
+		List<IndexedWord> nns = graph.getChildrenWithReln(head, EnglishGrammaticalRelations.NOUN_COMPOUND_MODIFIER);
+		String name = "";
+		// check for nulls. if there is nothing here, we have nothing to do.
+		if (nns != null) {
+			for (IndexedWord part : nns) {
+				name += part.word();
+				name += " ";
+			}
+		}
+		name += head.word();
+		return name;
+	}
+	
+	/** This method attempts to resolve noun phrases and conjunction. 
+	 * More precisely, it looks for nn and con_and dependencies below {@code head} and creates a list of entities.
+	 * @param head The head of the noun phrase
+	 * @param graph The sentence to look in.
+	 * @return A list of distinct words or names, grouped by "and"
+	 */
+	public static ArrayList<String> resolveCc(IndexedWord head,
+			SemanticGraph graph) {
+		// list of names
+		ArrayList<String> names = new ArrayList<String>();
+		// adding this subject
+		names.add(resolveNN(head, graph));
+		// check for more!
+		// more names can be reached with "and". Get us an "and":
+		GrammaticalRelation andrel = EnglishGrammaticalRelations.getConj("and");
+		// ask the graph for everything that is connected by "and":
+		List<IndexedWord> ands = graph.getChildrenWithReln(head, andrel);
+		for (IndexedWord w : ands) {
+			// add 'em
+			names.add(resolveNN(w, graph));
+		}
+		// hope those are all
+		return names;
+	}
+
 }
