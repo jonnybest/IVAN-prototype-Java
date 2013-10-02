@@ -427,7 +427,7 @@ public class DeclarationPositionFinder {
 	public List<EntityInfo> getDeclarations(CoreMap sentence) {
 		NounRootRule nrrule = new NounRootRule();
 		if (nrrule.apply(sentence)) {
-			
+			// TODO : get declared names and maybe map names to entities if possible or maybe even more
 		}
 		return null;
 	}
