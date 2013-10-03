@@ -165,7 +165,8 @@ public abstract class BaseRule {
 	}
 
 	/**
-	 * Returns any subject or a passive subject of the sentence
+	 * Returns the primary thing this sentence is talking about. 
+	 * More precisely: Returns any subject or a passive subject of the sentence, or the root if none applies.
 	 * @param graph
 	 * @return
 	 */
@@ -186,7 +187,8 @@ public abstract class BaseRule {
 			
 			return children.get(0);
 		}
-		return null;
+		// return null;
+		return graph.getFirstRoot(); // in a subject-less sentence, the root is as good as the subject
 	}
 
 	/**
@@ -242,9 +244,12 @@ public abstract class BaseRule {
 				name += part.word();
 				name += " ";
 			}
+			name += head.word();
+			return name;
 		}
-		name += head.word();
-		return name;
+		else {
+			return null;
+		}
 	}
 	
 	/** This method attempts to resolve noun phrases and conjunction. 

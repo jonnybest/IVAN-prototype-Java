@@ -12,8 +12,6 @@ import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
-import edu.kit.ipd.alicenlp.ivan.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.InitialState;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.NounRootRule;
@@ -272,8 +270,17 @@ public class DeclarationPositionFinder {
 
 	public List<String> recogniseNames(CoreMap sentence) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		IndexedWord subj = BaseRule.getSubject(graph);
-		ArrayList<String> names = BaseRule.resolveCc(subj, graph);
+		IndexedWord head = BaseRule.getSubject(graph);
+		if (head == null) {
+			// second try: use the root in subject-less sentences
+			head = graph.getFirstRoot();
+			// check again:
+			if (head == null) {
+				// I'm out of ideas
+				return null;
+			}
+		}
+		ArrayList<String> names = BaseRule.resolveCc(head, graph);
 		return names;
 	}
 
