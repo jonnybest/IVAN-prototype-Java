@@ -1,4 +1,4 @@
-package edu.kit.ipd.alicenlp.ivan;
+package edu.kit.ipd.alicenlp.ivan.analyzers;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -12,6 +12,8 @@ import net.sf.extjwnl.data.POS;
 import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.InitialState;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.NounRootRule;
