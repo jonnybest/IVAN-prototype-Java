@@ -38,6 +38,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import java.util.Locale;
 
 public class SwingWindow {
 
@@ -80,6 +81,8 @@ public class SwingWindow {
 	 */
 	private void initialize() {
 		frame = new JFrame();
+		frame.setLocale(Locale.ENGLISH);
+		frame.setTitle("¶v – Input & Verify AliceNLP");
 		frame.setBounds(100, 100, 612, 511);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 
