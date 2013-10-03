@@ -47,7 +47,7 @@ import java.util.Locale;
 public class SwingWindow {
 
 	private org.joda.time.DateTime stopwatch;
-	private JFrame frame;
+	private JFrame frmvanInput;
 	private LineNumbersTextPane txtEditor;
 	StyleContext sc = new StyleContext();
 	// final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
@@ -65,7 +65,7 @@ public class SwingWindow {
 			public void run() {
 				try {
 					SwingWindow window = new SwingWindow();
-					window.frame.setVisible(true);
+					window.frmvanInput.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -84,11 +84,11 @@ public class SwingWindow {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
-		frame.setLocale(Locale.ENGLISH);
-		frame.setTitle("¶v – Input & Verify AliceNLP");
-		frame.setBounds(100, 100, 612, 511);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
+		frmvanInput = new JFrame();
+		frmvanInput.setLocale(Locale.ENGLISH);
+		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
+		frmvanInput.setBounds(100, 100, 612, 511);
+		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 
 		txtEditor = new LineNumbersTextPane();
 		txtEditor.setDisplayLineNumbers(true);
@@ -102,21 +102,21 @@ public class SwingWindow {
 
 		addStylesToDocument((StyledDocument) txtEditor.getDocument());		
 
-		frame.getContentPane().add(txtEditor.getContainerWithLines(), BorderLayout.CENTER);
+		frmvanInput.getContentPane().add(txtEditor.getContainerWithLines(), BorderLayout.CENTER);
 		
 		JXTaskPaneContainer containerTaskPanel = new JXTaskPaneContainer();
 		JXTaskPane starterPain = new JXTaskPane();
 		starterPain.setTitle("Serious problems ");
 		starterPain.add(new Label("None."));
 		containerTaskPanel.add(starterPain);
-		frame.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
+		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
 		
 		emitterTextPane = new JTextPane();
 		emitterTextPane.setText("Hello World!");
 		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
 		emitterTextPane.setEditable(false);
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
-		frame.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
+		frmvanInput.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
 
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
