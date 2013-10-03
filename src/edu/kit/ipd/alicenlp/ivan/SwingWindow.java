@@ -43,6 +43,7 @@ import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcess
 import edu.stanford.nlp.util.CoreMap;
 
 import java.util.Locale;
+import java.awt.Toolkit;
 
 public class SwingWindow {
 
@@ -85,6 +86,7 @@ public class SwingWindow {
 	 */
 	private void initialize() {
 		frmvanInput = new JFrame();
+		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/icons/full/help.gif")));
 		frmvanInput.setLocale(Locale.ENGLISH);
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 612, 511);
