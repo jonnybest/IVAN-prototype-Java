@@ -457,7 +457,7 @@ public class StaticDynamicClassifier {
 				e.printStackTrace();
 			}
 		    // konfiguriere pipeline
-		    props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse"); //$NON-NLS-1$ //$NON-NLS-2$
+		    props.put("annotators", "tokenize, ssplit, pos, lemma, parse"); //$NON-NLS-1$ //$NON-NLS-2$
 		    pipeline = new StanfordCoreNLP(props);	    
 		    mypipeline = pipeline;
 		}
