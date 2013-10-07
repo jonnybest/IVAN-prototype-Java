@@ -86,7 +86,7 @@ public class SwingWindow {
 	 */
 	private void initialize() {
 		frmvanInput = new JFrame();
-		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/icons/full/help.gif")));
+		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/icon.png")));
 		frmvanInput.setLocale(Locale.ENGLISH);
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 612, 511);
