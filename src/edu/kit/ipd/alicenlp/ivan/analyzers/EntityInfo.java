@@ -7,8 +7,6 @@ import java.util.jar.Attributes.Name;
 
 import javax.swing.text.html.parser.Entity;
 
-import org.eclipse.swt.internal.mozilla.nsDynamicFunctionLoad;
-
 
 /**
  * The {@link EntityInfo} is a triple of <Entity, Location, Direction> and represents a single Entity's state in Alice.
