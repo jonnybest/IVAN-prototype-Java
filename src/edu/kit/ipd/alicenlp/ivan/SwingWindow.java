@@ -236,6 +236,7 @@ public class SwingWindow {
 		}
 		Annotation mydoc = new Annotation(lines);
 		pipeline.annotate(mydoc);
+		new edu.kit.ipd.alicenlp.ivan.analyzers.DirectSpeechAnnotator().annotate(mydoc);
 		java.util.List<CoreMap> sentences = mydoc
 				.get(SentencesAnnotation.class);
 
