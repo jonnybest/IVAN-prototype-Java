@@ -277,4 +277,9 @@ public abstract class BaseRule {
 		return names;
 	}
 
+	public static IndexedWord getRoot(CoreMap sentence) {
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		return graph.getFirstRoot();		
+	}
+
 }
