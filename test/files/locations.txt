@@ -37,7 +37,7 @@ On the right side in the foreground there is a Broccoli.
 Behind the Broccoli in the Background is a Bunny. 
 
 In the far right foreground is a Broccoli. 
-In the far left is a Mailbox and in front of it is a Frog. 
+In the far left there is a Mailbox and in front of it is a Frog. 
 Behind the Mailbox in the background is a PalmTree. 
 Behind the Broccoli in the background is a Bunny. 
 
@@ -47,7 +47,6 @@ Left in front of mailbox: frog in green colour.
 Right front: bunny in white colour. 
 In front of bunny on right side: green broccoli. 
 
-I see a palm tree on the left of the screen, a mailbox in front of it. 
 In the foreground there sits a frog on the left and a hare on the right of the screen. 
 
 In the background on the left hand side there is a PalmTree. 
