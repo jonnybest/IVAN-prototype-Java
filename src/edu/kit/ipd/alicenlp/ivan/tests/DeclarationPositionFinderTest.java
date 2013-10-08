@@ -8,11 +8,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -305,6 +307,8 @@ public class DeclarationPositionFinderTest {
 
 	@Test
 	public void testRecogniseNames() {
+		// I want to print a list of all recognitions to get an idea for what kinds of sentences are still improperly recognised
+		printRecognitionAnalysis();
 
 		Map<String, String[]> solutions = new TreeMap<String, String[]>();
 		solutions.put("There is a boy and a girl.", 
@@ -319,6 +323,28 @@ public class DeclarationPositionFinderTest {
 				new String[]{"duckling"});
 		solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.", 
 				new String[]{"frog", "hare"});
+		solutions.put("At the start the astronaut is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.",
+				new String[]{"astronaut", "monster"});
+		solutions.put("A piece of Brokkoli is in front of him.", new String[]{"piece of Brokkoli"});
+		solutions.put("I see a palm tree on the left of the screen and a mailbox in front of it. ", new String[]{"palm tree", "mailbox"});
+		solutions.put("In the foreground there is a frog on the left facing east-southeast and a broccoli on the right.", 
+				new String[]{"frog", "broccoli"});
+		solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.", 
+				new String[]{"frog", "hare"}); // probleme mit dem parser?
+		solutions.put("In the foreground on the left, there sits a green frog with a yellow belly facing eastsoutheast.", 
+				new String[]{"frog"});
+		solutions.put("In the background on the right, there sits a white bunny facing southsouthwest. ", 
+				new String[]{"bunny"});
+		solutions.put("In the background, slightly on the moon stands a space ship with a sign reading \"UNITED STATES\".", 
+				new String[]{"space ship"});
+		solutions.put("In the foreground, to the left of the stage stands the girl Alice.", 
+				new String[]{"girl"});
+		solutions.put("Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer. ", 
+				new String[]{"switch", "monkey"});
+		solutions.put("On the right side of the palm tree there sits a frog.", 
+				new String[]{"frog"});
+		solutions.put("To the right is a penguin with white stomach and face and blue back and wings.", new String[]{"penguin"});
+//		solutions.put("samplesentence", new String[]{"entity", "entity"});
 		
 
 		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
@@ -326,6 +352,9 @@ public class DeclarationPositionFinderTest {
 		for (Entry<String, String[]> sol : solutions.entrySet()) {
 			CoreMap annoSentence = annotateSingleSentence(sol.getKey());
 			List<String> einfos = proto.recogniseNames(annoSentence);
+			if (einfos.size() != sol.getValue().length) {
+				fail("Some entities were not recognised in in sentence \"" + sol.getKey() +"\"");
+			}
 			for (String foundname : einfos) {
 				boolean matched = false;
 				for (String solutionname : sol.getValue()) {
@@ -339,5 +368,53 @@ public class DeclarationPositionFinderTest {
 				}
 			}
 		}
+	}
+
+	private void printRecognitionAnalysis() {
+		// merge the two positive lists while eliminating duplicates
+		TreeSet<String> mysentences = new TreeSet<String>();
+		mysentences.addAll(Arrays.asList(directions));
+		mysentences.addAll(Arrays.asList(locations));
+		
+		// lets load some input files for good measure
+		List<String> splitfiles = new ArrayList<String>();
+		String newlineregex = "\r\n"; // this is a regex and just means "new line"
+		splitfiles.addAll(Arrays.asList(loadTestFile("bothdirectionsandlocations.txt").split(newlineregex)));
+		splitfiles.addAll(Arrays.asList(loadTestFile("directions.txt").split(newlineregex)));
+		splitfiles.addAll(Arrays.asList(loadTestFile("locations.txt").split(newlineregex)));
+		mysentences.addAll(splitfiles);
+		
+		// 
+		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+		for (String text : mysentences) {
+			CoreMap cm = annotateSingleSentence(text);
+			if (cm == null) {
+				continue;
+			}
+			List<String> names = proto.recogniseNames(cm);
+			// the names go into a left "column"
+			StringBuilder namesstring = new StringBuilder();
+			for (String n : names) {
+				namesstring.append(n);
+				namesstring.append(", ");
+			}
+			namesstring.delete(namesstring.length() - 2, namesstring.length());
+			// fill the left column until it is 40 chars wide
+			for (int i = namesstring.length(); i < 22; i++)
+			{
+				namesstring.append(' ');			
+			}
+			// print names into first column
+			System.out.print(namesstring);
+			System.out.print("\t");
+			// print sentence into second column
+			System.out.println(text);
+		}
+		nop();
+	}
+
+	private void nop() {
+		// TODO Auto-generated method stub
+		
 	}
 }
