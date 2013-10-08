@@ -20,9 +20,7 @@ import org.junit.Test;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.EntityInfo;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinderTest {
