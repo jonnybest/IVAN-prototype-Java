@@ -1,6 +1,6 @@
 In the foreground to the right, there is a Broccoli. 
 
-Behind the frog, to the left, is a Mailbox. 
+Behind the frog, to the left, there is a Mailbox. 
 Behind the Mailbox, to the right, is a PalmTree. 
 
 There is a palm on the left side of the ground, before the palm there is a mailbox.

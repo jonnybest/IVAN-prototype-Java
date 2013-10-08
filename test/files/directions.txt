@@ -1,4 +1,4 @@
-She is facing towards the viewer but turned 45� to the left of the stage.
+﻿She is facing towards the viewer but turned 45° to the left of the stage.
 
 The Bunny is facing the south, the Frog is facing the Broccoli. 
 The boy is facing the girl.
