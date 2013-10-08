@@ -178,10 +178,14 @@ public class DeclarationPositionFinder {
 		return myinstance;
 	}
 
-	public EntityInfo findAll(String name, IndexedWord root, CoreMap sentence) {
+	/** This method attempts to get all the available information out of a single sentence. 
+	 * @param sentence
+	 * @return
+	 */
+	public List<EntityInfo> findAll(CoreMap sentence) {
 		// TODO Auto-generated method stub
-		//  
-		return new EntityInfo(name);
+		//  		
+		return new ArrayList<EntityInfo>();
 	}
 	
 	/**
@@ -243,7 +247,7 @@ public class DeclarationPositionFinder {
 	}
 	
 
-	/** Returns entityinfos which make up the subject of {@code sentence}
+	/** Finds out which entites are declared in this {@code sentence}.
 	 * @param sentence
 	 * @return
 	 */
@@ -268,6 +272,10 @@ public class DeclarationPositionFinder {
 		return infos;
 	}
 
+	/** Searches the head of the sentence (subject and root) for nouns
+	 * @param sentence
+	 * @return
+	 */
 	public List<String> recogniseNames(CoreMap sentence) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord head = BaseRule.getSubject(graph);

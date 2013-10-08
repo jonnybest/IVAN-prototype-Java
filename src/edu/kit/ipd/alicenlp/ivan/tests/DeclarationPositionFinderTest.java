@@ -10,6 +10,9 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -108,11 +111,11 @@ public class DeclarationPositionFinderTest {
 		CharBuffer buffer = CharBuffer.allocate(1024);
 
 		// read the files into a list
-		System.out.print("{Reading files: ");
+		System.out.println("{Reading files: ");
 		for (File item : listOfFiles) {
 			// skip things that are not files
 			if (item.isFile()) {
-				System.out.print(item.getName() + ", ");
+				System.out.println(item.getName() + ", ");
 				/*
 				 * actual file loading
 				 */
@@ -183,17 +186,33 @@ public class DeclarationPositionFinderTest {
 	
 	@Test
 	public void testFindAll() {
-		//fail("Not yet implemented"); // TODO
+		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+		String text = "Behind the Broccoli, there is a Bunny facing south.",
+				name = "Bunny",
+				direction = "south",
+				location = "Behind the Broccoli";
+		EntityInfo sample = new EntityInfo(name, location, direction);
+		CoreMap sentence = annotateSingleSentence(text);
+		List<EntityInfo> entities = proto.findAll(sentence);
+		for (EntityInfo en : entities) {
+			if (!sample.equals(en)) {
+				fail(en + " did not satisfy test case.");
+			}
+			System.out.println("Success! " + en + " equals " + sample);
+		}
+		if (entities.isEmpty()) {
+			fail("Analyzer did not find anything in test sentence.");
+		}
 	}
 
 	@Test
 	public void testHasLocation() {
 		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-		for (String location : locations) {
-			assertTrue("Expected a location in this sentence.", proto.hasLocation(annotateSingleSentence(location)));			
+		for (CoreMap location : locationlist) {
+			assertTrue("Expected a location in this sentence: " + location, proto.hasLocation(location));			
 		}		
-		for (String neg : negatives) {
-			assertFalse("Expected no location in \"" + neg + "\"", proto.hasLocation(annotateSingleSentence(neg)));
+		for (CoreMap neg : negativeslist) {
+			assertFalse("Expected no location in \"" + neg + "\"", proto.hasLocation(neg));
 		}
 	}
 
@@ -208,24 +227,119 @@ public class DeclarationPositionFinderTest {
 		if (!"in the background on the left hand side".equals(inandon.getLocation())) {
 			fail("Location is wrong");
 		}
-		else {
-			System.out.println("Good: " +inandon);
+		EntityInfo behind = proto.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
+		if (!"Behind it to the right".equals(behind.getLocation())) {
+			fail("Location is wrong: " + behind);
 		}
 	}
 
 	@Test
 	public void testGetDirection() {
-		fail("Not yet implemented"); // TODO
+		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+		String text = "Behind the Broccoli, there is a Bunny facing south.",
+				name = "Bunny",
+				direction = "south";
+
+		CoreMap sentence = annotateSingleSentence(text);
+		EntityInfo entity = proto.getDirection(sentence);
+
+		if (entity.getDirection().equalsIgnoreCase(direction)) {
+			fail("Analyzer did not find correct direction in sample.");
+		}
+		
+		if (entity.getEntity().equalsIgnoreCase(name)) {
+			fail("Analyzer did not find correct name in direction sample.");
+		}
 	}
 
 	@Test
 	public void testGetDeclarations() {
-		fail("Not yet implemented"); // TODO
+//		String text = "There is a boy and a girl." + " "
+//				+ "The characters are a ninja tortoise, a rabbit and a T-Rex."+ " "
+//				+ "In the scene there are a boy and a girl."+ " "
+//				+ "The start depicts a boy facing to the right of the screen, and a woman facing to the front."+ " "
+//				+ "In the far left is a Mailbox and in front of it is a Frog."+ " "
+//				+ "Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."+ " "
+//				+ "In the foreground there sits a frog on the left and a hare on the right of the screen.";
+		
+		Map<String, String[]> solutions = new TreeMap<String, String[]>();
+		solutions.put("There is a boy and a girl.", 
+				new String[]{"boy", "girl"});		
+		solutions.put("The characters are a ninja tortoise, a rabbit and a T-Rex.", 
+				new String[]{"ninja tortoise", "rabbit", "T-Rex"});
+		solutions.put("In the scene there are a boy and a girl.", 
+				new String[]{"boy", "girl"});
+		solutions.put("In the far left is a Mailbox and in front of it is a Frog.", 
+				new String[]{"Mailbox", "Frog"});
+		solutions.put("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.", 
+				new String[]{"duckling"});
+		solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.", 
+				new String[]{"frog", "hare"});
+		
+//		List<CoreMap> sentencelist = new ArrayList<CoreMap>();
+//		annotateSentence(text, sentencelist);
+		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+//		for (CoreMap se : sentencelist) {
+//			//proto.recogniseNames(se);
+//			List<EntityInfo> ei = proto.getDeclarations(se);
+//			if (ei.isEmpty()) {
+//				fail("Analyzer failed to find any declarations in sample sentence: " + se);				
+//			}
+//			System.out.println("These are declarations: " + ei);
+//		}
+		for (Entry<String, String[]> sol : solutions.entrySet()) {
+			CoreMap anno = annotateSingleSentence(sol.getKey());
+			List<EntityInfo> einfos = proto.getDeclarations(anno);
+			for (EntityInfo info : einfos) {
+				boolean matched = false;
+				for (String name : sol.getValue()) {
+					if (name.equalsIgnoreCase(info.getEntity())) {
+						matched = true;
+						continue;
+					}					
+				}
+				if (!matched) {
+					fail("Entity not recognised: " + info.getEntity() + " in sentence \"" + sol.getKey() +"\"");
+				}
+			}
+		}
 	}
 
 	@Test
 	public void testRecogniseNames() {
-		fail("Not yet implemented"); // TODO
-	}
 
+		Map<String, String[]> solutions = new TreeMap<String, String[]>();
+		solutions.put("There is a boy and a girl.", 
+				new String[]{"boy", "girl"});		
+		solutions.put("The characters are a ninja tortoise, a rabbit and a T-Rex.", 
+				new String[]{"ninja tortoise", "rabbit", "T-Rex"});
+		solutions.put("In the scene there are a boy and a girl.", 
+				new String[]{"boy", "girl"});
+		solutions.put("In the far left is a Mailbox and in front of it is a Frog.", 
+				new String[]{"Mailbox", "Frog"});
+		solutions.put("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.", 
+				new String[]{"duckling"});
+		solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.", 
+				new String[]{"frog", "hare"});
+		
+
+		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+
+		for (Entry<String, String[]> sol : solutions.entrySet()) {
+			CoreMap annoSentence = annotateSingleSentence(sol.getKey());
+			List<String> einfos = proto.recogniseNames(annoSentence);
+			for (String foundname : einfos) {
+				boolean matched = false;
+				for (String solutionname : sol.getValue()) {
+					if (solutionname.equalsIgnoreCase(foundname)) {
+						matched = true;
+						continue;
+					}					
+				}
+				if (!matched) {
+					fail("Entity not recognised: " + foundname + " in sentence \"" + sol.getKey() +"\"");
+				}
+			}
+		}
+	}
 }
