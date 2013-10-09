@@ -62,7 +62,6 @@ In the far right foreground is a Broccoli.
 In the far left is a Mailbox and in front of it is a Frog. 
 Behind the Mailbox in the background is a PalmTree. 
 Behind the Broccoli in the background is a Bunny. 
-The Bunny is facing the south, the Frog is facing the Broccoli. 
 
 Ground is covered with green grass. 
 Left background with palm. 
