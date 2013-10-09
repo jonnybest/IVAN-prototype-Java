@@ -2,43 +2,48 @@ package edu.kit.ipd.alicenlp.ivan;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Label;
+import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Box;
+import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LineNumbersTextPane;
-import javax.swing.LineWrapEditorKit;
+import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
-import javax.swing.text.Document;
 
 import net.sf.extjwnl.dictionary.Dictionary;
 
+import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
@@ -54,31 +59,6 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-
-import java.util.Locale;
-import java.util.jar.Attributes.Name;
-
-import javax.swing.JToolBar;
-
-import org.jdesktop.swingx.JXBusyLabel;
-
-import javax.swing.SwingConstants;
-import javax.swing.JButton;
-
-import java.awt.Component;
-
-import javax.swing.Box;
-
-import org.jdesktop.swingx.JXGlassBox;
-
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
-import javax.swing.JMenuBar;
-import javax.swing.JPopupMenu;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JMenuItem;
 
 public class SwingWindow {
 
@@ -97,7 +77,6 @@ public class SwingWindow {
 	private Component horizontalGlue;
 	private String currentFileName = null;
 	private JMenuBar menuBar; 
-	private JMenuItem saveActionItem;
 
 	/**
 	 * Launch the application.
@@ -295,9 +274,16 @@ public class SwingWindow {
 				// okay, even close() throws? That's messed up.
 			}
 		}
+        commit();
         return true;
 	}
 	
+	/** This method performs a commit to the local git repository
+	 */
+	private void commit() {
+		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit();
+	}
+
 	/** Loads a page into the editor
 	 * 
 	 * @param editor
