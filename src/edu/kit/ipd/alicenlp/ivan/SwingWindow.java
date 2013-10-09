@@ -7,22 +7,35 @@ import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.LineNumbersTextPane;
+import javax.swing.LineWrapEditorKit;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.EditorKit;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.Document;
 
 import net.sf.extjwnl.dictionary.Dictionary;
 
@@ -43,6 +56,29 @@ import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcess
 import edu.stanford.nlp.util.CoreMap;
 
 import java.util.Locale;
+import java.util.jar.Attributes.Name;
+
+import javax.swing.JToolBar;
+
+import org.jdesktop.swingx.JXBusyLabel;
+
+import javax.swing.SwingConstants;
+import javax.swing.JButton;
+
+import java.awt.Component;
+
+import javax.swing.Box;
+
+import org.jdesktop.swingx.JXGlassBox;
+
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+
+import javax.swing.JMenuBar;
+import javax.swing.JPopupMenu;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JMenuItem;
 
 public class SwingWindow {
 
@@ -56,6 +92,12 @@ public class SwingWindow {
 	private JTextPane emitterTextPane;
 	private Set<EntityInfo> problemSetMissingLocation;
 	private Set<EntityInfo> problemSetMissingDirection;
+	private JXBusyLabel busyLabel;
+	private JButton btnSaveCheck;
+	private Component horizontalGlue;
+	private String currentFileName = null;
+	private JMenuBar menuBar; 
+	private JMenuItem saveActionItem;
 
 	/**
 	 * Launch the application.
@@ -83,6 +125,7 @@ public class SwingWindow {
 	/**
 	 * Initialize the contents of the frame.
 	 */
+	@SuppressWarnings("serial")
 	private void initialize() {
 		frmvanInput = new JFrame();
 		frmvanInput.setLocale(Locale.ENGLISH);
@@ -104,19 +147,88 @@ public class SwingWindow {
 
 		frmvanInput.getContentPane().add(txtEditor.getContainerWithLines(), BorderLayout.CENTER);
 		
-		JXTaskPaneContainer containerTaskPanel = new JXTaskPaneContainer();
-		JXTaskPane starterPain = new JXTaskPane();
-		starterPain.setTitle("Serious problems ");
-		starterPain.add(new Label("None."));
-		containerTaskPanel.add(starterPain);
-		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
-		
 		emitterTextPane = new JTextPane();
 		emitterTextPane.setText("Hello World!");
 		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
 		emitterTextPane.setEditable(false);
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
 		frmvanInput.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
+		
+		menuBar = new JMenuBar();
+		JMenu filemenu = new JMenu("Menu…");
+		
+		final Action actionLoad = new SwingAction()
+		{			
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser loadChooser = new JFileChooser();
+				loadChooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
+				File file;
+				int showOpenDialog = loadChooser.showOpenDialog(txtEditor);				
+				switch (showOpenDialog) {
+				case JFileChooser.APPROVE_OPTION:
+					currentFileName = loadChooser.getSelectedFile().getAbsolutePath();
+					file = loadChooser.getSelectedFile();
+					break;
+				default: // nothing to do
+					return;
+				}				
+				load(txtEditor, file);
+			}
+		};
+		actionLoad.putValue(Action.NAME, "Load…"); // set the name
+		actionLoad.putValue(Action.SHORT_DESCRIPTION, "Open a file for editing");
+		
+		filemenu.add(actionLoad);
+		menuBar.add(filemenu);
+		
+		
+		frmvanInput.getContentPane().add(menuBar, BorderLayout.NORTH);
+		
+		// this button triggers a run of the analyzers
+		btnSaveCheck = new JButton("Save and Check (Ctrl-S)");
+		menuBar.add(btnSaveCheck);
+				
+		final Action saveCheckAction = new SwingAction() {
+			public void actionPerformed(ActionEvent arg0) {
+				JXEditorPane editor = txtEditor;
+				boolean saved = save(editor);
+				if (!saved) {
+					return;
+				}
+				try {
+//					startStopWatch();
+//					processText(editor.getText());
+//					stopAndPrintStopWatch();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		};
+		saveCheckAction.putValue(Action.NAME, "Save and check"); // set the name
+		saveCheckAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file and runs analysis");
+		
+		// TODO: add save action without running the pipeline for the menu
+		btnSaveCheck.addActionListener(saveCheckAction);
+		
+		filemenu.add(saveCheckAction);
+		
+		// this glue pushes the spinner to the right
+		horizontalGlue = Box.createHorizontalGlue();
+		menuBar.add(horizontalGlue);
+		
+		// this spinner tells the user that analysis is currently running
+		busyLabel = new JXBusyLabel();
+		menuBar.add(busyLabel);
+		busyLabel.setVisible(false);
+		busyLabel.setHorizontalAlignment(SwingConstants.TRAILING);
+		
+		JXTaskPaneContainer containerTaskPanel = new JXTaskPaneContainer();
+		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
+		JXTaskPane starterPane = new JXTaskPane();
+		starterPane.setTitle("Serious problems ");
+		starterPane.add(new Label("None."));
+		containerTaskPanel.add(starterPane);
 
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
@@ -127,9 +239,9 @@ public class SwingWindow {
 				if (arg0.getKeyChar() == '.' || arg0.getKeyChar() == '\n') {
 					JXEditorPane editor = (JXEditorPane) arg0.getSource();
 					try {
-						startStopWatch();
-						processText(editor.getText());
-						stopAndPrintStopWatch();
+//						startStopWatch();
+//						processText(editor.getText());
+//						stopAndPrintStopWatch();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -143,6 +255,85 @@ public class SwingWindow {
 		// mykit.setWrap(true);
 
 		refreshLineNumbersFont();
+	}
+
+	/** Saves the current document 
+	 * @param editor the component which contains the text
+	 * @return 
+	 */
+	protected boolean save(JXEditorPane editor) {
+		File outputfile = null;
+		if (this.currentFileName == null) {
+			JFileChooser jfchooser = new JFileChooser();
+			jfchooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
+			int file = jfchooser.showSaveDialog(editor);
+			switch (file) {
+			case JFileChooser.APPROVE_OPTION:
+				outputfile = jfchooser.getSelectedFile();
+				this.currentFileName = outputfile.getAbsolutePath();
+				break;
+				
+			default: // I can't do anything with the other options
+				return false;
+			}
+		}
+		else {
+			outputfile = new File(currentFileName);
+		}
+		FileWriter out = null;
+        try {
+        	out = new FileWriter(currentFileName);
+			out.write(editor.getText());			
+		} catch (IOException e) {
+			// I have no clue what to do here
+			e.printStackTrace();
+			return false;
+		} finally {
+			try {
+				out.close();
+			} catch (IOException e) {
+				// okay, even close() throws? That's messed up.
+			}
+		}
+        return true;
+	}
+	
+	/** Loads a page into the editor
+	 * 
+	 * @param editor
+	 * @param file
+	 */
+	public void load(JXEditorPane editor, File file)
+	{
+		try {
+//			LineWrapEditorKit mykit = new LineWrapEditorKit();
+			EditorKit mykit = ((LineNumbersTextPane)editor).getEditorKit();
+			FileReader in = new FileReader(file);			
+			try {				
+				Document doc = editor.getDocument();
+				doc.remove(0, doc.getLength());
+				mykit.read(in, doc, 0);
+				clearStyles();
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+			this.currentFileName = file.getPath();
+		} catch (IOException e) {
+			// catch block in case load fails
+			e.printStackTrace();
+		}
+	}
+	
+	/** Reloads the page, even if it is already being displayed
+	 * 
+	 * @param editor
+	 * @param path
+	 */
+	public void reload(JXEditorPane editor, File file)
+	{
+		Document doc = editor.getDocument();
+		doc.putProperty(Document.StreamDescriptionProperty, null);
+		load(editor, file);
 	}
 
 	/** Prepares the problems list for the task pane. 
@@ -427,4 +618,12 @@ public class SwingWindow {
 		stopwatch = org.joda.time.DateTime.now();
 	}
 
+	private class SwingAction extends AbstractAction {
+		public SwingAction() {
+			putValue(NAME, "SwingAction");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+		public void actionPerformed(ActionEvent e) {
+		}
+	}
 }
