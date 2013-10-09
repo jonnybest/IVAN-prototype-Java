@@ -281,6 +281,15 @@ public class SwingWindow {
 	/** This method performs a commit to the local git repository
 	 */
 	private void commit() {
+		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.basepath;
+		FileWriter out;
+		try {
+			out = new FileWriter(basepath + "document.txt");
+			out.write(txtEditor.getText());
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit();
 	}
 
