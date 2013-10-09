@@ -308,7 +308,7 @@ public class DeclarationPositionFinderTest {
 	@Test
 	public void testRecogniseNames() {
 		// I want to print a list of all recognitions to get an idea for what kinds of sentences are still improperly recognised
-		printRecognitionAnalysis();
+//		printRecognitionAnalysis();
 
 		Map<String, String[]> solutions = new TreeMap<String, String[]>();
 		solutions.put("There is a boy and a girl.", 
@@ -339,11 +339,12 @@ public class DeclarationPositionFinderTest {
 				new String[]{"space ship"});
 		solutions.put("In the foreground, to the left of the stage stands the girl Alice.", 
 				new String[]{"girl"});
+		// these are pretty hard
 		solutions.put("Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer. ", 
 				new String[]{"switch", "monkey"});
-		solutions.put("On the right side of the palm tree there sits a frog.", 
-				new String[]{"frog"});
-		solutions.put("To the right is a penguin with white stomach and face and blue back and wings.", new String[]{"penguin"});
+		solutions.put("On the right side of the palm tree there sits a frog.", new String[]{"frog"});
+		// This one isn't specific enough, I think. From our PoV, the entites could also be penguin, face, blue back, and wings.
+//		solutions.put("To the right is a penguin with white stomach and face and blue back and wings.", new String[]{"penguin"});
 //		solutions.put("samplesentence", new String[]{"entity", "entity"});
 		
 
