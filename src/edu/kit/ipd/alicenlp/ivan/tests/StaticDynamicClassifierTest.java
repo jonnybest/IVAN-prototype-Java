@@ -37,6 +37,8 @@ public class StaticDynamicClassifierTest {
 
 	static List<CoreMap> setuplist = new ArrayList<CoreMap>();
 	static List<CoreMap> negativeslist = new ArrayList<CoreMap>();
+	private static String inputlocs;
+	private static String inputdirs;
 
 	
 	/**
@@ -44,23 +46,25 @@ public class StaticDynamicClassifierTest {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
 		// load corpus examples for locations
-		String inputlocs = loadTestFile("setup.txt");
-		// annotate corpus examples
-		annotateSentence(inputlocs, setuplist);
+		inputlocs = loadTestFile("setup.txt");
 		
 		// load corpus examples for directions
-		String inputdirs = loadTestFile("actions.txt");
-		// annotate corpus examples
-		annotateSentence(inputdirs, negativeslist);
+		inputdirs = loadTestFile("actions.txt");
 	}
 
 	/**
 	 * Test method for {@link edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier#classifySentence(edu.stanford.nlp.ling.IndexedWord, edu.stanford.nlp.util.CoreMap)}.
 	 */
 	@Test
-	public void testClassifySentence() {
+	public void testClassifySentence() {	
+		// get instance
 		StaticDynamicClassifier proto = StaticDynamicClassifier.getInstance();
+		
+		// annotate corpus examples
+		annotateSentence(inputlocs, setuplist);
+
 		for (CoreMap sentence : setuplist) {
 			IndexedWord root = BaseRule.getRoot(sentence);
 			Classification result = null;
@@ -73,6 +77,10 @@ public class StaticDynamicClassifierTest {
 				fail("Wrong classification for setup sentence \"" + sentence + "\"");
 			}
 		}
+		
+		// annotate corpus examples
+		annotateSentence(inputdirs, negativeslist);
+
 		for (CoreMap sentence : negativeslist) {
 			IndexedWord root = BaseRule.getRoot(sentence);
 			Classification result = null;
