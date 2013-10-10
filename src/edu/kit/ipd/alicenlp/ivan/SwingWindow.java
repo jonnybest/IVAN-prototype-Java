@@ -358,6 +358,10 @@ public class SwingWindow {
 		txtEditor.setFont(font);
 	}
 
+	/** Provdes the document with styles (mainly background colors) for the text.
+	 * 
+	 * @param doc A document to add the styles to
+	 */
 	protected void addStylesToDocument(StyledDocument doc) {
 		// Initialize some styles.
 		Style def = StyleContext.getDefaultStyleContext().getStyle(
