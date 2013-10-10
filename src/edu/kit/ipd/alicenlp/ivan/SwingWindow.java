@@ -10,12 +10,21 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -40,6 +49,11 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import javax.swing.text.StyledDocument;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.namespace.QName;
 
 import net.sf.extjwnl.dictionary.Dictionary;
 
@@ -123,7 +137,8 @@ public class SwingWindow {
 				+ "placeholder text (filler text) commonly used to demonstrate \n"
 				+ "the graphic elements of a document or visual presentation, \n"
 				+ "such as font, typography, and layout, by removing the \n"
-				+ "distraction of meaningful content.");
+				+ "distraction of meaningful content."
+				+ "There is a cat looking north.");
 
 		addStylesToDocument((StyledDocument) txtEditor.getDocument());		
 
@@ -158,7 +173,7 @@ public class SwingWindow {
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
 		frmvanInput.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
 		
-		/**
+		/*
 		 * Here is where I build the MENU
 		 */
 		menuBar = new JMenuBar();
@@ -230,16 +245,23 @@ public class SwingWindow {
 		busyLabel.setVisible(false);
 		busyLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 		
-		/**
+		/*
 		 * Here is where I build the TASK panel
 		 */
-		JXTaskPaneContainer containerTaskPanel = new IvanErrorsTaskPaneContainer();
+		IvanErrorsTaskPaneContainer containerTaskPanel = new IvanErrorsTaskPaneContainer();
 		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
-		JXTaskPane starterPane = new JXTaskPane();
-		starterPane.setTitle("Serious problems ");
-		starterPane.add(new Label("None."));
-		containerTaskPanel.add(starterPane);
-
+		JXTaskPane seriousProblemsPane = new JXTaskPane();
+		seriousProblemsPane.setTitle("Serious problems ");
+		seriousProblemsPane.add(new Label("None."));
+		containerTaskPanel.add(seriousProblemsPane);
+		
+		containerTaskPanel.createCategory("Missing location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
+		containerTaskPanel.createProblem("Missing location", "There is a cat looking north.", 15, 22);
+		
+		System.out.println(containerTaskPanel);
+		System.out.println();
+		containerTaskPanel.list();
+				
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
 	}
