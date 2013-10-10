@@ -102,7 +102,7 @@ public class SwingWindow {
 	}
 
 	/**
-	 * Initialize the contents of the frame.
+	 * Initialize the contents of the frame, the EDITOR
 	 */
 	@SuppressWarnings("serial")
 	private void initialize() {
@@ -125,7 +125,29 @@ public class SwingWindow {
 		addStylesToDocument((StyledDocument) txtEditor.getDocument());		
 
 		frmvanInput.getContentPane().add(txtEditor.getContainerWithLines(), BorderLayout.CENTER);
+
+		txtEditor.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent arg0) {
+				if (arg0.getKeyChar() == '.' || arg0.getKeyChar() == '\n') {
+					JXEditorPane editor = (JXEditorPane) arg0.getSource();
+					try {
+//						startStopWatch();
+//						processText(editor.getText());
+//						stopAndPrintStopWatch();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		refreshLineNumbersFont();		
+		/** END of the editor part */
 		
+		/**
+		 * Here is where I build the EMITTER panel
+		 */
 		emitterTextPane = new JTextPane();
 		emitterTextPane.setText("Hello World!");
 		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
@@ -133,6 +155,9 @@ public class SwingWindow {
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
 		frmvanInput.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
 		
+		/**
+		 * Here is where I build the MENU
+		 */
 		menuBar = new JMenuBar();
 		JMenu filemenu = new JMenu("Menu…");
 		
@@ -202,6 +227,9 @@ public class SwingWindow {
 		busyLabel.setVisible(false);
 		busyLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 		
+		/**
+		 * Here is where I build the TASK panel
+		 */
 		JXTaskPaneContainer containerTaskPanel = new JXTaskPaneContainer();
 		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
 		JXTaskPane starterPane = new JXTaskPane();
@@ -211,29 +239,6 @@ public class SwingWindow {
 
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
-		
-		txtEditor.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyTyped(KeyEvent arg0) {
-				if (arg0.getKeyChar() == '.' || arg0.getKeyChar() == '\n') {
-					JXEditorPane editor = (JXEditorPane) arg0.getSource();
-					try {
-//						startStopWatch();
-//						processText(editor.getText());
-//						stopAndPrintStopWatch();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-
-		// LineWrapEditorKit mykit = (LineWrapEditorKit)
-		// txtEditor.getEditorKit();
-		// mykit.setWrap(true);
-
-		refreshLineNumbersFont();
 	}
 
 	/** Saves the current document 
