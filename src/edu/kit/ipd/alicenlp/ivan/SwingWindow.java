@@ -101,10 +101,9 @@ public class SwingWindow {
 		initialize();
 	}
 
-	/**
-	 * Initialize the contents of the frame, the EDITOR
+	/** Do inital stuff, create a UI with a frame and all that
 	 */
-	@SuppressWarnings("serial")
+	@SuppressWarnings("serial") // This class is surely not getting serialized
 	private void initialize() {
 		frmvanInput = new JFrame();
 		frmvanInput.setLocale(Locale.ENGLISH);
@@ -112,6 +111,9 @@ public class SwingWindow {
 		frmvanInput.setBounds(100, 100, 612, 511);
 		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 
+		/**
+		 * Initialize the contents of the frame, the EDITOR
+		 */
 		txtEditor = new LineNumbersTextPane();
 		txtEditor.setDisplayLineNumbers(true);
 		// txtEditor.setDocument(doc);
