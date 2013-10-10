@@ -175,9 +175,9 @@ public class SwingWindow {
 					return;
 				}
 				try {
-//					startStopWatch();
-//					processText(editor.getText());
-//					stopAndPrintStopWatch();
+					startStopWatch();
+					processText(editor.getText());
+					stopAndPrintStopWatch();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
