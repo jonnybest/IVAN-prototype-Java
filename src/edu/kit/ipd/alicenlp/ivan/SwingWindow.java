@@ -350,8 +350,8 @@ public class SwingWindow {
 		this.problemSetMissingLocation = new HashSet<EntityInfo>();
 	}
 
-	/**
-	 * 
+	/** Use this function to reset the size and style of the line numbers.
+	 * The line numbers are sometimes a little off (too small or too big).
 	 */
 	private void refreshLineNumbersFont() {
 		Font font = txtEditor.getFont();
