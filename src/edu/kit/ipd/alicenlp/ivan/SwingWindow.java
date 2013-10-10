@@ -51,6 +51,7 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -232,7 +233,7 @@ public class SwingWindow {
 		/**
 		 * Here is where I build the TASK panel
 		 */
-		JXTaskPaneContainer containerTaskPanel = new JXTaskPaneContainer();
+		JXTaskPaneContainer containerTaskPanel = new IvanErrorsTaskPaneContainer();
 		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
 		JXTaskPane starterPane = new JXTaskPane();
 		starterPane.setTitle("Serious problems ");
