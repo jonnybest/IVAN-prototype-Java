@@ -274,13 +274,13 @@ public class SwingWindow {
 				// okay, even close() throws? That's messed up.
 			}
 		}
-        commit();
+        commit(outputfile.getName());
         return true;
 	}
 	
 	/** This method performs a commit to the local git repository
 	 */
-	private void commit() {
+	private void commit(String branch) {
 		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.basepath;
 		FileWriter out;
 		try {
@@ -290,7 +290,7 @@ public class SwingWindow {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
-		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit();
+		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
 	}
 
 	/** Loads a page into the editor
@@ -309,6 +309,7 @@ public class SwingWindow {
 				doc.remove(0, doc.getLength());
 				mykit.read(in, doc, 0);
 				clearStyles();
+				tag("load." + file.getName());
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 			}
@@ -319,6 +320,10 @@ public class SwingWindow {
 		}
 	}
 	
+	private void tag(String tagname) {
+		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.tag(tagname);		
+	}
+
 	/** Reloads the page, even if it is already being displayed
 	 * 
 	 * @param editor
