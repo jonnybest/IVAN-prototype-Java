@@ -184,7 +184,7 @@ public class SwingWindow {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser loadChooser = new JFileChooser();
 				loadChooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
-				File file;
+				File file = null;
 				int showOpenDialog = loadChooser.showOpenDialog(txtEditor);				
 				switch (showOpenDialog) {
 				case JFileChooser.APPROVE_OPTION:
@@ -248,19 +248,35 @@ public class SwingWindow {
 		/*
 		 * Here is where I build the TASK panel
 		 */
+		// creating the actual taskpanel
 		IvanErrorsTaskPaneContainer containerTaskPanel = new IvanErrorsTaskPaneContainer();
-		frmvanInput.getContentPane().add(containerTaskPanel, BorderLayout.EAST);
+		// create us a scroll thing
+		// wrap our panel into the scrollthing
+		JScrollPane sp = new JScrollPane(containerTaskPanel);
+		// add our controls to the visible world
+		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
+		
+		// create some mock content
 		JXTaskPane seriousProblemsPane = new JXTaskPane();
 		seriousProblemsPane.setTitle("Serious problems ");
 		seriousProblemsPane.add(new Label("None."));
 		containerTaskPanel.add(seriousProblemsPane);
+
+		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
+		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
 		
 		containerTaskPanel.createCategory("Missing location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
-		containerTaskPanel.createProblem("Missing location", "There is a cat looking north.", 15, 22);
+		containerTaskPanel.createProblem("Missing location", "There is a cat looking north.", 25, 31);
+		
+		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
+		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76);
+		
+		containerTaskPanel.createCategory("meta", null);
+		containerTaskPanel.createProblem("meta", null, 0,0);
 		
 		System.out.println(containerTaskPanel);
 		System.out.println();
-		containerTaskPanel.list();
+		//containerTaskPanel.list();
 				
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();

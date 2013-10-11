@@ -3,31 +3,24 @@
  */
 package edu.kit.ipd.alicenlp.ivan.components;
 
-import java.awt.BorderLayout; 
-import java.awt.Dimension; 
 import java.awt.Font; 
-import java.awt.Label;
+import java.awt.event.ActionEvent;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.swing.JEditorPane; 
-import javax.swing.JFrame; 
-import javax.swing.JPanel; 
-import javax.swing.JScrollPane; 
-import javax.swing.SwingUtilities; 
-import javax.swing.UIManager; 
-import javax.swing.text.html.HTMLDocument; 
- 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
 
-
-
-import org.jdesktop.application.Action;
 import org.jdesktop.application.Application; 
 import org.jdesktop.application.ApplicationActionMap; 
+import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTaskPane; 
 import org.jdesktop.swingx.JXTaskPaneContainer; 
@@ -47,17 +40,41 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 		final public String Category;
 		final public List<CodePoint> Codepoints;
+		final public String Quickfix;
+		final public String Problem;		
 
-		public IvanErrorInstance(String category, List<CodePoint> codepoints)  
+		public IvanErrorInstance(String category, List<CodePoint> codepoints, String qf, String prob)  
 		{
 			Category = category;
 			Codepoints = codepoints;
+			Quickfix = qf;
+			Problem = prob;			
 		}
 		
 		@Override
 		public boolean equals(Object obj) {
 			// TODO Auto-generated method stub
 			return super.equals(obj);
+		}
+		
+		@Override
+		public String toString() {
+			StringBuilder outstr = new StringBuilder();
+			for (CodePoint cp : Codepoints) {
+				outstr.append(cp.x + "," +cp.y);
+				outstr.append("|");
+			}
+			outstr.deleteCharAt(outstr.length()-1);
+			outstr.append("  ");
+			outstr.append(Quickfix);
+			
+			if(Problem != null){			
+				outstr.append("\t");
+				outstr.append("("+ Problem + ")");
+				outstr.append("\n");
+			}
+			
+			return outstr.toString();
 		}
 	}
 
@@ -118,7 +135,27 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 //			}
 //		}
 //		System.out.println();#
-		return super.toString();
+		final String nl = "\n";
+		StringBuilder sb = new StringBuilder();		
+		
+		for (Entry<String, JXTaskPane> pane : mypanes.entrySet()) {
+			JXTaskPane pn = pane.getValue();
+			ActionMap am = Application.getInstance().getContext().getActionMap(pn);
+			if(am.size() == 0)
+				continue;
+			sb.append(pane.getKey());
+			sb.append(nl);
+			for (Object key : am.keys()) {
+				Action ac = am.get(key);
+				IvanErrorInstance err = (IvanErrorInstance) ac.getValue("error");
+				
+				sb.append("\t-");				
+				sb.append(err.toString());
+				sb.append(nl);
+			}
+		}
+		return sb.toString();
+		//return super.toString();
 	}
 
 	/** Create a category of errors which should be presented to the user in a single taskpane. 
@@ -130,11 +167,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	public void createCategory(String title, String description) {
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
-		JXLabel lbl = new JXLabel(description);
-		lbl.setLineWrap(true);
+		if(description != null){
+			JXLabel lbl = new JXLabel(description);
+			lbl.setLineWrap(true);
 		
-		lbl.setFont(errorInfoFont);
-		pane.add(lbl);		
+			lbl.setFont(errorInfoFont);
+			pane.add(lbl);
+		}
 		mypanes.put(title, pane);
 	}
 
@@ -142,7 +181,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		JXTaskPane tsk = mypanes.get(category);
 		if(tsk != null)
 		{
-			IvanErrorInstance error = new IvanErrorInstance(category, codepoints);
+			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, "qf-ignore", errormsg);
 			boolean present = this.bagofProblems.contains(error);
 			if(!present){
 				bagofProblems.add(error);
@@ -156,27 +195,74 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 	
-	private void createQuickfixes(IvanErrorInstance error) {
+	private void createQuickfixes(final IvanErrorInstance error) {
 		IvanErrorsTaskPaneContainer tpc = this;
 		JXTaskPane tsk = mypanes.get(error.Category);
 		
 		// createTaskPaneDemo()
 		// "System" GROUP 
-        JXTaskPane systemGroup = tsk; 
-        systemGroup.setName("systemGroup"); 
-        tpc.add(systemGroup); 
+		
+        tsk.setName(error.Quickfix); 
+        tpc.add(tsk); 
         
         // bind()
-        ApplicationActionMap map = Application.getInstance().getContext().getActionMap(this); 
+        ApplicationActionMap map = Application.getInstance().getContext().getActionMap(tsk); 
         
-        systemGroup.add(map.get("email")); 
-        systemGroup.add(map.get("delete")); 
+//        Action IvanAction = new Action(){
+//        	boolean isEnabled = true;
+//        	boolean isSelected = false;
+//        	
+//        	@Override
+//        	public Class<? extends Annotation> annotationType() {
+//        		// TODO Auto-generated method stub
+//        		return Action.class;
+//        	}
+//
+//			@Override
+//			public BlockingScope block() {
+//				return BlockingScope.NONE;
+//			}
+//
+//			@Override
+//			public String enabledProperty() {
+//				return "isEnabled";
+//			}
+//
+//			@Override
+//			public String name() {				
+//				return error.Category;
+//			}
+//
+//			@Override
+//			public String selectedProperty() {
+//				return "isSelected";
+//			}
+//        };
+        
+        //String name = error.Category;
+        String quickfix = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+        
+        javax.swing.Action myAction = new AbstractAction(quickfix) {        	
+        	@Override
+			public void actionPerformed(ActionEvent e) {
+				//String name = (String) getValue(SHORT_DESCRIPTION);
+				System.out.println("This action's error is " + getValue("error"));
+			}
+		};
+		myAction.putValue("error", error);
+		
+		
+		tsk.add(myAction);
+        map.put("qf-ignore", myAction);
+        
 	}
 	
-    @Action 
-    public void email() { } 
+    @org.jdesktop.application.Action
+    public void email() {
+    	System.out.println("Email sent!");
+    } 
      
-    @Action 
+    @org.jdesktop.application.Action 
     public void delete() { } 
 
 	public boolean createProblem(String category, String errormsg, CodePoint codepoint) {
@@ -186,4 +272,5 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	public boolean createProblem(String category, String errormsg, int x, int y) {
 		return createProblem(category, errormsg, new CodePoint(x, y));
 	}
+	
 }
