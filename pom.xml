@@ -50,11 +50,22 @@
 		<version>3.2.0</version>
 		<classifier>models</classifier>
 	</dependency>
-  	<dependency>
-  		<groupId>org.swinglabs</groupId>
-  		<artifactId>swingx</artifactId>
-  		<version>1.6.1</version>
-  	</dependency>
+<!--   	<dependency> -->
+<!--   		<groupId>org.swinglabs</groupId> -->
+<!--   		<artifactId>swingx</artifactId> -->
+<!--   		<version>1.6.1</version> -->
+<!--   	</dependency> -->
+	<dependency>
+    	<groupId>org.swinglabs.swingx</groupId>
+	    <artifactId>swingx-all</artifactId>
+	    <version>1.6.5-1</version>
+	</dependency>
+	<!--  Test -->
+	<dependency>
+    <groupId>org.jdesktop</groupId>
+    <artifactId>appframework</artifactId>
+    <version>1.0.3</version>
+</dependency>
   	<!-- jgit Core Library -->
     <dependency>
       <groupId>org.eclipse.jgit</groupId>
