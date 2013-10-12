@@ -6,6 +6,7 @@ package edu.kit.ipd.alicenlp.ivan.components;
 import java.awt.Font; 
 import java.awt.event.ActionEvent;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -36,8 +37,12 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
+	private static final String QF_ERROR = "error";
+	private static final String QF_NAME = "qf-name";
+
 	public class IvanErrorInstance {
 
+		final public String[] Reference;
 		final public String Category;
 		final public List<CodePoint> Codepoints;
 		final public String Quickfix;
@@ -49,6 +54,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			Codepoints = codepoints;
 			Quickfix = qf;
 			Problem = prob;			
+			Reference = null;
+		}
+		public IvanErrorInstance(String category, List<CodePoint> codepoints, String qf, String prob, String[] refs)  
+		{
+			Category = category;
+			Codepoints = codepoints;
+			Quickfix = qf;
+			Problem = prob;
+			Reference = refs;
 		}
 		
 		@Override
@@ -147,11 +161,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			sb.append(nl);
 			for (Object key : am.keys()) {
 				Action ac = am.get(key);
-				IvanErrorInstance err = (IvanErrorInstance) ac.getValue("error");
+				IvanErrorInstance err = (IvanErrorInstance) ac.getValue(QF_ERROR);
 				
-				sb.append("\t-");				
-				sb.append(err.toString());
-				sb.append(nl);
+				sb.append("\t");				
+				sb.append(ac.toString());
+				//sb.append(nl);
 			}
 		}
 		return sb.toString();
@@ -177,11 +191,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		mypanes.put(title, pane);
 	}
 
-	public boolean createProblem(String category, String errormsg, List<CodePoint> codepoints) {
+	public boolean createProblem(String category, String errormsg, List<CodePoint> codepoints, String[] references) {
 		JXTaskPane tsk = mypanes.get(category);
 		if(tsk != null)
 		{
-			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, "qf-ignore", errormsg);
+			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, "qf-ignore", errormsg, references);
 			boolean present = this.bagofProblems.contains(error);
 			if(!present){
 				bagofProblems.add(error);
@@ -207,70 +221,269 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
         
         // bind()
         ApplicationActionMap map = Application.getInstance().getContext().getActionMap(tsk); 
-        
-//        Action IvanAction = new Action(){
-//        	boolean isEnabled = true;
-//        	boolean isSelected = false;
-//        	
-//        	@Override
-//        	public Class<? extends Annotation> annotationType() {
-//        		// TODO Auto-generated method stub
-//        		return Action.class;
-//        	}
-//
-//			@Override
-//			public BlockingScope block() {
-//				return BlockingScope.NONE;
-//			}
-//
-//			@Override
-//			public String enabledProperty() {
-//				return "isEnabled";
-//			}
-//
-//			@Override
-//			public String name() {				
-//				return error.Category;
-//			}
-//
-//			@Override
-//			public String selectedProperty() {
-//				return "isSelected";
-//			}
-//        };
+
+	    //this is just an annotation, not something you can run:
+//      Action IvanAction = new Action(){
+
         
         //String name = error.Category;
-        String quickfix = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
         
-        javax.swing.Action myAction = new AbstractAction(quickfix) {        	
-        	@Override
-			public void actionPerformed(ActionEvent e) {
-				//String name = (String) getValue(SHORT_DESCRIPTION);
-				System.out.println("This action's error is " + getValue("error"));
-			}
-		};
-		myAction.putValue("error", error);
-		
-		
-		tsk.add(myAction);
-        map.put("qf-ignore", myAction);
+        List<javax.swing.Action> myQuickfixesForThisError = createAvailableQuickfixes(error);
+        
+        for (Action act : myQuickfixesForThisError) {
+        	tsk.add(act);
+        	map.put(act.getValue(QF_NAME), act);			
+		}
         
 	}
+
+	/** This method looks up available quickfixes in the quickfix map and creates appropriate actions
+	 * @param error
+	 * @return
+	 */
+	protected List<javax.swing.Action> createAvailableQuickfixes(
+			final IvanErrorInstance error) {
+		
+		// this list will contain the availale fixes
+		List<javax.swing.Action> myQuickfixesForThisError = new ArrayList<Action>();
+		
+		/* The DELETE_SENTENCE action */
+		if(error.Category.equals("effect")) // for sentences without effect only
+		{
+			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+	        	@Override
+				public void actionPerformed(ActionEvent e) {
+					//String name = (String) getValue(SHORT_DESCRIPTION);
+	        		System.out.println("I'm deleting this sentence.");
+	        		
+					System.out.println("This action's error is " + getValue(QF_ERROR));
+				}
+	        	
+	        	@Override
+	        	public String toString() {
+	        		return qfActionPrinter(this);
+	        	}
+			};
+			// make the error retrievable
+			myAction.putValue(QF_ERROR, error);
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "qf-delete");
+			myQuickfixesForThisError.add(myAction);
+		}
+		
+		/* The ADD_SENTENCE action */
+		if(error.Category.equals("location")) /* LOCATION */
+		{
+			String[] references = error.Reference;
+			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+	        	@Override
+				public void actionPerformed(ActionEvent e) {
+					//String name = (String) getValue(SHORT_DESCRIPTION);
+	        		System.out.println("I'm adding a location.");
+					System.out.println("This action's error is " + getValue(QF_ERROR));
+				}
+
+	        	@Override
+	        	public String toString() {
+	        		return qfActionPrinter(this);
+	        	}
+			};
+			// make the error retrievable
+			myAction.putValue(QF_ERROR, error);
+			
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "qf-add"+ Arrays.toString(references));
+			myQuickfixesForThisError.add(myAction);
+		} 
+		else if(error.Category.equals("direction")) /* DIRECTION */
+		{ 
+			String[] references = error.Reference;
+			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+	        	@Override
+				public void actionPerformed(ActionEvent e) {
+					//String name = (String) getValue(SHORT_DESCRIPTION);
+	        		System.out.println("I'm adding a direction.");
+					System.out.println("This action's error is " + getValue(QF_ERROR));
+				}
+
+	        	@Override
+	        	public String toString() {
+	        		return qfActionPrinter(this);
+	        	}
+			};
+			// make the error retrievable
+			myAction.putValue(QF_ERROR, error);
+			
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "qf-add"+ Arrays.toString(references));
+			myQuickfixesForThisError.add(myAction);
+		}
+				
+		/* The IGNORE action is almost always available */
+		if(!error.Category.equals("meta"))
+		{
+			// the description to display
+	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+	        
+	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+	        	@Override
+				public void actionPerformed(ActionEvent e) {
+					//String name = (String) getValue(SHORT_DESCRIPTION);
+					System.out.println("This action's error is " + getValue(QF_ERROR));
+				}
+
+	        	@Override
+	        	public String toString() {
+	        		return qfActionPrinter(this);
+	        	}
+			};
+			// make the error retrievable
+			myAction.putValue(QF_ERROR, error);
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "qf-ignore");
+			myQuickfixesForThisError.add(myAction);
+		}
+		else { /** Create META actions */
+			/* IGNORE ALL */
+			{
+				// the description to display
+		        String displayDescription = "Ignore all current problems";	        
+		        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+		        	@Override
+					public void actionPerformed(ActionEvent e) {
+						//String name = (String) getValue(SHORT_DESCRIPTION);
+		        		System.out.println("Ignoring all currently displayed errors");
+					}
 	
-    @org.jdesktop.application.Action
-    public void email() {
-    	System.out.println("Email sent!");
-    } 
-     
-    @org.jdesktop.application.Action 
-    public void delete() { } 
+		        	@Override
+		        	public String toString() {
+		        		String qf_shorthand = (String) getValue(QF_NAME);
+		        		
+		        		StringBuilder outstr = new StringBuilder();
+		        		
+		        		//outstr.append("\t");	    			
+		        		outstr.append(qf_shorthand);
+		        		
+		        		return outstr.toString();
+		        	}
+				};
+				// set the shorthand notation for this qf
+				myAction.putValue(QF_NAME, "mf-ignore-all");
+				myQuickfixesForThisError.add(myAction);
+			}
+			/* RESET IGNORED */
+			{
+				// the description to display
+		        String displayDescription = "Restore ignored problems";	        
+		        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+		        	@Override
+					public void actionPerformed(ActionEvent e) {
+						//String name = (String) getValue(SHORT_DESCRIPTION);
+		        		System.out.println("Restoring error display");
+					}
+	
+		        	@Override
+		        	public String toString() {
+		        		String qf_shorthand = (String) getValue(QF_NAME);
+		        		
+		        		StringBuilder outstr = new StringBuilder();
+		        		
+		        		//outstr.append("\t");	    			
+		        		outstr.append(qf_shorthand);
+		        		
+		        		return outstr.toString();
+		        	}
+				};
+				// set the shorthand notation for this qf
+				myAction.putValue(QF_NAME, "mf-reset-ignore");
+				myQuickfixesForThisError.add(myAction);
+			}
+			/* CHECK all sentences */
+			{
+				// the description to display
+		        String displayDescription = "Check all sentences";	        
+		        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
+		        	@Override
+					public void actionPerformed(ActionEvent e) {
+						//String name = (String) getValue(SHORT_DESCRIPTION);
+		        		System.out.println("Running pipeline");
+					}
+	
+		        	@Override
+		        	public String toString() {
+		        		String qf_shorthand = (String) getValue(QF_NAME);
+		        		
+		        		StringBuilder outstr = new StringBuilder();
+		        		
+		        		//outstr.append("\t");	    			
+		        		outstr.append(qf_shorthand);
+		        		
+		        		return outstr.toString();
+		        	}
+				};
+				// set the shorthand notation for this qf
+				myAction.putValue(QF_NAME, "mf-check");
+				myQuickfixesForThisError.add(myAction);
+			}
+		}
+		
+		return myQuickfixesForThisError;
+	}
+//	
+//    @org.jdesktop.application.Action
+//    public void email() {
+//    	System.out.println("Email sent!");
+//    } 
+//     
+//    @org.jdesktop.application.Action 
+//    public void delete() { } 
 
 	public boolean createProblem(String category, String errormsg, CodePoint codepoint) {
-		return createProblem(category, errormsg, Arrays.asList(new CodePoint[]{codepoint}));
+		return createProblem(category, errormsg, Arrays.asList(new CodePoint[]{codepoint}), null);
 	}
 
 	public boolean createProblem(String category, String errormsg, int x, int y) {
 		return createProblem(category, errormsg, new CodePoint(x, y));
+	}
+
+	public boolean createProblem(String category, String errormsg, int i, int j,
+			String[] references) {
+		return createProblem(category, errormsg, Arrays.asList(new CodePoint[]{new CodePoint(i, j)}), references);
+	}
+
+	/**
+	 * @return
+	 */
+	protected String qfActionPrinter(Action action) {
+		IvanErrorInstance err = (IvanErrorInstance) action.getValue(QF_ERROR);
+		String qf_shorthand = (String) action.getValue(QF_NAME);
+		
+		// in case something goes wrong
+		if(err == null)
+		{
+			System.err.println("IvanError instance was not set.");
+			return super.toString();
+		}
+		
+		StringBuilder outstr = new StringBuilder();
+		for (CodePoint cp : err.Codepoints) {
+			outstr.append(cp.x + "," +cp.y);
+			outstr.append("|");
+		}
+		outstr.deleteCharAt(outstr.length()-1);
+		outstr.append("  ");	    			
+		outstr.append(qf_shorthand);
+		
+		if(err.Problem != null){			
+			outstr.append("\t");
+			outstr.append("("+ err.Problem + ")");
+			outstr.append("\n");
+		}
+		
+		return outstr.toString();
 	}
 	
 }

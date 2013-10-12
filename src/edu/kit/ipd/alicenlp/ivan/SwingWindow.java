@@ -265,11 +265,11 @@ public class SwingWindow {
 		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
 		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
 		
-		containerTaskPanel.createCategory("Missing location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
-		containerTaskPanel.createProblem("Missing location", "There is a cat looking north.", 25, 31);
+		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
+		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"cat"});
 		
 		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
-		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76);
+		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
 		
 		containerTaskPanel.createCategory("meta", null);
 		containerTaskPanel.createProblem("meta", null, 0,0);
