@@ -186,8 +186,12 @@ public class SwingWindow {
 		menuBar = new JMenuBar();
 		JMenu filemenu = new JMenu("Menu…");
 		
+		/** Allows the user to LOAD a document into the editor */
 		final Action actionLoad = new SwingAction()
 		{			
+			/**
+			 * Loads a document with a jfilechooser dialog
+			 */
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser loadChooser = new JFileChooser();
 				loadChooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
