@@ -29,8 +29,11 @@ import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ActionMap;
 import javax.swing.Box;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -38,6 +41,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.LineNumbersTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -233,7 +237,6 @@ public class SwingWindow {
 					processText(editor.getText());
 					stopAndPrintStopWatch();
 				} catch (Exception e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -241,7 +244,10 @@ public class SwingWindow {
 		saveCheckAction.putValue(Action.NAME, "Save and check"); // set the name
 		saveCheckAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file and runs analysis");
 		
-		// TODO: add save action without running the pipeline for the menu
+		// setup up the CTRL-S hotkey for running save-and-check from within the editor area
+		InputMap map = txtEditor.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		map.put(KeyStroke.getKeyStroke("control S"), saveCheckAction);
+		
 		btnSaveCheck.addActionListener(saveCheckAction);
 		
 		filemenu.add(saveCheckAction);
