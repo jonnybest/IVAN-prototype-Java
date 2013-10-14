@@ -3,12 +3,14 @@
  */
 package edu.kit.ipd.alicenlp.ivan.components;
 
+import java.awt.Component;
 import java.awt.Font; 
 import java.awt.event.ActionEvent;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -18,6 +20,9 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JXTextPane;
+import javax.swing.LineNumbersTextPane;
+import javax.swing.text.EditorKit;
 
 import org.jdesktop.application.Application; 
 import org.jdesktop.application.ApplicationActionMap; 
@@ -25,6 +30,8 @@ import org.jdesktop.application.Task.BlockingScope;
 import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTaskPane; 
 import org.jdesktop.swingx.JXTaskPaneContainer; 
+
+import edu.kit.ipd.alicenlp.ivan.SwingWindow;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -67,8 +74,22 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		
 		@Override
 		public boolean equals(Object obj) {
-			// TODO Auto-generated method stub
-			return super.equals(obj);
+			if (obj instanceof IvanErrorInstance)
+			{
+				IvanErrorInstance otherError = (IvanErrorInstance) obj;
+				if(Category.equals(otherError.Category)
+						&& Problem.equals(otherError.Problem)
+						&& Codepoints.size() == otherError.Codepoints.size())
+				{
+					for (CodePoint cp : Codepoints) {
+						if(!otherError.Codepoints.contains(cp))
+						{
+							return false;
+						}
+					}
+				}
+			}
+			return false;
 		}
 		
 		@Override
@@ -93,8 +114,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	}
 
 	private Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
-	private Set<IvanErrorInstance> bagofProblems = new HashSet<IvanErrorInstance>();
 	final private Font errorInfoFont = new Font("Calibri", 0, 11);
+	private JXTextPane txtEditor = null;
 
 	public class CodePoint extends Tuple<Integer, Integer>{
 
@@ -110,28 +131,27 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			this.x = x; 
 			this.y = y; 
 		} 
+		
+		@Override
+		public boolean equals(Object obj) {
+			if(obj instanceof Tuple<?, ?>)
+			{
+				Tuple<?, ?> other = (Tuple<?, ?>) obj;
+				if (x.equals(other.x) && y.equals(other.y))
+					return true;
+			}
+			return false;
+		}
 	}
 
-	/** This class represents a catergory if errors.
-	 * It contains instances of this error.
-	 * @author Jonny
-	 *
-	 */
-	public class IvanCategory 
-	{
-		public String Name;
-		public String Description;
-	}
+	private Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
+	private Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	
-	enum ErrorCategory {
-		Warning,
-		Error
-	}
-
 
 	/**
 	 */
-	public IvanErrorsTaskPaneContainer() {
+	public IvanErrorsTaskPaneContainer(JXTextPane editor) {
+		txtEditor = editor;
 	}
 	
 	/** This method allows printing all the currently displayed errors and warnings in a readable, diff-able manner 
@@ -195,10 +215,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		JXTaskPane tsk = mypanes.get(category);
 		if(tsk != null)
 		{
-			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, "qf-ignore", errormsg, references);
-			boolean present = this.bagofProblems.contains(error);
+			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, null, errormsg, references);
+			boolean present = this.ignoredProblems.contains(error);
 			if(!present){
-				bagofProblems.add(error);
+				this.bagofProblems.add(error);
 				createQuickfixes(error);
 				return true;
 			}
@@ -256,8 +276,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				public void actionPerformed(ActionEvent e) {
 					//String name = (String) getValue(SHORT_DESCRIPTION);
 	        		System.out.println("I'm deleting this sentence.");
-	        		
-					System.out.println("This action's error is " + getValue(QF_ERROR));
+
+	        		System.out.println("This action's error is " + getValue(QF_ERROR));
 				}
 	        	
 	        	@Override
@@ -325,6 +345,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		/* The IGNORE action is almost always available */
 		if(!error.Category.equals("meta"))
 		{
+			// instance 
+			final IvanErrorsTaskPaneContainer tp = this;
 			// the description to display
 	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
 	        
@@ -332,7 +354,32 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	        	@Override
 				public void actionPerformed(ActionEvent e) {
 					//String name = (String) getValue(SHORT_DESCRIPTION);
+	        		//error = (IvanErrorInstance) getValue(QF_ERROR);
+	        		System.out.println("Ignoring " + error);
+	        		// get this category panel
+	        		JXTaskPane panel = mypanes.get(error.Category);
+	        		// get the actions configured for this panel
+	        		ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
+	        		List<Action> keepme = new LinkedList<Action>();
+	        		for (Object key : map.keys()) {
+						Action otherQuickfix = map.get(key);
+						Object otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
+						if(!error.equals(otherError))
+						{
+							System.out.println("Saving this one for later.");
+							keepme.add(otherQuickfix);
+						}
+						else {
+							map.remove(key); // throw it away
+						}
+					}
+	        		panel.removeAll();
+	        		for (Action action : keepme) {
+						panel.add(action);
+					}
+	        		ignoredProblems.add(error);
 					System.out.println("This action's error is " + getValue(QF_ERROR));
+					System.out.println(tp.toString());
 				}
 
 	        	@Override
@@ -410,6 +457,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 					public void actionPerformed(ActionEvent e) {
 						//String name = (String) getValue(SHORT_DESCRIPTION);
 		        		System.out.println("Running pipeline");
+		        		SwingWindow.processText();
 					}
 	
 		        	@Override
@@ -485,5 +533,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		
 		return outstr.toString();
 	}
-	
+
+	public void setEditor(LineNumbersTextPane txtEditor) {
+		this.txtEditor = txtEditor;
+	}
 }

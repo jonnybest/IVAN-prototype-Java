@@ -77,9 +77,14 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class SwingWindow {
 
+	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
+	// editor panel
 	private LineNumbersTextPane txtEditor;
+	// errors panel
+	private IvanErrorsTaskPaneContainer containerTaskPanel;
+	
 	StyleContext sc = new StyleContext();
 	// final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
 	private Style SetupStyle;
@@ -113,6 +118,8 @@ public class SwingWindow {
 	 * Create the application.
 	 */
 	public SwingWindow() {
+		instance = this;
+		
 		initialize();
 	}
 
@@ -249,7 +256,7 @@ public class SwingWindow {
 		 * Here is where I build the TASK panel
 		 */
 		// creating the actual taskpanel
-		IvanErrorsTaskPaneContainer containerTaskPanel = new IvanErrorsTaskPaneContainer();
+		containerTaskPanel = new IvanErrorsTaskPaneContainer(txtEditor);
 		// create us a scroll thing
 		// wrap our panel into the scrollthing
 		JScrollPane sp = new JScrollPane(containerTaskPanel);
@@ -266,7 +273,7 @@ public class SwingWindow {
 		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
 		
 		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
-		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"cat"});
+		containerTaskPanel.createProblem(" location", "There is a cat looking north.", 25, 31, new String[] {"cat"});
 		
 		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
 		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
@@ -389,6 +396,9 @@ public class SwingWindow {
 		// prepare a list for the problems
 		this.problemSetMissingDirection = new HashSet<EntityInfo>();
 		this.problemSetMissingLocation = new HashSet<EntityInfo>();
+		
+		// tell the errors panel where our editor is so it can apply quick fixes
+		this.containerTaskPanel.setEditor(this.txtEditor);
 	}
 
 	/** Use this function to reset the size and style of the line numbers.
@@ -431,6 +441,15 @@ public class SwingWindow {
 
 	}
 
+	public static void processText(){
+		try {
+			instance.processText(instance.txtEditor.getText());
+		} catch (Exception e) {
+			System.err.println("The caller tried to process this text and caused an exception.");
+			e.printStackTrace();
+		}
+	}
+	
 	/**
 	 * @param text
 	 * @throws Exception
