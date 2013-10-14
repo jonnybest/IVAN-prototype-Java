@@ -3,10 +3,8 @@
  */
 package edu.kit.ipd.alicenlp.ivan.components;
 
-import java.awt.Component;
-import java.awt.Font; 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -22,14 +20,13 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JXTextPane;
 import javax.swing.LineNumbersTextPane;
-import javax.swing.text.EditorKit;
+import javax.swing.text.BadLocationException;
 
-import org.jdesktop.application.Application; 
-import org.jdesktop.application.ApplicationActionMap; 
-import org.jdesktop.application.Task.BlockingScope;
+import org.jdesktop.application.Application;
+import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.swingx.JXLabel;
-import org.jdesktop.swingx.JXTaskPane; 
-import org.jdesktop.swingx.JXTaskPaneContainer; 
+import org.jdesktop.swingx.JXTaskPane;
+import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
 
@@ -181,8 +178,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			sb.append(nl);
 			for (Object key : am.keys()) {
 				Action ac = am.get(key);
-				IvanErrorInstance err = (IvanErrorInstance) ac.getValue(QF_ERROR);
-				
 				sb.append("\t");				
 				sb.append(ac.toString());
 				//sb.append(nl);
@@ -275,12 +270,105 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	        	@Override
 				public void actionPerformed(ActionEvent e) {
 					//String name = (String) getValue(SHORT_DESCRIPTION);
-	        		System.out.println("I'm deleting this sentence.");
-
-	        		System.out.println("This action's error is " + getValue(QF_ERROR));
+	        		//System.out.println("I'm deleting this sentence.");
+        			/* 1. figure out the sentence bounds (Periods, Question Marks, and Exclamation Points)
+        			 *   a) search right for a sentence punctuation
+        			 *   b) search left for a sentence punctuation
+        			 * 2. delete everything in between left bound and right bound
+        			 **/
+	        		int lb = searchLeftBound(error.Codepoints);
+	        		int rb = searchRightBound(error.Codepoints);
+	        		// select the improper sentence
+//	        		txtEditor.setSelectionStart(lb);
+//	        		txtEditor.setSelectionEnd(rb);
+	        		txtEditor.setCaretPosition(lb);
+	        		txtEditor.moveCaretPosition(rb);	        		
+	        		// delete it. this is undoable
+	        		txtEditor.replaceSelection("");
+	        		// get the focus so user can start editing right away
+	        		txtEditor.requestFocusInWindow();
+	        		//System.out.println("This action's error is " + getValue(QF_ERROR));
 				}
 	        	
-	        	@Override
+	        	private int searchRightBound(List<CodePoint> codepoints) {
+	        		int maxEndPoint = codepoints.get(0).y;
+					for (CodePoint cp : codepoints) {
+						maxEndPoint = Math.max(cp.y, maxEndPoint);
+					}
+					assert maxEndPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
+					
+					final int contentlength = txtEditor.getText().length();
+					int lastMark = contentlength;
+					int maxlen = lastMark-maxEndPoint;
+					if (maxlen > 0) {
+						int lastPeriod;
+						try {
+							lastPeriod = txtEditor.getText(maxEndPoint, maxlen)
+									.indexOf(".");
+							if(lastPeriod > 0)
+								lastMark = Math.min(lastMark, lastPeriod);
+						} catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+						int lastEx;
+						try {
+							lastEx = txtEditor.getText(maxEndPoint, maxlen)
+									.indexOf("!");
+							if(lastEx > 0)
+								lastMark = Math.min(lastMark, lastEx);
+						} catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+						int lastQues;
+						try {
+							lastQues = txtEditor.getText(maxEndPoint, maxlen)
+									.indexOf("?");
+							if(lastQues > 0)
+								lastMark = Math.min(lastMark, lastQues);
+						} catch (BadLocationException e) {
+							e.printStackTrace();
+						}
+					}
+					//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
+					if(lastMark < contentlength)
+					{
+						// we have found a sentence separation mark to the right, so return its position
+						return maxEndPoint + lastMark + 1;
+					}
+					else
+					{
+						// we have not found any sentence separator to the right, so return EOF
+						return contentlength;
+					}
+				}
+
+				private int searchLeftBound(List<CodePoint> codepoints) {
+					// the first hint we have is the left point of the first "codepoint"
+					int minStartingPoint = codepoints.get(0).x;
+					// now try finding the smallest known left codepoint
+					for (CodePoint cp : codepoints) {
+						minStartingPoint = Math.min(cp.x, minStartingPoint);
+					}
+					assert minStartingPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
+					
+					// we may have to start all the way to the left
+					int lastMark = 0;
+					// search to the right for a period
+					int lastPeriod = txtEditor.getText().lastIndexOf(".", minStartingPoint);
+					lastMark = Math.max(lastMark, lastPeriod);
+					int lastEx = txtEditor.getText().lastIndexOf("!", minStartingPoint);
+					lastMark = Math.max(lastMark, lastEx);
+					int lastQues = txtEditor.getText().lastIndexOf("?", minStartingPoint);
+					lastMark = Math.max(lastMark, lastQues);
+					//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
+					
+					// this is either a 0 or greater
+					minStartingPoint = lastMark;
+
+					return minStartingPoint;
+				}
+
+				@Override
 	        	public String toString() {
 	        		return qfActionPrinter(this);
 	        	}
