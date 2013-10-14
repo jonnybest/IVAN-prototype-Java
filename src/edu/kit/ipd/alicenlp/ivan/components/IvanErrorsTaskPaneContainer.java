@@ -179,7 +179,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("I'm adding a location.");
 			String[] unlocatedNames = myerror.Reference;
-			String[] stubs = {" in the left front.", " in the right front."};
+			String[] stubs = {" is in the left front.", 
+					" is in the right front.", 
+					" is in the background to the left."};
 			/* Create location sentences.
 			 * 1. find the insertion point. The insertion point is somewhere to the right of the last cue.
 			 * 2. set the caret to the insertion point
@@ -187,7 +189,21 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			 *   a) build a sentence: Name + Stub. Then insert it.
 			 *   b) if you run out of stubs, create Name + " is on the … side." and then select the three dots.
 			 **/
-			
+			// focus is important, so the user can readily start typing after clicking
+			txtEditor.requestFocusInWindow();
+			// get insertion point
+			int insertionpoint = 0; // findInsertionPoint(error);
+			// set the caret
+			txtEditor.setCaretPosition(insertionpoint);
+			for (int i = 0; i < unlocatedNames.length; i++) {
+				if(i < stubs.length){
+					// build a sentence from a stub
+					String sentence = unlocatedNames[i] + stubs[i]; 
+					// insert the sentence
+					txtEditor.replaceSelection(sentence);
+					// maybe add a newline, too?
+				}
+			}
 			System.out.println("This action's error is " + getValue(QF_ERROR));
 		}
 
