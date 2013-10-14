@@ -167,14 +167,27 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	}
 
 	private final class AddLocationAction extends AbstractAction {
-		private AddLocationAction(String name) {
+		final private IvanErrorInstance myerror;
+
+		private AddLocationAction(String name, IvanErrorInstance error2) {
 			super(name);
+			this.myerror = error2;
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("I'm adding a location.");
+			String[] unlocatedNames = myerror.Reference;
+			String[] stubs = {" in the left front.", " in the right front."};
+			/* Create location sentences.
+			 * 1. find the insertion point. The insertion point is somewhere to the right of the last cue.
+			 * 2. set the caret to the insertion point
+			 * 3. for each Name without location, insert a sentence. (unlocatedNames)
+			 *   a) build a sentence: Name + Stub. Then insert it.
+			 *   b) if you run out of stubs, create Name + " is on the … side." and then select the three dots.
+			 **/
+			
 			System.out.println("This action's error is " + getValue(QF_ERROR));
 		}
 
@@ -300,7 +313,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	}
 
 	private final class AddDirectionAction extends AbstractAction {
-		private AddDirectionAction(String name) {
+		private AddDirectionAction(String name, IvanErrorInstance error) {
 			super(name);
 		}
 
@@ -552,7 +565,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{
 			String[] references = error.Reference;
 			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
-	        javax.swing.Action myAction = new AddLocationAction(displayDescription);
+	        javax.swing.Action myAction = new AddLocationAction(displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -564,7 +577,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{ 
 			String[] references = error.Reference;
 			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
-	        javax.swing.Action myAction = new AddDirectionAction(displayDescription);
+	        javax.swing.Action myAction = new AddDirectionAction(displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
