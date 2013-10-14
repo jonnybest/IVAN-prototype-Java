@@ -29,6 +29,7 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
+import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer.IvanErrorInstance;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -43,6 +44,278 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 	private static final String QF_ERROR = "error";
 	private static final String QF_NAME = "qf-name";
+
+	private final class CheckSentencesMetaAction extends AbstractAction {
+		private CheckSentencesMetaAction(String name) {
+			super(name);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			System.out.println("Running pipeline");
+			SwingWindow.processText();
+		}
+
+		@Override
+		public String toString() {
+			String qf_shorthand = (String) getValue(QF_NAME);
+			
+			StringBuilder outstr = new StringBuilder();
+			
+			//outstr.append("\t");	    			
+			outstr.append(qf_shorthand);
+			
+			return outstr.toString();
+		}
+	}
+
+	private final class RestoreAllMetaAction extends AbstractAction {
+		private RestoreAllMetaAction(String name) {
+			super(name);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			System.out.println("Restoring error display");
+		}
+
+		@Override
+		public String toString() {
+			String qf_shorthand = (String) getValue(QF_NAME);
+			
+			StringBuilder outstr = new StringBuilder();
+			
+			//outstr.append("\t");	    			
+			outstr.append(qf_shorthand);
+			
+			return outstr.toString();
+		}
+	}
+
+	private final class IgnoreAllMetaAction extends AbstractAction {
+		private IgnoreAllMetaAction(String name) {
+			super(name);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			System.out.println("Ignoring all currently displayed errors");
+		}
+
+		@Override
+		public String toString() {
+			String qf_shorthand = (String) getValue(QF_NAME);
+			
+			StringBuilder outstr = new StringBuilder();
+			
+			//outstr.append("\t");	    			
+			outstr.append(qf_shorthand);
+			
+			return outstr.toString();
+		}
+	}
+
+	private final class IgnoreProblemAction extends AbstractAction {
+		private final IvanErrorInstance error;
+		private final IvanErrorsTaskPaneContainer tp;
+
+		private IgnoreProblemAction(String name, IvanErrorInstance error,
+				IvanErrorsTaskPaneContainer tp) {
+			super(name);
+			this.error = error;
+			this.tp = tp;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			//error = (IvanErrorInstance) getValue(QF_ERROR);
+			System.out.println("Ignoring " + error);
+			// get this category panel
+			JXTaskPane panel = mypanes.get(error.Category);
+			// get the actions configured for this panel
+			ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
+			List<Action> keepme = new LinkedList<Action>();
+			for (Object key : map.keys()) {
+				Action otherQuickfix = map.get(key);
+				Object otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
+				if(!error.equals(otherError))
+				{
+					System.out.println("Saving this one for later.");
+					keepme.add(otherQuickfix);
+				}
+				else {
+					map.remove(key); // throw it away
+				}
+			}
+			panel.removeAll();
+			for (Action action : keepme) {
+				panel.add(action);
+			}
+			ignoredProblems.add(error);
+			System.out.println("This action's error is " + getValue(QF_ERROR));
+			System.out.println(tp.toString());
+		}
+
+		@Override
+		public String toString() {
+			return qfActionPrinter(this);
+		}
+	}
+
+	private final class AddLocationAction extends AbstractAction {
+		private AddLocationAction(String name) {
+			super(name);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			System.out.println("I'm adding a location.");
+			System.out.println("This action's error is " + getValue(QF_ERROR));
+		}
+
+		@Override
+		public String toString() {
+			return qfActionPrinter(this);
+		}
+	}
+
+	private final class DeleteSentenceAction extends AbstractAction {
+		private final IvanErrorInstance error;
+
+		private DeleteSentenceAction(String name, IvanErrorInstance error) {
+			super(name);
+			this.error = error;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			//System.out.println("I'm deleting this sentence.");
+			/* 1. figure out the sentence bounds (Periods, Question Marks, and Exclamation Points)
+			 *   a) search right for a sentence punctuation
+			 *   b) search left for a sentence punctuation
+			 * 2. delete everything in between left bound and right bound
+			 **/
+			int lb = searchLeftBound(error.Codepoints);
+			int rb = searchRightBound(error.Codepoints);
+			// select the improper sentence
+//	        		txtEditor.setSelectionStart(lb);
+//	        		txtEditor.setSelectionEnd(rb);
+			txtEditor.setCaretPosition(lb);
+			txtEditor.moveCaretPosition(rb);	        		
+			// delete it. this is undoable
+			txtEditor.replaceSelection("");
+			// get the focus so user can start editing right away
+			txtEditor.requestFocusInWindow();
+			//System.out.println("This action's error is " + getValue(QF_ERROR));
+		}
+
+		private int searchRightBound(List<CodePoint> codepoints) {
+			int maxEndPoint = codepoints.get(0).y;
+			for (CodePoint cp : codepoints) {
+				maxEndPoint = Math.max(cp.y, maxEndPoint);
+			}
+			assert maxEndPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
+			
+			final int contentlength = txtEditor.getText().length();
+			int lastMark = contentlength;
+			int maxlen = lastMark-maxEndPoint;
+			if (maxlen > 0) {
+				int lastPeriod;
+				try {
+					lastPeriod = txtEditor.getText(maxEndPoint, maxlen)
+							.indexOf(".");
+					if(lastPeriod > 0)
+						lastMark = Math.min(lastMark, lastPeriod);
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+				int lastEx;
+				try {
+					lastEx = txtEditor.getText(maxEndPoint, maxlen)
+							.indexOf("!");
+					if(lastEx > 0)
+						lastMark = Math.min(lastMark, lastEx);
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+				int lastQues;
+				try {
+					lastQues = txtEditor.getText(maxEndPoint, maxlen)
+							.indexOf("?");
+					if(lastQues > 0)
+						lastMark = Math.min(lastMark, lastQues);
+				} catch (BadLocationException e) {
+					e.printStackTrace();
+				}
+			}
+			//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
+			if(lastMark < contentlength)
+			{
+				// we have found a sentence separation mark to the right, so return its position
+				return maxEndPoint + lastMark + 1;
+			}
+			else
+			{
+				// we have not found any sentence separator to the right, so return EOF
+				return contentlength;
+			}
+		}
+
+		private int searchLeftBound(List<CodePoint> codepoints) {
+			// the first hint we have is the left point of the first "codepoint"
+			int minStartingPoint = codepoints.get(0).x;
+			// now try finding the smallest known left codepoint
+			for (CodePoint cp : codepoints) {
+				minStartingPoint = Math.min(cp.x, minStartingPoint);
+			}
+			assert minStartingPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
+			
+			// we may have to start all the way to the left
+			int lastMark = 0;
+			// search to the right for a period
+			int lastPeriod = txtEditor.getText().lastIndexOf(".", minStartingPoint);
+			lastMark = Math.max(lastMark, lastPeriod);
+			int lastEx = txtEditor.getText().lastIndexOf("!", minStartingPoint);
+			lastMark = Math.max(lastMark, lastEx);
+			int lastQues = txtEditor.getText().lastIndexOf("?", minStartingPoint);
+			lastMark = Math.max(lastMark, lastQues);
+			//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
+			
+			// this is either a 0 or greater
+			minStartingPoint = lastMark;
+
+			return minStartingPoint;
+		}
+
+		@Override
+		public String toString() {
+			return qfActionPrinter(this);
+		}
+	}
+
+	private final class AddDirectionAction extends AbstractAction {
+		private AddDirectionAction(String name) {
+			super(name);
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent e) {
+			//String name = (String) getValue(SHORT_DESCRIPTION);
+			System.out.println("I'm adding a direction.");
+			System.out.println("This action's error is " + getValue(QF_ERROR));
+		}
+
+		@Override
+		public String toString() {
+			return qfActionPrinter(this);
+		}
+	}
 
 	public class IvanErrorInstance {
 
@@ -266,113 +539,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		if(error.Category.equals("effect")) // for sentences without effect only
 		{
 			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
-	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-	        	@Override
-				public void actionPerformed(ActionEvent e) {
-					//String name = (String) getValue(SHORT_DESCRIPTION);
-	        		//System.out.println("I'm deleting this sentence.");
-        			/* 1. figure out the sentence bounds (Periods, Question Marks, and Exclamation Points)
-        			 *   a) search right for a sentence punctuation
-        			 *   b) search left for a sentence punctuation
-        			 * 2. delete everything in between left bound and right bound
-        			 **/
-	        		int lb = searchLeftBound(error.Codepoints);
-	        		int rb = searchRightBound(error.Codepoints);
-	        		// select the improper sentence
-//	        		txtEditor.setSelectionStart(lb);
-//	        		txtEditor.setSelectionEnd(rb);
-	        		txtEditor.setCaretPosition(lb);
-	        		txtEditor.moveCaretPosition(rb);	        		
-	        		// delete it. this is undoable
-	        		txtEditor.replaceSelection("");
-	        		// get the focus so user can start editing right away
-	        		txtEditor.requestFocusInWindow();
-	        		//System.out.println("This action's error is " + getValue(QF_ERROR));
-				}
-	        	
-	        	private int searchRightBound(List<CodePoint> codepoints) {
-	        		int maxEndPoint = codepoints.get(0).y;
-					for (CodePoint cp : codepoints) {
-						maxEndPoint = Math.max(cp.y, maxEndPoint);
-					}
-					assert maxEndPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
-					
-					final int contentlength = txtEditor.getText().length();
-					int lastMark = contentlength;
-					int maxlen = lastMark-maxEndPoint;
-					if (maxlen > 0) {
-						int lastPeriod;
-						try {
-							lastPeriod = txtEditor.getText(maxEndPoint, maxlen)
-									.indexOf(".");
-							if(lastPeriod > 0)
-								lastMark = Math.min(lastMark, lastPeriod);
-						} catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-						int lastEx;
-						try {
-							lastEx = txtEditor.getText(maxEndPoint, maxlen)
-									.indexOf("!");
-							if(lastEx > 0)
-								lastMark = Math.min(lastMark, lastEx);
-						} catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-						int lastQues;
-						try {
-							lastQues = txtEditor.getText(maxEndPoint, maxlen)
-									.indexOf("?");
-							if(lastQues > 0)
-								lastMark = Math.min(lastMark, lastQues);
-						} catch (BadLocationException e) {
-							e.printStackTrace();
-						}
-					}
-					//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
-					if(lastMark < contentlength)
-					{
-						// we have found a sentence separation mark to the right, so return its position
-						return maxEndPoint + lastMark + 1;
-					}
-					else
-					{
-						// we have not found any sentence separator to the right, so return EOF
-						return contentlength;
-					}
-				}
-
-				private int searchLeftBound(List<CodePoint> codepoints) {
-					// the first hint we have is the left point of the first "codepoint"
-					int minStartingPoint = codepoints.get(0).x;
-					// now try finding the smallest known left codepoint
-					for (CodePoint cp : codepoints) {
-						minStartingPoint = Math.min(cp.x, minStartingPoint);
-					}
-					assert minStartingPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
-					
-					// we may have to start all the way to the left
-					int lastMark = 0;
-					// search to the right for a period
-					int lastPeriod = txtEditor.getText().lastIndexOf(".", minStartingPoint);
-					lastMark = Math.max(lastMark, lastPeriod);
-					int lastEx = txtEditor.getText().lastIndexOf("!", minStartingPoint);
-					lastMark = Math.max(lastMark, lastEx);
-					int lastQues = txtEditor.getText().lastIndexOf("?", minStartingPoint);
-					lastMark = Math.max(lastMark, lastQues);
-					//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
-					
-					// this is either a 0 or greater
-					minStartingPoint = lastMark;
-
-					return minStartingPoint;
-				}
-
-				@Override
-	        	public String toString() {
-	        		return qfActionPrinter(this);
-	        	}
-			};
+	        javax.swing.Action myAction = new DeleteSentenceAction(displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -385,19 +552,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{
 			String[] references = error.Reference;
 			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
-	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-	        	@Override
-				public void actionPerformed(ActionEvent e) {
-					//String name = (String) getValue(SHORT_DESCRIPTION);
-	        		System.out.println("I'm adding a location.");
-					System.out.println("This action's error is " + getValue(QF_ERROR));
-				}
-
-	        	@Override
-	        	public String toString() {
-	        		return qfActionPrinter(this);
-	        	}
-			};
+	        javax.swing.Action myAction = new AddLocationAction(displayDescription);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -409,19 +564,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{ 
 			String[] references = error.Reference;
 			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
-	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-	        	@Override
-				public void actionPerformed(ActionEvent e) {
-					//String name = (String) getValue(SHORT_DESCRIPTION);
-	        		System.out.println("I'm adding a direction.");
-					System.out.println("This action's error is " + getValue(QF_ERROR));
-				}
-
-	        	@Override
-	        	public String toString() {
-	        		return qfActionPrinter(this);
-	        	}
-			};
+	        javax.swing.Action myAction = new AddDirectionAction(displayDescription);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -438,43 +581,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// the description to display
 	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
 	        
-	        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-	        	@Override
-				public void actionPerformed(ActionEvent e) {
-					//String name = (String) getValue(SHORT_DESCRIPTION);
-	        		//error = (IvanErrorInstance) getValue(QF_ERROR);
-	        		System.out.println("Ignoring " + error);
-	        		// get this category panel
-	        		JXTaskPane panel = mypanes.get(error.Category);
-	        		// get the actions configured for this panel
-	        		ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
-	        		List<Action> keepme = new LinkedList<Action>();
-	        		for (Object key : map.keys()) {
-						Action otherQuickfix = map.get(key);
-						Object otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
-						if(!error.equals(otherError))
-						{
-							System.out.println("Saving this one for later.");
-							keepme.add(otherQuickfix);
-						}
-						else {
-							map.remove(key); // throw it away
-						}
-					}
-	        		panel.removeAll();
-	        		for (Action action : keepme) {
-						panel.add(action);
-					}
-	        		ignoredProblems.add(error);
-					System.out.println("This action's error is " + getValue(QF_ERROR));
-					System.out.println(tp.toString());
-				}
-
-	        	@Override
-	        	public String toString() {
-	        		return qfActionPrinter(this);
-	        	}
-			};
+	        javax.swing.Action myAction = new IgnoreProblemAction(displayDescription, error, tp);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -486,25 +593,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Ignore all current problems";	        
-		        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-		        	@Override
-					public void actionPerformed(ActionEvent e) {
-						//String name = (String) getValue(SHORT_DESCRIPTION);
-		        		System.out.println("Ignoring all currently displayed errors");
-					}
-	
-		        	@Override
-		        	public String toString() {
-		        		String qf_shorthand = (String) getValue(QF_NAME);
-		        		
-		        		StringBuilder outstr = new StringBuilder();
-		        		
-		        		//outstr.append("\t");	    			
-		        		outstr.append(qf_shorthand);
-		        		
-		        		return outstr.toString();
-		        	}
-				};
+		        javax.swing.Action myAction = new IgnoreAllMetaAction(displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-ignore-all");
 				myQuickfixesForThisError.add(myAction);
@@ -513,25 +602,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Restore ignored problems";	        
-		        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-		        	@Override
-					public void actionPerformed(ActionEvent e) {
-						//String name = (String) getValue(SHORT_DESCRIPTION);
-		        		System.out.println("Restoring error display");
-					}
-	
-		        	@Override
-		        	public String toString() {
-		        		String qf_shorthand = (String) getValue(QF_NAME);
-		        		
-		        		StringBuilder outstr = new StringBuilder();
-		        		
-		        		//outstr.append("\t");	    			
-		        		outstr.append(qf_shorthand);
-		        		
-		        		return outstr.toString();
-		        	}
-				};
+		        javax.swing.Action myAction = new RestoreAllMetaAction(displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-reset-ignore");
 				myQuickfixesForThisError.add(myAction);
@@ -540,26 +611,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Check all sentences";	        
-		        javax.swing.Action myAction = new AbstractAction(displayDescription) {        	
-		        	@Override
-					public void actionPerformed(ActionEvent e) {
-						//String name = (String) getValue(SHORT_DESCRIPTION);
-		        		System.out.println("Running pipeline");
-		        		SwingWindow.processText();
-					}
-	
-		        	@Override
-		        	public String toString() {
-		        		String qf_shorthand = (String) getValue(QF_NAME);
-		        		
-		        		StringBuilder outstr = new StringBuilder();
-		        		
-		        		//outstr.append("\t");	    			
-		        		outstr.append(qf_shorthand);
-		        		
-		        		return outstr.toString();
-		        	}
-				};
+		        javax.swing.Action myAction = new CheckSentencesMetaAction(displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-check");
 				myQuickfixesForThisError.add(myAction);
