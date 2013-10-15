@@ -171,7 +171,6 @@ public class SwingWindow {
 				}
 			}
 		});
-		refreshLineNumbersFont();		
 		/** END of the editor part */
 		
 		/**
@@ -297,6 +296,8 @@ public class SwingWindow {
 				
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
+		// update the line numbers with whatever we changed here
+		refreshLineNumbersFont();
 	}
 
 	/** Saves the current document 
