@@ -168,10 +168,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 	private final class AddLocationAction extends AbstractAction {
 		final private IvanErrorInstance myerror;
+		private List<String> stubs = new ArrayList<String>();
 
 		private AddLocationAction(String name, IvanErrorInstance error2) {
 			super(name);
 			this.myerror = error2;
+			stubs.addAll(Arrays.asList(new String[]{
+				" is in the left front.",
+				" is in the right front.",
+				" is in the background to the left."}));
 		}
 
 		@Override
@@ -179,9 +184,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("I'm adding a location.");
 			String[] unlocatedNames = myerror.Reference;
-			String[] stubs = {" is in the left front.", 
-					" is in the right front.", 
-					" is in the background to the left."};
 			/* Create location sentences.
 			 * 1. find the insertion point. The insertion point is somewhere to the right of the last cue.
 			 * 2. set the caret to the insertion point
@@ -192,19 +194,84 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// focus is important, so the user can readily start typing after clicking
 			txtEditor.requestFocusInWindow();
 			// get insertion point
-			int insertionpoint = 0; // findInsertionPoint(error);
+			int insertionpoint = findInsertionPoint(myerror.Codepoints);
 			// set the caret
 			txtEditor.setCaretPosition(insertionpoint);
 			for (int i = 0; i < unlocatedNames.length; i++) {
-				if(i < stubs.length){
+				String sentence;
+				if(stubs.size() > 0){
 					// build a sentence from a stub
-					String sentence = unlocatedNames[i] + stubs[i]; 
+					sentence = "\n" + unlocatedNames[i] + stubs.get(0) + " ";
+					stubs.remove(0);
+					// finalise last sentence with a period, if not present
+					try {
+						String text = txtEditor.getText(insertionpoint - 1, 1);
+						if(!text.equals("."))
+						{
+							sentence = "." + sentence;
+						}
+					} catch (BadLocationException e1) {
+						e1.printStackTrace();
+					}
 					// insert the sentence
 					txtEditor.replaceSelection(sentence);
-					// maybe add a newline, too?
 				}
+				else {
+					sentence = "\n" + unlocatedNames[i] + " is on the … side. ";
+					// finalise last sentence with a period, if not present
+					try {
+						String text = txtEditor.getText(insertionpoint - 1, 1);
+						if(!text.equals("."))
+						{
+							sentence = "." + sentence;
+						}
+					} catch (BadLocationException e1) {
+						e1.printStackTrace();
+					}
+					// insert the sentence
+					txtEditor.replaceSelection(sentence);
+					// select the … 
+					int dotspoint = txtEditor.getText().indexOf("…", insertionpoint);
+					txtEditor.setCaretPosition(dotspoint);
+					txtEditor.moveCaretPosition(dotspoint + 1);
+				}
+				
+				
+				
 			}
 			System.out.println("This action's error is " + getValue(QF_ERROR));
+		}
+
+		/** Finds the position where a new sentence can be inserted.
+		 * More precisely it returns the character index after the next sentence termination mark. 
+		 * @param codepoints
+		 * @return
+		 */
+		private int findInsertionPoint(List<CodePoint> codepoints) {
+			// find the last character index for this error
+			int lastcp = 0;
+			for (CodePoint po : codepoints) {
+				if(po.y > lastcp)
+					lastcp = po.y;
+			}
+			// text shortcut
+			String txt = txtEditor.getText();
+			// get the maximum index for this text
+			int maxlength = txt.length();
+			// find the index of the next Period, Question mark or exclamation mark
+			int lastPer = txt.indexOf(".", lastcp);
+			int lastQue = txt.indexOf("?", lastcp);
+			int lastExc = txt.indexOf("!", lastcp);
+			// figure out which of the three occurs the earliest
+			int lastMark = maxlength;
+			if(lastPer > 0)
+				lastMark = Math.min(lastPer, lastMark) + 1;
+			if(lastQue > 0)
+				lastMark = Math.min(lastQue, lastMark) + 1;
+			if(lastExc > 0)
+				lastMark = Math.min(lastExc, lastMark) + 1;
+			// returns either the earliest mark or EOF if no mark is present
+			return lastMark;
 		}
 
 		@Override
