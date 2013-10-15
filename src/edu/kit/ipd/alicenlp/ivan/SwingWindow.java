@@ -249,7 +249,39 @@ public class SwingWindow {
 		
 		btnSaveCheck.addActionListener(saveCheckAction);
 		
-		filemenu.add(saveCheckAction);
+		
+		// this is an action for saving the file (no checking)
+		final Action saveAction = new SwingAction() {
+			public void actionPerformed(ActionEvent arg0) {
+				JXEditorPane editor = txtEditor;
+				save(editor);								
+			}
+		};
+		saveAction.putValue(Action.NAME, "Save"); // set the name
+		saveAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file");
+		
+		filemenu.add(saveAction);
+		
+		// this is an action for SAVE AS...
+		final Action saveAsAction = new SwingAction() {
+			public void actionPerformed(ActionEvent arg0) {
+				JXEditorPane editor = txtEditor;
+				// remember old document name for later
+				String tmpfilename = currentFileName;
+				// delete the current document name so the save file dialog will pop up
+				currentFileName = null;
+				// save things
+				boolean saved = save(editor);
+				// if the save was not successful, restore the old document name
+				if(!saved){
+					currentFileName = tmpfilename;
+				}
+			}
+		};
+		saveAsAction.putValue(Action.NAME, "Save as…"); // set the name
+		saveAsAction.putValue(Action.SHORT_DESCRIPTION, "Saves to a new file");
+		
+		filemenu.add(saveAsAction);
 		
 		// this glue pushes the spinner to the right
 		horizontalGlue = Box.createHorizontalGlue();
