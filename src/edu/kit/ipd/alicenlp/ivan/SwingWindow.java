@@ -6,6 +6,7 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Label;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -61,6 +62,7 @@ import javax.xml.namespace.QName;
 
 import net.sf.extjwnl.dictionary.Dictionary;
 
+import org.jdesktop.application.Application;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
@@ -187,7 +189,7 @@ public class SwingWindow {
 		 * Here is where I build the MENU
 		 */
 		menuBar = new JMenuBar();
-		JMenu filemenu = new JMenu("Menu…");
+		JMenu filemenu = new JMenu("File ");
 		
 		/** Allows the user to LOAD a document into the editor */
 		final Action actionLoad = new SwingAction()
@@ -219,35 +221,6 @@ public class SwingWindow {
 		
 		
 		frmvanInput.getContentPane().add(menuBar, BorderLayout.NORTH);
-		
-		// this button triggers a run of the analyzers
-		btnSaveCheck = new JButton("Save and Check (Ctrl-S)");
-		menuBar.add(btnSaveCheck);
-				
-		final Action saveCheckAction = new SwingAction() {
-			public void actionPerformed(ActionEvent arg0) {
-				JXEditorPane editor = txtEditor;
-				boolean saved = save(editor);
-				if (!saved) {
-					return;
-				}
-				try {
-					startStopWatch();
-					processText(editor.getText());
-					stopAndPrintStopWatch();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		};
-		saveCheckAction.putValue(Action.NAME, "Save and check"); // set the name
-		saveCheckAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file and runs analysis");
-		
-		// setup up the CTRL-S hotkey for running save-and-check from within the editor area
-		InputMap map = txtEditor.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-		map.put(KeyStroke.getKeyStroke("control S"), saveCheckAction);
-		
-		btnSaveCheck.addActionListener(saveCheckAction);
 		
 		
 		// this is an action for saving the file (no checking)
@@ -282,6 +255,80 @@ public class SwingWindow {
 		saveAsAction.putValue(Action.SHORT_DESCRIPTION, "Saves to a new file");
 		
 		filemenu.add(saveAsAction);
+		
+		// this is an action for EXIT...
+		final Action exitAction = new SwingAction() {
+			public void actionPerformed(ActionEvent arg0) {
+				Application.getInstance().exit();
+			}
+		};
+		exitAction.putValue(Action.NAME, "Exit"); // set the name
+		exitAction.putValue(Action.SHORT_DESCRIPTION, "Closes the program");
+		
+		filemenu.add(exitAction);
+		
+		// create an EDIT menu with UNDO, CUT, PASTE and the like
+		JMenu editMenu = new JMenu("Edit ");
+		
+		final Action undoAction = /*undoAction*/ new SwingAction(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				txtEditor.doCommand("undo", this);
+			}
+		};
+		undoAction.putValue(Action.NAME, "Undo (Ctrl-Z)");
+		undoAction.putValue(Action.SHORT_DESCRIPTION, "Reverts your last action");
+		editMenu.add(undoAction);
+		
+		final Action redoAction = /*redoAction*/ new SwingAction(){
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				txtEditor.doCommand("redo", this);
+			}
+		};
+		redoAction.putValue(Action.NAME, "Redo (Ctrl-Y)");
+		redoAction.putValue(Action.SHORT_DESCRIPTION, "Restores the last undo");
+		editMenu.add(redoAction);
+		
+		Action copy = txtEditor.getActionMap().get("copy");
+		Action paste = txtEditor.getActionMap().get("paste");
+		Action cut = txtEditor.getActionMap().get("cut");
+		editMenu.add(copy); // FIXME: not enabled in menu :(
+		editMenu.add(cut); // FIXME: not enabled in menu :(
+		editMenu.add(paste);
+		
+		// put the edit menu on the menu bar
+		menuBar.add(editMenu);
+		
+		// this button triggers a run of the analyzers
+		btnSaveCheck = new JButton("Save and Check (Ctrl-S)");
+		menuBar.add(btnSaveCheck);
+				
+		final Action saveCheckAction = new SwingAction() {
+			public void actionPerformed(ActionEvent arg0) {
+				JXEditorPane editor = txtEditor;
+				boolean saved = save(editor);
+				if (!saved) {
+					return;
+				}
+				try {
+					startStopWatch();
+					processText(editor.getText());
+					stopAndPrintStopWatch();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		};
+		saveCheckAction.putValue(Action.NAME, "Save and check"); // set the name
+		saveCheckAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file and runs analysis");
+		
+		// setup up the CTRL-S hotkey for running save-and-check from within the editor area
+		InputMap map = txtEditor.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+		map.put(KeyStroke.getKeyStroke("control S"), saveCheckAction);
+		
+		btnSaveCheck.addActionListener(saveCheckAction);
+		
 		
 		// this glue pushes the spinner to the right
 		horizontalGlue = Box.createHorizontalGlue();
