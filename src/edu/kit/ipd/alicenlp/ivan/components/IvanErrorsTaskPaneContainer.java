@@ -80,6 +80,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("Restoring error display");
 			// TODO: implement RestoreAllMetaAction
+			ignoredProblems.clear();
+			SwingWindow.processText();
 		}
 
 		@Override
