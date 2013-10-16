@@ -218,7 +218,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("I'm adding a location.");
-			insertSentenceStub(myerror, stubs, " is in the …. ");
+			insertSentenceStub(myerror, stubs, " is in the …. ", "in the …");
 			System.out.println("This action's error is " + getValue(QF_ERROR));
 		}
 
@@ -341,7 +341,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("I'm adding a direction.");
-			insertSentenceStub(myerror, stubs, " is facing ….");
+			insertSentenceStub(myerror, stubs, " is facing ….", "…");
 			System.out.println("This action's error is " + getValue(QF_ERROR));
 		}
 
@@ -713,9 +713,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	}
 
 	/**
+	 * @param markThisPart 
 	 * 
 	 */
-	private void insertSentenceStub(IvanErrorInstance myerror, List<String> stubs, String defaultStub) {
+	private void insertSentenceStub(IvanErrorInstance myerror, List<String> stubs, String defaultStub, String markThisPart) {
 		String[] unlocatedNames = myerror.Reference;
 		/* Create location sentences.
 		 * 1. find the insertion point. The insertion point is somewhere to the right of the last cue.
@@ -764,10 +765,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// insert the sentence
 			txtEditor.replaceSelection(sentence);
 			// select the … 
-			int dotspoint = txtEditor.getText().indexOf("…", insertionpoint);
+			int dotspoint = txtEditor.getText().indexOf(markThisPart, insertionpoint);
 			if(dotspoint > 0){
 				txtEditor.setCaretPosition(dotspoint);
-				txtEditor.moveCaretPosition(dotspoint + 1);
+				txtEditor.moveCaretPosition(dotspoint + markThisPart.length());
 			}				
 		}
 	}
