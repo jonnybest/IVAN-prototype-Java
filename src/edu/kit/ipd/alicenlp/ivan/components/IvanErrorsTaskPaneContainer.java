@@ -279,7 +279,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			 * 2. delete everything in between left bound and right bound
 			 **/
 			int lb = searchLeftBound(error.Codepoints);
-			int rb = searchRightBound(error.Codepoints);
+			int rb = findInsertionPoint(error.Codepoints);
 			// select the improper sentence
 //	        		txtEditor.setSelectionStart(lb);
 //	        		txtEditor.setSelectionEnd(rb);
