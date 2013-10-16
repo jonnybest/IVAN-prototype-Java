@@ -21,6 +21,7 @@ public class CoreferenceResolverTest extends CoreferenceResolver {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		CoreferenceResolver.getInstance();
 	}
 
 	/**

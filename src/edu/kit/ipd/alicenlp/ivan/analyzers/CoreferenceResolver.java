@@ -58,14 +58,20 @@ public class CoreferenceResolver implements CorefMentionFinder {
 	 */
 	public static String findName(String word, int startIndex, String text)
 	{		
+		startIndex = text.indexOf(word);
 		Annotation doc = new Annotation(text);
 		getInstance().mypipeline.annotate(doc);
-		for(CoreMap sentence : doc.get(SentencesAnnotation.class))
-		{
-			@SuppressWarnings("unused")
-			Map<Integer, CorefChain> coref = sentence.get(CorefChainAnnotation.class);
+		Map<Integer, CorefChain> coref = doc.get(CorefChainAnnotation.class);
+		for (CorefChain entry : coref.values()) {
+			Object bla = entry.getMentionsWithSameHead(2, startIndex);
 			nop();
 		}
+//		for(CoreMap sentence : doc.get(SentencesAnnotation.class))
+//		{
+//			@SuppressWarnings("unused")
+//			Map<Integer, CorefChain> coref = sentence.get(CorefChainAnnotation.class);
+//			nop();
+//		}
 		return null;
 	}
 	
