@@ -292,58 +292,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			//System.out.println("This action's error is " + getValue(QF_ERROR));
 		}
 
-		private int searchRightBound(List<CodePoint> codepoints) {
-			int maxEndPoint = codepoints.get(0).y;
-			for (CodePoint cp : codepoints) {
-				maxEndPoint = Math.max(cp.y, maxEndPoint);
-			}
-			assert maxEndPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
-			
-			final int contentlength = txtEditor.getText().length();
-			int lastMark = contentlength;
-			int maxlen = lastMark-maxEndPoint;
-			if (maxlen > 0) {
-				int lastPeriod;
-				try {
-					lastPeriod = txtEditor.getText(maxEndPoint, maxlen)
-							.indexOf(".");
-					if(lastPeriod > 0)
-						lastMark = Math.min(lastMark, lastPeriod);
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-				int lastEx;
-				try {
-					lastEx = txtEditor.getText(maxEndPoint, maxlen)
-							.indexOf("!");
-					if(lastEx > 0)
-						lastMark = Math.min(lastMark, lastEx);
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-				int lastQues;
-				try {
-					lastQues = txtEditor.getText(maxEndPoint, maxlen)
-							.indexOf("?");
-					if(lastQues > 0)
-						lastMark = Math.min(lastMark, lastQues);
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-				}
-			}
-			//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
-			if(lastMark < contentlength)
-			{
-				// we have found a sentence separation mark to the right, so return its position
-				return maxEndPoint + lastMark + 1;
-			}
-			else
-			{
-				// we have not found any sentence separator to the right, so return EOF
-				return contentlength;
-			}
-		}
-
 		private int findSentenceStart(List<CodePoint> codepoints) {
 			// the first hint we have is the left point of the first "codepoint"
 			int minStartingPoint = codepoints.get(0).x;
