@@ -288,7 +288,15 @@ public class DeclarationPositionFinder {
 				return null;
 			}
 		}
-		ArrayList<String> names = BaseRule.resolveCc(head, graph);
+		ArrayList<IndexedWord> namesIW = new ArrayList<IndexedWord>();
+		ArrayList<String> names = BaseRule.resolveCc(head, graph, namesIW);
+		for (IndexedWord n : namesIW) {
+			if(n.tag().equals("PRP"))
+			{
+				CoreferenceResolver cresolver = CoreferenceResolver.getInstance();
+				cresolver.resolve(n);
+			}
+		}
 		return names;
 	}
 

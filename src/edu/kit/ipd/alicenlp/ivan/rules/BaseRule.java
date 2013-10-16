@@ -10,7 +10,6 @@ import java.util.List;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -256,14 +255,17 @@ public abstract class BaseRule {
 	 * More precisely, it looks for nn and con_and dependencies below {@code head} and creates a list of entities.
 	 * @param head The head of the noun phrase
 	 * @param graph The sentence to look in.
+	 * @param namesIW The IndexedWords which form the head of each noun phrase
 	 * @return A list of distinct words or names, grouped by "and"
 	 */
 	public static ArrayList<String> resolveCc(IndexedWord head,
-			SemanticGraph graph) {
+			SemanticGraph graph, ArrayList<IndexedWord> namesIW) {
 		// list of names
 		ArrayList<String> names = new ArrayList<String>();
+		assert namesIW != null;
 		// adding this subject
 		names.add(resolveNN(head, graph));
+		namesIW.add(head);
 		// check for more!
 		// more names can be reached with "and". Get us an "and":
 		GrammaticalRelation andrel = EnglishGrammaticalRelations.getConj("and");
@@ -272,6 +274,7 @@ public abstract class BaseRule {
 		for (IndexedWord w : ands) {
 			// add 'em
 			names.add(resolveNN(w, graph));
+			namesIW.add(w);
 		}
 		// hope those are all
 		return names;

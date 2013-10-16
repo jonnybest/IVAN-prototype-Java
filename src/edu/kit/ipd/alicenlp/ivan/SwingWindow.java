@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import javax.lang.model.type.DeclaredType;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -68,6 +69,7 @@ import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
+import edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
@@ -721,6 +723,7 @@ public class SwingWindow {
 //				// System.out.println(word);
 //			}
 		}
+		
 		refreshLineNumbersFont();
 		diplayWarnings();
 	}
