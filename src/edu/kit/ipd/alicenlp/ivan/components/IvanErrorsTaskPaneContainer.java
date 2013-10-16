@@ -278,7 +278,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			 *   b) search left for a sentence punctuation
 			 * 2. delete everything in between left bound and right bound
 			 **/
-			int lb = searchLeftBound(error.Codepoints);
+			int lb = findSentenceStart(error.Codepoints);
 			int rb = findInsertionPoint(error.Codepoints);
 			// select the improper sentence
 //	        		txtEditor.setSelectionStart(lb);
@@ -344,7 +344,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			}
 		}
 
-		private int searchLeftBound(List<CodePoint> codepoints) {
+		private int findSentenceStart(List<CodePoint> codepoints) {
 			// the first hint we have is the left point of the first "codepoint"
 			int minStartingPoint = codepoints.get(0).x;
 			// now try finding the smallest known left codepoint
