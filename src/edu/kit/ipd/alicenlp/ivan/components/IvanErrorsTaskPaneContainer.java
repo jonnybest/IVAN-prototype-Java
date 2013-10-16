@@ -3,6 +3,7 @@
  */
 package edu.kit.ipd.alicenlp.ivan.components;
 
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -29,7 +30,6 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
-import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer.IvanErrorInstance;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -105,6 +105,37 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
 			System.out.println("Ignoring all currently displayed errors");
 			// TODO: implement me
+			// if qf_name == "qf-ignore"
+			// for each panel...
+			for (Component comp : getComponents()) {
+				if(comp instanceof JXTaskPane)
+				{
+					JXTaskPane panel = (JXTaskPane) comp;
+					ApplicationActionMap map = Application.getInstance()
+							.getContext().getActionMap(panel);
+					List<Action> keepme = new LinkedList<Action>();
+					if(map.size() > 0)
+					{
+						for (Object key : map.keys()) {
+							Action otherQuickfix = map.get(key);
+							IvanErrorInstance otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
+							if (otherError == null) {
+								System.out.print("Saving this one for later: ");
+								System.out.println(otherQuickfix);
+								
+								keepme.add(otherQuickfix);
+							} else {
+								map.remove(key); // throw it away
+								ignoredProblems.add(otherError);
+							}
+						}
+						panel.removeAll();
+						for (Action action : keepme) {
+							panel.add(action);
+						}
+					}
+				}
+			}
 		}
 
 		@Override
