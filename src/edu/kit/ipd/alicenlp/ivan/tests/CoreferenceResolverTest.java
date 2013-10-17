@@ -29,7 +29,12 @@ public class CoreferenceResolverTest extends CoreferenceResolver {
 	 */
 	@Test
 	public final void testFindName() {
-		findName("dog", 0, "Harry is a dog. The dog is on the right side.");
+		String harry = findName("dog", 0, "Harry is a dog. The dog is on the right side.");
+		if(!harry.equals("Harry"))
+			fail("Harry failed.");
+		String melissa = findName("Melissa", 0, "Nothing happens for a second. Harry is looking at a dog.");
+		if(melissa != null)
+			fail("Melissa failed");
 	}
 
 	/**
