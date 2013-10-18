@@ -12,9 +12,8 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver;
-import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -63,22 +62,15 @@ public class CoreferenceResolverTest extends CoreferenceResolver {
 
 	/**
 	 * Test method for
-	 * {@link edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver#extractPredictedMentions(edu.stanford.nlp.pipeline.Annotation, int, edu.stanford.nlp.dcoref.Dictionaries)}
-	 * .
-	 */
-	@Test
-	public final void testExtractPredictedMentions() {
-		fail("Not yet implemented"); // TODO
-	}
-
-	/**
-	 * Test method for
 	 * {@link edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver#resolve(edu.stanford.nlp.ling.IndexedWord)}
 	 * .
+	 * @throws IvanException 
 	 */
 	@Test
-	public final void testResolve() {				
-		String text = "The start depicts a boy facing to the right of the screen, and a woman facing to the front. "
+	public final void testResolve() throws IvanException {				
+		String text = ""
+				+ "The woman facing to the front is called \"Lisa.\""
+				+ "The start depicts a boy facing to the right of the screen, and the woman facing to the front. "
 				+ "The woman then raises her left arm and a speech bubble appears from her mouth which reads \"hello.\""
 				+ "She then proceeds to wave, still facing forwards, and turns to face the man. "
 				+ "Next she extends her right hand and shakes. "
@@ -87,10 +79,9 @@ public class CoreferenceResolverTest extends CoreferenceResolver {
 				+ "Both characters then raise their left arm upwards in a smooth motion at a 90 degree angle and "
 				+ "rotate multiple times. "
 				+ "Both arms are then replaced at the characters hips before they raise their "
-				+ "left arm 90 defrees once again and wave. The animation is then complete."
-				+ "The woman facing to the front is called \"Lisa.\"";
+				+ "left arm 90 defrees once again and wave. The animation is then complete.";
 		String searchword = "she";
-		String name = "a woman";
+		String name = "Lisa";
 
 		Annotation doc = new Annotation(text);
 		// run my pipeline on it
@@ -118,8 +109,12 @@ public class CoreferenceResolverTest extends CoreferenceResolver {
 		}
 		
 		String result = resolve(labelForMyWord, doc);
+		Assert.assertEquals("test 1 failed", name, result); // test1 end
 		
-		Assert.assertEquals(name, result);		
+		// test 2 for the overload
+		setDocument(doc);
+		result = resolve(labelForMyWord);
+		Assert.assertEquals("Test 2 failed", name, result); // test2
 	}
 
 	private StanfordCoreNLP getPipeline() {
