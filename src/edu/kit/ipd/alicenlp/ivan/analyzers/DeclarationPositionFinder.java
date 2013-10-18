@@ -6,32 +6,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import net.sf.extjwnl.JWNLException;
-import net.sf.extjwnl.data.IndexWord;
-import net.sf.extjwnl.data.POS;
-import net.sf.extjwnl.data.Pointer;
-import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
-import edu.kit.ipd.alicenlp.ivan.rules.NounRootRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
-import edu.stanford.nlp.ling.Sentence;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NounCompoundModifierGRAnnotation;
-import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinder {
@@ -250,8 +235,9 @@ public class DeclarationPositionFinder {
 	/** Finds out which entites are declared in this {@code sentence}.
 	 * @param sentence
 	 * @return
+	 * @throws IvanException 
 	 */
-	public List<EntityInfo> getDeclarations(CoreMap sentence) {
+	public List<EntityInfo> getDeclarations(CoreMap sentence) throws IvanException {
 //		NounRootRule nrrule = new NounRootRule();
 //		if (nrrule.apply(sentence)) {
 //			// TODO : get declared names and maybe map names to entities if possible or maybe even more
@@ -275,8 +261,9 @@ public class DeclarationPositionFinder {
 	/** Searches the head of the sentence (subject and root) for nouns
 	 * @param sentence
 	 * @return
+	 * @throws IvanException 
 	 */
-	public List<String> recogniseNames(CoreMap sentence) {
+	public List<String> recogniseNames(CoreMap sentence) throws IvanException {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord head = BaseRule.getSubject(graph);
 		if (head == null) {
