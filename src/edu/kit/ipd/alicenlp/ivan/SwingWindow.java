@@ -354,10 +354,10 @@ public class SwingWindow {
 		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
 		
 		// create some mock content
-		JXTaskPane seriousProblemsPane = new JXTaskPane();
-		seriousProblemsPane.setTitle("Serious problems ");
-		seriousProblemsPane.add(new Label("None."));
-		containerTaskPanel.add(seriousProblemsPane);
+//		JXTaskPane seriousProblemsPane = new JXTaskPane();
+//		seriousProblemsPane.setTitle("Serious problems ");
+//		seriousProblemsPane.add(new Label("None."));
+//		containerTaskPanel.add(seriousProblemsPane);
 
 		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
 		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
