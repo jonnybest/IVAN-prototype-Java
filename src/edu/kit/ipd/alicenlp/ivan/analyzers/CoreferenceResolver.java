@@ -8,21 +8,16 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
-import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
-import edu.stanford.nlp.dcoref.CorefMentionFinder;
-import edu.stanford.nlp.dcoref.Dictionaries;
-import edu.stanford.nlp.dcoref.Mention;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.IndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentenceIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
@@ -31,10 +26,11 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class CoreferenceResolver implements CorefMentionFinder {
+public class CoreferenceResolver {
 	
 	private static CoreferenceResolver instance;
 	private StanfordCoreNLP mypipeline = null;
+	private Annotation doc;
 
 	public static CoreferenceResolver getInstance()
 	{
@@ -66,8 +62,9 @@ public class CoreferenceResolver implements CorefMentionFinder {
 	 */
 	public static String findName(String name, int startIndex, String text)
 	{	
-		// find out where this word is in the text (careful, there may be more than one instance)
-		startIndex = text.indexOf(name); // debug
+		if(startIndex < 0)
+			return null;
+		
 		/** note: if you get a multi-word name, you can indexOf the whole thing to get a start index and the just split
 		 *        at the space to get the head. the head is always the rightmost word. 
 		 *        the new index is then = indexOf(name) + length(name) - length(head) */
@@ -83,20 +80,18 @@ public class CoreferenceResolver implements CorefMentionFinder {
 		*    after that I can iterate the CorefChains and for each chain invoke getMentionsWithSameHead
 		*    when I have found the right chain, I return the representative phrase
 		*/ 
+		CoreLabel labelForMyWord = null;
 		List<CoreMap> sentences = doc.get(SentencesAnnotation.class);
-		int sentenceIndex = -1;
-		int headIndex = -1;
 		for(CoreMap s : sentences)
 		{
 			if(startIndex >= s.get(CharacterOffsetBeginAnnotation.class)){
 				if(startIndex < s.get(CharacterOffsetEndAnnotation.class)){
-					sentenceIndex = s.get(SentenceIndexAnnotation.class);
 					List<CoreLabel> tokens = s.get(TokensAnnotation.class);
 					//tokens.
 					for (CoreLabel lbl : tokens) {
 						if(lbl.word().equals(name)) // this words for single-word names only!
 						{
-							headIndex = lbl.get(IndexAnnotation.class);
+							labelForMyWord = lbl;
 							nop();
 							break;
 						}
@@ -105,9 +100,32 @@ public class CoreferenceResolver implements CorefMentionFinder {
 			}
 			nop();
 		}
+		
+		return resolve(labelForMyWord, doc);
+	}
+
+	/**
+	 * @param doc
+	 * @param labelForMyWord
+	 * @return
+	 */
+	public static String resolve(CoreLabel name, Annotation doc) {
+		if(doc == null)
+			return null;
+		if(name == null)
+			return null;
+		
+		// coref-part
+		int sentence = -1;
 		Map<Integer, CorefChain> coref = doc.get(CorefChainAnnotation.class);
+		for (CoreMap s : doc.get(SentencesAnnotation.class)) {
+			sentence = s.get(SentenceIndexAnnotation.class);
+			if(s.get(TokensAnnotation.class).contains(name))
+				break;
+			nop();
+		}
 		for (CorefChain entry : coref.values()) {
-			Set<CorefMention> mention = entry.getMentionsWithSameHead(sentenceIndex + 1 /* starts at 1 */, headIndex);
+			Set<CorefMention> mention = entry.getMentionsWithSameHead(sentence  + 1 /* starts at 1 */, name.index());
 			if(mention != null)
 				return entry.getRepresentativeMention().mentionSpan;
 			nop();
@@ -121,15 +139,19 @@ public class CoreferenceResolver implements CorefMentionFinder {
 		return null;
 	}
 	
-	@Override
-	public List<List<Mention>> extractPredictedMentions(Annotation doc, int maxGoldID, Dictionaries dict) {
-		// TODO Auto-generated method stub
-		return null;
+	public String resolve(CoreLabel name) throws IvanException {
+		if(this.doc != null)
+			return resolve(name, doc);
+		else {
+			throw new IvanException("Document for this instance has not been set. Call setDocument() first, please.");			
+		}
 	}
 	
-	public String resolve(IndexedWord n) {
-		// TODO Auto-generated method stub
-		return null;
+	/** Set an annotated document for this resolver
+	 * @param document
+	 */
+	public void setDocument(Annotation document){
+		doc = document;
 	}
 	
 	private static void nop() {
