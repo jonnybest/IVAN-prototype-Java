@@ -1,6 +1,8 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -8,17 +10,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.EntityInfo;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -253,7 +254,7 @@ public class DeclarationPositionFinderTest {
 	}
 
 	@Test
-	public void testGetDeclarations() {
+	public void testGetDeclarations() throws IvanException {
 //		String text = "There is a boy and a girl." + " "
 //				+ "The characters are a ninja tortoise, a rabbit and a T-Rex."+ " "
 //				+ "In the scene there are a boy and a girl."+ " "
@@ -306,7 +307,7 @@ public class DeclarationPositionFinderTest {
 	}
 
 	@Test
-	public void testRecogniseNames() {
+	public void testRecogniseNames() throws IvanException {
 		// I want to print a list of all recognitions to get an idea for what kinds of sentences are still improperly recognised
 //		printRecognitionAnalysis();
 
@@ -371,51 +372,47 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	private void printRecognitionAnalysis() {
-		// merge the two positive lists while eliminating duplicates
-		TreeSet<String> mysentences = new TreeSet<String>();
-		mysentences.addAll(Arrays.asList(directions));
-		mysentences.addAll(Arrays.asList(locations));
-		
-		// lets load some input files for good measure
-		List<String> splitfiles = new ArrayList<String>();
-		String newlineregex = "\r\n"; // this is a regex and just means "new line"
-		splitfiles.addAll(Arrays.asList(loadTestFile("bothdirectionsandlocations.txt").split(newlineregex)));
-		splitfiles.addAll(Arrays.asList(loadTestFile("directions.txt").split(newlineregex)));
-		splitfiles.addAll(Arrays.asList(loadTestFile("locations.txt").split(newlineregex)));
-		mysentences.addAll(splitfiles);
-		
-		// 
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-		for (String text : mysentences) {
-			CoreMap cm = annotateSingleSentence(text);
-			if (cm == null) {
-				continue;
-			}
-			List<String> names = proto.recogniseNames(cm);
-			// the names go into a left "column"
-			StringBuilder namesstring = new StringBuilder();
-			for (String n : names) {
-				namesstring.append(n);
-				namesstring.append(", ");
-			}
-			namesstring.delete(namesstring.length() - 2, namesstring.length());
-			// fill the left column until it is 40 chars wide
-			for (int i = namesstring.length(); i < 22; i++)
-			{
-				namesstring.append(' ');			
-			}
-			// print names into first column
-			System.out.print(namesstring);
-			System.out.print("\t");
-			// print sentence into second column
-			System.out.println(text);
-		}
-		nop();
-	}
+//	private void printRecognitionAnalysis() throws IvanException {
+//		// merge the two positive lists while eliminating duplicates
+//		TreeSet<String> mysentences = new TreeSet<String>();
+//		mysentences.addAll(Arrays.asList(directions));
+//		mysentences.addAll(Arrays.asList(locations));
+//		
+//		// lets load some input files for good measure
+//		List<String> splitfiles = new ArrayList<String>();
+//		String newlineregex = "\r\n"; // this is a regex and just means "new line"
+//		splitfiles.addAll(Arrays.asList(loadTestFile("bothdirectionsandlocations.txt").split(newlineregex)));
+//		splitfiles.addAll(Arrays.asList(loadTestFile("directions.txt").split(newlineregex)));
+//		splitfiles.addAll(Arrays.asList(loadTestFile("locations.txt").split(newlineregex)));
+//		mysentences.addAll(splitfiles);
+//		
+//		// 
+//		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+//		for (String text : mysentences) {
+//			CoreMap cm = annotateSingleSentence(text);
+//			if (cm == null) {
+//				continue;
+//			}
+//			List<String> names = proto.recogniseNames(cm);
+//			// the names go into a left "column"
+//			StringBuilder namesstring = new StringBuilder();
+//			for (String n : names) {
+//				namesstring.append(n);
+//				namesstring.append(", ");
+//			}
+//			namesstring.delete(namesstring.length() - 2, namesstring.length());
+//			// fill the left column until it is 40 chars wide
+//			for (int i = namesstring.length(); i < 22; i++)
+//			{
+//				namesstring.append(' ');			
+//			}
+//			// print names into first column
+//			System.out.print(namesstring);
+//			System.out.print("\t");
+//			// print sentence into second column
+//			System.out.println(text);
+//		}
+//		nop();
+//	}
 
-	private void nop() {
-		// TODO Auto-generated method stub
-		
-	}
 }
