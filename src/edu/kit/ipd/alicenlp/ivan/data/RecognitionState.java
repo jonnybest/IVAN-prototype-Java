@@ -5,6 +5,8 @@ package edu.kit.ipd.alicenlp.ivan.data;
 
 
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 
 import edu.stanford.nlp.util.Pair;
@@ -26,6 +28,9 @@ public class RecognitionState {
 			return super.toString();
 		
 		// do some real work
+		/** Process DECLARATIONS part
+		 * 
+		 */
 		StringBuilder sb = new StringBuilder();
 		
 		// 1. talk about the names
@@ -52,10 +57,37 @@ public class RecognitionState {
 			 *   when the stack has more items left, write "A $entity is $pos1 [and $pos2], $dir."
 			 *   TODO: I need to write different sentences, depending on whether they already have a name ("a cat"/"Fluffy") or whether the entity starts with a vowel ("a"/"an")   
 			*/
-			
+			// make stack
+			Deque<EntityInfo> entities = new ArrayDeque<EntityInfo>();
+			entities.addAll(declarations);
+			// loop
+			while(!entities.isEmpty())
+			{
+				if(entities.size() > 2){
+					EntityInfo entity = entities.remove();
+					sb.append("A " + entity.getEntity() + " is " + entity.getLocation() + ", " + entity.getDirection() + ".");
+					sep(sb);
+				}
+				else {
+					appendSentence(entities.remove(), entities.remove(), sb);
+					// no break, because the queue should be empty now anyway
+				}
+			}
 		}
 		
 		return sb.toString();
+	}
+
+	private void appendSentence(EntityInfo first, EntityInfo second,
+			StringBuilder sb) {
+		// first
+		sb.append("A " + first.getEntity() + " is " + first.getLocation() + ", " + first.getDirection());
+		// separate
+		sb.append("; and ");
+		// second
+		sb.append("a " + second.getEntity() + " is " + second.getLocation() + ", " + second.getDirection());
+		// finalize
+		sb.append(".");
 	}
 
 	/** this function separates two sentences

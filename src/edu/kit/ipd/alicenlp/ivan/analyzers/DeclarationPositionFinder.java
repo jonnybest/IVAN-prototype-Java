@@ -317,9 +317,20 @@ public class DeclarationPositionFinder {
 	}
 
 	/** Analyzes the given sentences and persists the result in the interal state 
+	 * @throws IvanException 
 	 */
-	public void learnDeclarations(CoreMap sentence) {
+	public void learnDeclarations(CoreMap sentence) throws IvanException {
 		// TODO implement learnDecl
+		// learn names
+		List<EntityInfo> things = getDeclarations(sentence);
+		for (EntityInfo n : things) {
+			
+			nop();
+		}
+	}
+
+	private void nop() {
+		// TODO Auto-generated method stub
 		
 	}
 

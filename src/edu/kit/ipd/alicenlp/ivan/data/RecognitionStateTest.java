@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -19,7 +20,7 @@ public class RecognitionStateTest extends RecognitionState {
 	}
 
 	@Test
-	public final void testToString() {
+	public final void testToString() throws IvanException {
 //		String testfile = "The ground is covered with grass."
 //				+ "In the background there is a sunflower on the far right facing southwest."
 //				+ "In the foreground there is a monkey in the middle facing southwest."
