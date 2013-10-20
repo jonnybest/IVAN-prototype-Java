@@ -21,7 +21,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
-import edu.kit.ipd.alicenlp.ivan.analyzers.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;

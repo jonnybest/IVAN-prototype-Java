@@ -1,4 +1,4 @@
-package edu.kit.ipd.alicenlp.ivan.analyzers;
+package edu.kit.ipd.alicenlp.ivan.data;
 
 import java.util.ArrayList;
 import java.util.Collection;

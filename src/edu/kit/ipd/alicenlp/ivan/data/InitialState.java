@@ -1,26 +1,28 @@
 /**
  * 
  */
-package edu.kit.ipd.alicenlp.ivan.analyzers;
+package edu.kit.ipd.alicenlp.ivan.data;
 
-import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
  * @author Jonny
  *
  */
-@SuppressWarnings("serial")
 public class InitialState extends HashSet<EntityInfo>
 {
+	/** something to make the warning go away
+	 * 
+	 */
+	private static final long serialVersionUID = 1058L;
+	/** The set of all known names, linked to their respective entity
+	 * 
+	 */
 	private HashMap<String,ArrayList<EntityInfo>> nameset = new HashMap<String, ArrayList<EntityInfo>>();
 
 	/** Clears ALL the state!

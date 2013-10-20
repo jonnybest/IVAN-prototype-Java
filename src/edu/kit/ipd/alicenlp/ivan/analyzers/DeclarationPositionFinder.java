@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;

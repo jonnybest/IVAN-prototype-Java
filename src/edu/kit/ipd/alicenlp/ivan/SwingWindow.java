@@ -71,9 +71,9 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
-import edu.kit.ipd.alicenlp.ivan.analyzers.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
