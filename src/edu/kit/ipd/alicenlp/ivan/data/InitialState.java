@@ -9,8 +9,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import edu.stanford.nlp.util.Pair;
 
-/**
+
+/** This class manages a set of names and EntityInfos
  * @author Jonny
  *
  */
@@ -187,5 +189,20 @@ public class InitialState extends HashSet<EntityInfo>
 	public ArrayList<EntityInfo> get(String name)
 	{
 		return nameset.get(name);
+	}
+
+	/** This method creates a simple view onto the entites with names: The left hand string is the entity, the right hand string its assigned name. 
+	 */ 
+	public List<Pair<String, String>> getEntityNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/** Returns whether there are any names assigned to the contained entities
+	 * 
+	 * @return TRUE if at least one entity has a proper name.
+	 */
+	public boolean hasNames() {
+		return !nameset.isEmpty();
 	}
 }

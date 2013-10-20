@@ -23,8 +23,8 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinder {
 	
-
-	private InitialState mystate = null;
+	/** This field contains the names and entities. The rules are: only one state per analyzer. */ 
+	final private InitialState mystate = new InitialState();
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
@@ -41,8 +41,7 @@ public class DeclarationPositionFinder {
 			myinstance = this;
 		}
 		
-		// this class is also in charge of keeping a state, so here it is:
-		this.mystate = new InitialState();
+		// this class is also in charge of keeping a state, but I really only want one state per analyzer.
 	}
 
 	public DeclarationPositionFinder(StanfordCoreNLP pipeline, Dictionary wordnet)
@@ -55,8 +54,6 @@ public class DeclarationPositionFinder {
 		if (myinstance == null) {
 			myinstance = this;
 		}
-		// this class is also in charge of keeping a state, so here it is:
-		this.mystate = new InitialState();
 	}
 
 	protected Annotation annotate(String text) {
@@ -169,7 +166,7 @@ public class DeclarationPositionFinder {
 	 * @param sentence
 	 * @return
 	 */
-	public List<EntityInfo> findAll(CoreMap sentence) {
+	public static List<EntityInfo> findAll(CoreMap sentence) {
 		// TODO Auto-generated method stub
 		//  		
 		return new ArrayList<EntityInfo>();
@@ -180,7 +177,7 @@ public class DeclarationPositionFinder {
 	 * @param sentence
 	 * @return True, if a location has been recognised.
 	 */
-	public boolean hasLocation(CoreMap sentence)
+	public static boolean hasLocation(CoreMap sentence)
 	{
 		return getLocation(sentence) != null; 
 	}
@@ -190,7 +187,7 @@ public class DeclarationPositionFinder {
 	 * @param sentence A CoreMap to look inside
 	 * @return An EntityInfo containing the location and the word it refers to. Or {@code null} if none was found.
 	 */
-	public EntityInfo getLocation(CoreMap sentence) 
+	public static EntityInfo getLocation(CoreMap sentence) 
 	{
 		String entity, location = null;
 		// the entity is most likely the subject(s) of the sentence
@@ -234,7 +231,8 @@ public class DeclarationPositionFinder {
 	}
 	
 
-	/** Finds out which entites are declared in this {@code sentence}.
+	/** Finds out which entites are declared in this {@code sentence}. 
+	 * Right now, it simply recognises names. 
 	 * @param sentence
 	 * @return
 	 * @throws IvanException 
@@ -316,6 +314,13 @@ public class DeclarationPositionFinder {
 	public void reset() {	
 		// FIXME: I really hope the entities don't leak
 		mystate.clear();
+	}
+
+	/** Analyzes the given sentences and persists the result in the interal state 
+	 */
+	public void learnDeclarations(CoreMap sentence) {
+		// TODO implement learnDecl
+		
 	}
 
 }
