@@ -6,9 +6,12 @@ import java.util.List;
 
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
+import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
+import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -87,6 +90,49 @@ public class DirectionKeywordRule extends BaseRule implements IGraphRule {
 				break;
 			}
 		}
+		
+		// String[] partmodkw = new String[ ]{"face", "turn"};
+
+		// participal modifier rules for facing
+		{
+			String kw = "face";
+			GrammaticalRelation rel = EnglishGrammaticalRelations.PARTICIPIAL_MODIFIER;
+			List<SemanticGraphEdge> lst = graph.findAllRelns(rel);
+			if(!lst.isEmpty())
+			{
+				//partmod.lemma().equalsIgnoreCase(kw))
+				for (SemanticGraphEdge edge : lst) {
+					if(edge.getDependent().lemma().equalsIgnoreCase(kw))
+					{
+						subject = edge.getGovernor();
+						verb = edge.getDependent();
+						direction = printSubGraph(edge.getDependent(), Sentence);
+						return true;
+					}
+				}
+			}
+		}
+		
+		// relative clause modifier rules for turned
+		{
+			String kw = "turn";
+			GrammaticalRelation rel = EnglishGrammaticalRelations.RELATIVE_CLAUSE_MODIFIER;
+			List<SemanticGraphEdge> lst = graph.findAllRelns(rel);
+			if(!lst.isEmpty())
+			{
+				//partmod.lemma().equalsIgnoreCase(kw))
+				for (SemanticGraphEdge edge : lst) {
+					if(edge.getDependent().lemma().equalsIgnoreCase(kw))
+					{
+						subject = edge.getGovernor();
+						verb = edge.getDependent();
+						direction = printSubGraph(edge.getDependent(), Sentence);
+						return true;
+					}
+				}
+			}
+		}
+		
 		return false;
 	}
 
