@@ -76,18 +76,30 @@ public class EntityInfo
 		try {
 			if (obj.getClass().equals(EntityInfo.class)) {
 				EntityInfo other = (EntityInfo) obj;
-				// this first check allows nulls in location and direction
-				if (other.Entity.equalsIgnoreCase(Entity) 
-						&& other.Location == Location
-						&& other.Direction == Direction) {
-					return true;
+				
+				// are they the same thing? this is usually the case if both features are null
+				boolean locsSame = other.Location == Location;
+				boolean dirsSame = other.Direction == Direction;
+				
+				// are they at least equal? this may be the case if both features are strings
+				// perform check only if there was a difference in the previous check
+				boolean locsEqual = locsSame;
+				if(!locsSame)
+					locsEqual = other.Location.equalsIgnoreCase(Location);
+				boolean dirsEqual = dirsSame;
+				if(!dirsSame)
+					dirsEqual = other.Direction.equalsIgnoreCase(Direction);
+				
+				// if the references equal OR the values equal, the features is alright
+				boolean locsOk = locsSame || locsEqual;
+				boolean dirsOk = dirsSame || dirsEqual;
+				
+				// if the names are equal, return the feature equality
+				if (other.Entity.equalsIgnoreCase(Entity)) {
+					// features are equal if all features are equal
+					return locsOk && dirsOk;
 				}
-				// if the first check fails, there is a non-null feature, so those have to be compared as well
-				else if (other.Entity.equalsIgnoreCase(Entity) 
-						&& other.Location.equalsIgnoreCase(Location)
-						&& other.Direction.equalsIgnoreCase(Direction)) {
-					return true;
-				}
+				
 			}
 		} catch (NullPointerException e) {
 			// underspecified entities never equal anything
