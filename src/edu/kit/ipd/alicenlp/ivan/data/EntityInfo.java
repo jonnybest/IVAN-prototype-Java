@@ -69,7 +69,6 @@ public class EntityInfo
 	
 	@Override
 	public boolean equals(Object obj) {
-		System.out.println("Someone invoked my equals method");
 		if (this.Entity == null) {
 			// underspecified entities never equal anything
 			return false;

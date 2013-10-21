@@ -62,7 +62,6 @@ public class InitialState extends HashSet<EntityInfo>
 	 */
 	@Override
 	public boolean add(EntityInfo e) {
-		System.out.println("Someone invoked add");
 		// lets see if this entity is already in our set
 		boolean addednewly = super.add(e);
 		if (!addednewly) {
@@ -209,7 +208,6 @@ public class InitialState extends HashSet<EntityInfo>
 	
 	@Override
 	public boolean contains(Object o) {
-		System.out.println("Someone invoked my contains method");
 		return super.contains(o);
 	}
 }
