@@ -403,6 +403,9 @@ public class DeclarationPositionFinderTest {
 		InitialState state = proto.getCurrentState();
 		assertEquals("count mismatch", output.size(), state.size());
 		
+		EntityInfo ground = state.getSingle("ground");
+		assertEquals("basic equality test", ground, output.get(0));
+		
 		for (EntityInfo ei : output) {
 			assertTrue("missing entity info: " + ei, state.contains(ei));
 		}

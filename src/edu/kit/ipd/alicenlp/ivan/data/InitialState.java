@@ -62,6 +62,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 */
 	@Override
 	public boolean add(EntityInfo e) {
+		System.out.println("Someone invoked add");
 		// lets see if this entity is already in our set
 		boolean addednewly = super.add(e);
 		if (!addednewly) {
@@ -84,7 +85,7 @@ public class InitialState extends HashSet<EntityInfo>
 		}
 		
 		elist.add(e);
-		nameset.put(e.getEntity(), elist);
+		ArrayList<EntityInfo> result = nameset.put(e.getEntity(), elist);
 		return true;
 	}
 	
@@ -106,7 +107,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 * @param e
 	 * @return
 	 */
-	public boolean update(EntityInfo e) {
+	private boolean update(EntityInfo e) {
 		return update(null, e);		
 	}
 
@@ -115,7 +116,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 * @param Name
 	 * @param e
 	 */
-	public boolean update(String Name, EntityInfo e) {		
+	private boolean update(String Name, EntityInfo e) {		
 		if (Name == null) {	// name is not given, so we will resolve by Entity description only
 			ArrayList<EntityInfo> elist = nameset.get(e.getEntity());
 			if (elist == null)
@@ -204,5 +205,11 @@ public class InitialState extends HashSet<EntityInfo>
 	 */
 	public boolean hasNames() {
 		return !nameset.isEmpty();
+	}
+	
+	@Override
+	public boolean contains(Object o) {
+		System.out.println("Someone invoked my contains method");
+		return super.contains(o);
 	}
 }

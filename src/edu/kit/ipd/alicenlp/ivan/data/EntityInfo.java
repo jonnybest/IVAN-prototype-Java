@@ -69,6 +69,7 @@ public class EntityInfo
 	
 	@Override
 	public boolean equals(Object obj) {
+		System.out.println("Someone invoked my equals method");
 		if (this.Entity == null) {
 			// underspecified entities never equal anything
 			return false;
@@ -94,6 +95,12 @@ public class EntityInfo
 			return false;
 		}
 		return super.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		// two entityinfos are equal, when their string representation looks the same
+		return this.toString().hashCode();	
 	}
 
 	@Override
