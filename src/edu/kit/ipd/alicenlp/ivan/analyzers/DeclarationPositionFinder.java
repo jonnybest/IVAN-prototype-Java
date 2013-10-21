@@ -324,7 +324,7 @@ public class DeclarationPositionFinder {
 		// learn names
 		List<EntityInfo> things = getDeclarations(sentence);
 		for (EntityInfo n : things) {
-			
+			this.mystate.add(n);
 			nop();
 		}
 	}
