@@ -166,12 +166,46 @@ public class DeclarationPositionFinder {
 	 * @param sentence
 	 * @return
 	 */
-	public static List<EntityInfo> findAll(CoreMap sentence) {
-		// TODO Auto-generated method stub
-		//  		
-		return new ArrayList<EntityInfo>();
+	public static List<EntityInfo> findAll(CoreMap sentence) 
+	{
+		ArrayList<EntityInfo> infos = new ArrayList<EntityInfo>();
+		/* If this was perfect, this is how'd you find all infos:
+		 *   1. learn all the names
+		 *   2. learn all the locations
+		 *   3. learn all the directions
+		 *   4. for all names, see if there is an associated location and direction and if yes
+		 *   5. build a new EntityInfo with the available information and return it
+		 *   
+		 * But instead, we only find out all the names and for all the names we add location and direction and return.		
+		 */
+		try {
+			// get ALL the names
+			List<String> names = recogniseNames(sentence);
+			// get THE location for this sentence. yes, this assumes they're all standing in the same spot
+			EntityInfo locs = getLocation(sentence);
+			// get THE direction for all the entities in this sentence. yes, this assumes they're all facing the same way
+			EntityInfo dirs = getDirection(sentence);
+			// put the loc/dir info into new entityinfos
+			for (String n : names) {
+				EntityInfo info = new EntityInfo(n);
+				if(hasLocation(sentence))
+					info.setLocation(locs.getLocation());
+				if(hasDirection(sentence))
+					info.setDirection(dirs.getDirection());
+				infos.add(info);
+			}			
+		} catch (IvanException e) {
+			// not sure what to do now?
+			e.printStackTrace();
+		}
+		
+		return infos;
 	}
 	
+	private static boolean hasDirection(CoreMap sentence) {
+		return getDirection(sentence) != null;
+	}
+
 	/**
 	 * Indicates whether this sentence contains a location.
 	 * @param sentence
@@ -216,7 +250,7 @@ public class DeclarationPositionFinder {
 	 * @param sentence A CoreMap to look inside
 	 * @return An EntityInfo containing the direction and the word it refers to. Or {@code null} if none was found.
 	 */
-	public EntityInfo getDirection(CoreMap sentence) {
+	public static EntityInfo getDirection(CoreMap sentence) {
 		String entity, direction = null;
 		
 		DirectionKeywordRule dRule = new DirectionKeywordRule();
@@ -263,7 +297,7 @@ public class DeclarationPositionFinder {
 	 * @return
 	 * @throws IvanException 
 	 */
-	public List<String> recogniseNames(CoreMap sentence) throws IvanException {
+	public static List<String> recogniseNames(CoreMap sentence) throws IvanException {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord head = BaseRule.getSubject(graph);
 		if (head == null) {
@@ -322,8 +356,8 @@ public class DeclarationPositionFinder {
 	public void learnDeclarations(CoreMap sentence) throws IvanException {
 		// TODO implement learnDecl
 		// learn names
-		List<EntityInfo> things = getDeclarations(sentence);
-		for (EntityInfo n : things) {
+		List<EntityInfo> things = findAll(sentence);
+		for (EntityInfo n : things) {			
 			this.mystate.add(n);
 			nop();
 		}
