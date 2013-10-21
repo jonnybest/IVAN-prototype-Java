@@ -391,8 +391,8 @@ public class DeclarationPositionFinderTest {
 		ArrayList<EntityInfo> output = new ArrayList<EntityInfo>();
 		output.add(new EntityInfo("ground"));
 		output.add(new EntityInfo("monkey", "in the foreground", "facing southwest"));
-		output.add(new EntityInfo("broccoli", "On the right side of the ground", null));
-		output.add(new EntityInfo("bucket", "Behind the monkey, to the right", null));
+		output.add(new EntityInfo("broccoli", "on the right side of the ground", null));
+		output.add(new EntityInfo("bucket", "behind the monkey, to the right", null));
 		
 		Annotation doc = new Annotation(input);
 		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
@@ -409,6 +409,11 @@ public class DeclarationPositionFinderTest {
 		
 		for (EntityInfo ei : output) {
 			EntityInfo sibling = state.getSingle(ei.getEntity());
+			if(sibling != null)
+			{
+				System.out.println("Siblings are " + (sibling.equals(ei) ? "equal" : "not equal: " + ei + " and " + sibling));
+				assertEquals("test", ei.toString(), sibling.toString());
+			}
 			assertTrue("missing entity info: " + ei + ", possible match: " + sibling, state.contains(ei));
 		}
 	}
