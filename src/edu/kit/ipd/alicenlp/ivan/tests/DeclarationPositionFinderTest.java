@@ -1,5 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -16,12 +17,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -57,9 +60,14 @@ public class DeclarationPositionFinderTest {
 	static List<CoreMap> directionlist = new ArrayList<CoreMap>();
 	static List<CoreMap> negativeslist = new ArrayList<CoreMap>();
 	
-	@BeforeClass
+	static boolean setupDone = false;
+	
+	//@BeforeClass
 	public static void setup()
 	{
+		if(setupDone)
+			return;
+		
 		// load corpus examples for locations
 		String inputlocs = loadTestFile("locations.txt");
 		// annotate corpus examples
@@ -194,7 +202,7 @@ public class DeclarationPositionFinderTest {
 				location = "Behind the Broccoli";
 		EntityInfo sample = new EntityInfo(name, location, direction);
 		CoreMap sentence = annotateSingleSentence(text);
-		List<EntityInfo> entities = proto.findAll(sentence);
+		List<EntityInfo> entities = DeclarationPositionFinder.findAll(sentence);
 		for (EntityInfo en : entities) {
 			if (!sample.equals(en)) {
 				fail(en + " did not satisfy test case.");
@@ -208,27 +216,26 @@ public class DeclarationPositionFinderTest {
 
 	@Test
 	public void testHasLocation() {
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+		setup();
 		for (CoreMap location : locationlist) {
-			assertTrue("Expected a location in this sentence: " + location, proto.hasLocation(location));			
+			assertTrue("Expected a location in this sentence: " + location, DeclarationPositionFinder.hasLocation(location));			
 		}		
 		for (CoreMap neg : negativeslist) {
-			assertFalse("Expected no location in \"" + neg + "\"", proto.hasLocation(neg));
+			assertFalse("Expected no location in \"" + neg + "\"", DeclarationPositionFinder.hasLocation(neg));
 		}
 	}
 
 	@Test
 	public void testGetLocation() {
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-		EntityInfo simplein = proto.getLocation(annotateSingleSentence("There is a ghost in this house."));
+		EntityInfo simplein = DeclarationPositionFinder.getLocation(annotateSingleSentence("There is a ghost in this house."));
 		if (!"in this house".equals(simplein.getLocation())) {
 			fail("Location is wrong"); 			
 		}
-		EntityInfo inandon = proto.getLocation(annotateSingleSentence("The house is in the background on the left hand side."));
+		EntityInfo inandon = DeclarationPositionFinder.getLocation(annotateSingleSentence("The house is in the background on the left hand side."));
 		if (!"in the background on the left hand side".equals(inandon.getLocation())) {
 			fail("Location is wrong");
 		}
-		EntityInfo behind = proto.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
+		EntityInfo behind = DeclarationPositionFinder.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
 		if (!"Behind it to the right".equals(behind.getLocation())) {
 			fail("Location is wrong: " + behind);
 		}
@@ -369,6 +376,35 @@ public class DeclarationPositionFinderTest {
 					fail("Entity not recognised: " + foundname + " in sentence \"" + sol.getKey() +"\"");
 				}
 			}
+		}
+	}
+	
+	@Test
+	public void testLearnDeclarations() throws IvanException
+	{
+		String input = "The ground is covered with grass. "
+				+ "In the foreground there is a monkey in the middle facing southwest. "
+				+ "On the right side of the ground, there is a broccoli. "
+				+ "Behind the monkey, to the right, there is a bucket.";
+		
+		ArrayList<EntityInfo> output = new ArrayList<EntityInfo>();
+		output.add(new EntityInfo("ground"));
+		output.add(new EntityInfo("monkey", "in the middle", "facing southwest"));
+		output.add(new EntityInfo("broccoli", "On the right side of the ground", null));
+		output.add(new EntityInfo("bucket", "Behind the monkey, to the right", null));
+		
+		Annotation doc = new Annotation(input);
+		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+		proto.getPipeline().annotate(doc);
+		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			proto.learnDeclarations(sentence);
+		}
+		
+		InitialState state = proto.getCurrentState();
+		assertEquals("count mismatch", output.size(), state.size());
+		
+		for (EntityInfo ei : output) {
+			assertTrue("missing entity info: " + ei, state.contains(ei));
 		}
 	}
 
