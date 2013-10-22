@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.lang.model.type.DeclaredType;
@@ -104,7 +105,8 @@ public class SwingWindow {
 	private JButton btnSaveCheck;
 	private Component horizontalGlue;
 	private String currentFileName = null;
-	private JMenuBar menuBar; 
+	private JMenuBar menuBar;
+	private StanfordCoreNLP mypipeline; 
 
 	/**
 	 * Launch the application.
@@ -581,7 +583,7 @@ public class SwingWindow {
 		}
 		StanfordCoreNLP pipeline = null;
 		try {
-			pipeline = myclassifier.getPipeline();
+			pipeline = setupCoreNLP();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -726,6 +728,31 @@ public class SwingWindow {
 		
 		refreshLineNumbersFont();
 		diplayWarnings();
+	}
+
+		/**
+	 * 
+	 */
+	protected StanfordCoreNLP setupCoreNLP() {
+		StanfordCoreNLP pipeline;
+		if (mypipeline == null) {			
+		    // creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
+		    Properties props = new Properties();
+		    // alternativ: wsj-bidirectional 
+		    try {
+				props.put("pos.model", "edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger"); 
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		    // konfiguriere pipeline
+		    props.put("annotators", "tokenize, ssplit, pos, lemma, parse"); //$NON-NLS-1$ //$NON-NLS-2$
+		    pipeline = new StanfordCoreNLP(props);	    
+		    mypipeline = pipeline;
+		}
+		else {
+			pipeline = mypipeline;
+		}
+		return pipeline;
 	}
 
 	private void diplayWarnings() {

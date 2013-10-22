@@ -101,7 +101,7 @@ public class DeclarationPositionFinder {
 	/**
 	 * 
 	 */
-	protected void setupCoreNLP() {
+	protected StanfordCoreNLP setupCoreNLP() {
 		StanfordCoreNLP pipeline;
 		if (mypipeline == null) {			
 		    // creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
@@ -120,6 +120,7 @@ public class DeclarationPositionFinder {
 		else {
 			pipeline = mypipeline;
 		}
+		return pipeline;
 	}
 
 	/**

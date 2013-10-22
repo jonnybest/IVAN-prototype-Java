@@ -16,6 +16,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
@@ -28,6 +29,19 @@ import edu.stanford.nlp.util.CoreMap;
  *
  */
 public abstract class BaseRule {
+	
+
+	public static boolean hasAgent(IndexedWord root, SemanticGraph graph) {
+		// implement a check for agent(root, nounphrase)
+		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class);
+		// TODO: verify this 
+		return graph.hasChildWithReln(root, agentrel);
+	}
+	
+	public static boolean isPOSFamily(CoreLabel word, String string) {
+		String pos = word.get(PartOfSpeechAnnotation.class).toUpperCase();
+		return pos.startsWith(string.toUpperCase());
+	}
 	
 	/**
 	 * @param graph
@@ -44,7 +58,7 @@ public abstract class BaseRule {
 		return det != null;
 	}
 
-	protected static Boolean is1stPerson(IndexedWord root, SemanticGraph graph)
+	public static Boolean is1stPerson(IndexedWord root, SemanticGraph graph)
 	{
 		// not actually always first person, but for our corpus, it's good enough 
 //		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
@@ -55,7 +69,7 @@ public abstract class BaseRule {
 		return subject == null || subject.word().equalsIgnoreCase("I");
 	}
 	
-	protected static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
+	public static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
 	{
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
@@ -66,7 +80,7 @@ public abstract class BaseRule {
 		return graph.hasChildWithReln(word, reln);
 	}
 
-	protected static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
+	public static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
 		if (graph.hasChildWithReln(word, reln)) {
 			String pos = graph.getChildWithReln(word, reln).get(PartOfSpeechAnnotation.class);
@@ -77,22 +91,22 @@ public abstract class BaseRule {
 		return false;
 	}
 
-	protected static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
+	public static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}
 	
-    protected static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
+    public static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}    
 
-	protected static IndexedWord getDeterminer(IndexedWord word, SemanticGraph graph) {
+	public static IndexedWord getDeterminer(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
 	
-	protected static IndexedWord getDirectObject(IndexedWord word, SemanticGraph graph) {
+	public static IndexedWord getDirectObject(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
@@ -103,7 +117,7 @@ public abstract class BaseRule {
 	 * @param graph A basic graph (non-collapsed) 
 	 * @return
 	 */
-	protected static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
+	public static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
@@ -120,7 +134,7 @@ public abstract class BaseRule {
 		}
 	}
 	
-	protected static boolean isPassive(IndexedWord root, SemanticGraph graph) {
+	public static boolean isPassive(IndexedWord root, SemanticGraph graph) {
 		// Examples: 
 		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
 		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
