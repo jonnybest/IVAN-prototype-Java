@@ -3,6 +3,9 @@
  */
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
+import java.util.List;
+
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.Annotator.Requirement;
 import edu.stanford.nlp.util.TypesafeMap;
 
@@ -10,8 +13,23 @@ import edu.stanford.nlp.util.TypesafeMap;
  * @author Jonny
  *
  */
-public abstract class IvanAnalyzer {
+public abstract class IvanAnalyzer implements Annotator  
+{
+	/** This list contains such noun phrases which refer to one or more locations. 
+	 * 
+	 * @author Jonny
+	 *
+	 */
+	public abstract class Locations implements TypesafeMap.Key<Locations>, List<String>
+	{
+		
+	}
 
+	/** Classification refers to the meaning of the sentence and its role within the description of the Alice word.
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	public enum Classification implements TypesafeMap.Key<Classification> 
 	{
 		/**
@@ -55,4 +73,20 @@ public abstract class IvanAnalyzer {
 	 * Time sentences usually indicate that time is passing.
 	 */
 	public static final Requirement TIME_CLASSIFICATION = new Requirement("alicetime");
+	
+	/** This requirement implies that declarations are tagged.
+	 * Declaring sentences assert that some entity exists. These tags should provide some way to retrieve the declared entities.
+	 */
+	public static final Requirement DECLARATION_REQUIREMENT = new Requirement("alicedecl");
+	
+	/** This requirement implies that locations are tagged.
+	 * The tags should provide some way to retrieve the locations.
+	 */
+	public static final Requirement LOCATION_REQUIREMENT = new Requirement("alicelocation");
+	
+	/** This requirement implies that direction are tagged.
+	 * The tags should provide some way to retrieve the direction.
+	 */
+	public static final Requirement DIRECTION_REQUIREMENT = new Requirement("alicedirection");
+	
 }

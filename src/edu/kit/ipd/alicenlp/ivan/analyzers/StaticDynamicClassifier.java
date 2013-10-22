@@ -27,7 +27,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
-public class StaticDynamicClassifier extends IvanAnalyzer implements Annotator  
+public class StaticDynamicClassifier extends IvanAnalyzer  
 {
 	static private StaticDynamicClassifier myinstance = null;
 	private Dictionary dictionary;
@@ -306,7 +306,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer implements Annotator
 	public Set<Requirement> requires() {
 		Set<Requirement> myreqs = new HashSet<Annotator.Requirement>();
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
-		myreqs.add(PARSE_REQUIREMENT);
+		//myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
 	}
 

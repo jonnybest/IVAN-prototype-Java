@@ -9,7 +9,7 @@ import javax.swing.text.html.parser.Entity;
 
 
 /**
- * The {@link EntityInfo} is a triple of <Entity, Location, Direction> and represents a single Entity's state in Alice.
+ * The {@link EntityInfo} is a triple of <Entity, Locations, Direction> and represents a single Entity's state in Alice.
  * @author Jonny
  *
  */

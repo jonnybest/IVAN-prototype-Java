@@ -2,6 +2,7 @@ package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
@@ -23,10 +25,14 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Locations;
+import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinderTest {
@@ -229,15 +235,15 @@ public class DeclarationPositionFinderTest {
 	public void testGetLocation() {
 		EntityInfo simplein = DeclarationPositionFinder.getLocation(annotateSingleSentence("There is a ghost in this house."));
 		if (!"in this house".equals(simplein.getLocation())) {
-			fail("Location is wrong"); 			
+			fail("Locations is wrong"); 			
 		}
 		EntityInfo inandon = DeclarationPositionFinder.getLocation(annotateSingleSentence("The house is in the background on the left hand side."));
 		if (!"in the background on the left hand side".equals(inandon.getLocation())) {
-			fail("Location is wrong");
+			fail("Locations is wrong");
 		}
 		EntityInfo behind = DeclarationPositionFinder.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
 		if (!"Behind it to the right".equals(behind.getLocation())) {
-			fail("Location is wrong: " + behind);
+			fail("Locations is wrong: " + behind);
 		}
 	}
 
@@ -461,4 +467,60 @@ public class DeclarationPositionFinderTest {
 //		nop();
 //	}
 
+	/** This is a test for Stanford Pipeline compliance. 
+	 *  
+	 * Here are the steps: (from the FAQ)
+	 * 1. extend the class edu.stanford.nlp.pipeline.Annotator 
+	 * 2. I assume you're writing your own code to do the processing. Whatever code you write, you want to call it from a class that is a subclass of Annotator. Look at any of the existing Annotator classes, such as POSTaggerAnnotator, and try to emulate what it does.
+	 * 3. Have a constructor with the signature (String, Properties)
+	 * 4. If your new annotator is FilterAnnotator, for example, it must have a constructor FilterAnnotator(String name, Properties props) in order to work.
+	 * 5. Add the property customAnnotatorClass.FOO=BAR
+	 * 6. Using the same example, suppose your full class name is com.foo.FilterAnnotator, and you want the new annotator to have the name "filter". When creating the CoreNLP properties, you need to add the flag 
+	 * 		customAnnotatorClass.filter=com.foo.FilterAnnotator
+	 * 7. You can then add "filter" to the list of annotators in the annotators property. When you do that, the constructor FilterAnnotator(String, Properties) will be called with the name "filter" and the properties files you run CoreNLP with. This lets you define any property flag you want. For example, you could name a flag filter.verbose and then extract that flag from the properties to determine the verbosity of your new annotator.
+	 */
+	@Test
+	public void StanfordPipelineTest(){
+		
+		// constructin test
+		@SuppressWarnings("unused")
+		DeclarationPositionFinder myannotator = new DeclarationPositionFinder("hi", new Properties());
+		
+		// functional test 
+		String text = "In the background on the left hand side there is a PalmTree. "
+				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. "
+				+ "Right to the mailbox there is a Frog facing east. "
+				+ "In the foreground on the right hand side there is a Bunny facing southwest. "
+				+ "In front of the Bunny there is a Broccoli.";
+		Annotation doc = new Annotation(text);
+		
+		StanfordCoreNLP pipeline;
+			
+	    // creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
+	    Properties props = new Properties();
+	    // alternativ: wsj-bidirectional 
+	    try {
+			props.put("pos.model", "edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger"); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	    props.put("customAnnotatorClass.decl", "edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+	    
+	    // konfiguriere pipeline
+	    props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+	    pipeline = new StanfordCoreNLP(props);	
+	    
+	    pipeline.annotate(doc);
+
+	    // lets see if there are any annotations at all
+	    assertEquals("Sentences are missing", 5, doc.get(SentencesAnnotation.class).size());
+	    
+	    // the sentences in this test should all have some annotation or another
+	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertTrue("Sentences was not classified: " + sentence.toString(), sentence.containsKey(Locations.class));
+			assertNotNull(sentence.get(Classification.class));
+			System.out.println(sentence.get(Classification.class) + ": " + sentence.toString());
+		}
+	    
+	}
 }

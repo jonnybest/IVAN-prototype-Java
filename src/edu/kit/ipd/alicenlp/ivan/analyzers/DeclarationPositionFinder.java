@@ -3,11 +3,15 @@ package edu.kit.ipd.alicenlp.ivan.analyzers;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
+import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
@@ -15,13 +19,17 @@ import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
 import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.pipeline.Annotator.Requirement;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
-public class DeclarationPositionFinder {
+public class DeclarationPositionFinder extends IvanAnalyzer
+{
 	
 	/** This field contains the names and entities. The rules are: only one state per analyzer. */ 
 	final private InitialState mystate = new InitialState();
@@ -54,6 +62,10 @@ public class DeclarationPositionFinder {
 		if (myinstance == null) {
 			myinstance = this;
 		}
+	}
+
+	public DeclarationPositionFinder(String string, Properties properties) {
+		// TODO Auto-generated constructor stub
 	}
 
 	protected Annotation annotate(String text) {
@@ -367,6 +379,30 @@ public class DeclarationPositionFinder {
 	private void nop() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void annotate(Annotation annotation) {
+		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			// do stuff
+		}		
+	}
+
+	@Override
+	public Set<Requirement> requirementsSatisfied() {
+		Set<Requirement> isatisfy = new HashSet<Annotator.Requirement>();
+		isatisfy.add(DECLARATION_REQUIREMENT);
+		isatisfy.add(LOCATION_REQUIREMENT);
+		isatisfy.add(DIRECTION_REQUIREMENT);
+		return isatisfy;
+	}
+
+	@Override
+	public Set<Requirement> requires() {
+		Set<Requirement> myreqs = new HashSet<Annotator.Requirement>();
+		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
+		myreqs.add(PARSE_REQUIREMENT);
+		return myreqs;
 	}
 
 }
