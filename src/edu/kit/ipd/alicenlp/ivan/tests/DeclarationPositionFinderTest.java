@@ -25,7 +25,8 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
-import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Locations;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
@@ -235,15 +236,15 @@ public class DeclarationPositionFinderTest {
 	public void testGetLocation() {
 		EntityInfo simplein = DeclarationPositionFinder.getLocation(annotateSingleSentence("There is a ghost in this house."));
 		if (!"in this house".equals(simplein.getLocation())) {
-			fail("Locations is wrong"); 			
+			fail("LocationListAnnotation is wrong"); 			
 		}
 		EntityInfo inandon = DeclarationPositionFinder.getLocation(annotateSingleSentence("The house is in the background on the left hand side."));
 		if (!"in the background on the left hand side".equals(inandon.getLocation())) {
-			fail("Locations is wrong");
+			fail("LocationListAnnotation is wrong");
 		}
 		EntityInfo behind = DeclarationPositionFinder.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
 		if (!"Behind it to the right".equals(behind.getLocation())) {
-			fail("Locations is wrong: " + behind);
+			fail("LocationListAnnotation is wrong: " + behind);
 		}
 	}
 
@@ -489,7 +490,7 @@ public class DeclarationPositionFinderTest {
 		// functional test 
 		String text = "In the background on the left hand side there is a PalmTree. "
 				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. "
-				+ "Right to the mailbox there is a Frog facing east. "
+				+ "To the right of the mailbox there is a Frog facing east. "
 				+ "In the foreground on the right hand side there is a Bunny facing southwest. "
 				+ "In front of the Bunny there is a Broccoli.";
 		Annotation doc = new Annotation(text);
@@ -517,9 +518,18 @@ public class DeclarationPositionFinderTest {
 	    
 	    // the sentences in this test should all have some annotation or another
 	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
-			assertTrue("Sentences was not classified: " + sentence.toString(), sentence.containsKey(Locations.class));
-			assertNotNull(sentence.get(Classification.class));
-			System.out.println(sentence.get(Classification.class) + ": " + sentence.toString());
+			assertTrue("Sentences was not analyzed: " + sentence.toString(), sentence.containsKey(LocationListAnnotation.class));
+			LocationListAnnotation locs = sentence.get(LocationListAnnotation.class);
+			assertNotNull(locs);
+			System.out.println(sentence.get(LocationListAnnotation.class) + ": " + sentence.toString());
+			
+			assertTrue("there are no locations in this location", locs.size() > 0);
+			
+			for (LocationAnnotation l : locs) {
+				assertNotNull(l);
+				assertTrue("description is too short", l.getLocation().length() > 2);
+				assertTrue("referent is too short", l.getReferent().word().length() > 2);
+			}
 		}
 	    
 	}

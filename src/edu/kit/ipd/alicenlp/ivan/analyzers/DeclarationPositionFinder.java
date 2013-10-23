@@ -27,6 +27,7 @@ import edu.stanford.nlp.pipeline.Annotator.Requirement;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.Pair;
 
 public class DeclarationPositionFinder extends IvanAnalyzer
 {
@@ -384,7 +385,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	@Override
 	public void annotate(Annotation annotation) {
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
-			// do stuff
+			// TODO: do stuff
+			LocationListAnnotation list = new LocationListAnnotation();
+			
 		}		
 	}
 

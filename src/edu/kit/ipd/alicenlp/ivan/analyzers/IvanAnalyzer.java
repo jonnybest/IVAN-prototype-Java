@@ -3,10 +3,13 @@
  */
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.Annotator.Requirement;
+import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.TypesafeMap;
 
 /** This is the base class for AliceNLP classifiers used in Ivan. It contains the requirements constants for the pipeline extension.
@@ -20,9 +23,47 @@ public abstract class IvanAnalyzer implements Annotator
 	 * @author Jonny
 	 *
 	 */
-	public abstract class Locations implements TypesafeMap.Key<Locations>, List<String>
+	public class LocationListAnnotation extends ArrayList<LocationAnnotation> implements TypesafeMap.Key<LocationListAnnotation>
 	{
+
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -1061724414454603409L;
 		
+	}
+	
+	/** This is a location, consisting of a noun phrase for the location and an indexword which is the head of the refering noun phrase.
+	 * 
+	 * @author Jonny
+	 *
+	 */
+	public class LocationAnnotation extends Pair<String, IndexedWord> implements TypesafeMap.Key<LocationAnnotation>
+	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -5261083421581474205L;
+
+		public IndexedWord getReferent()
+		{
+			return this.second();
+		}
+		
+		public String getLocation()
+		{
+			return this.first();
+		}
+		
+		public void setReferent(IndexedWord word)
+		{
+			this.second = word;
+		}
+		
+		public void setLocation(String nounphrase)
+		{
+			this.first = nounphrase;
+		}
 	}
 
 	/** Classification refers to the meaning of the sentence and its role within the description of the Alice word.
