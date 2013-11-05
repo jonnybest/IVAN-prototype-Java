@@ -34,6 +34,9 @@ import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
+import edu.stanford.nlp.trees.TreeFactory;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinderTest {
@@ -490,11 +493,89 @@ public class DeclarationPositionFinderTest {
 		// functional test 
 		String text = "In the background on the left hand side there is a PalmTree. "
 				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. "
-				+ "To the right of the mailbox there is a Frog facing east. "
+			//	+ "To the right of the mailbox there is a Frog facing east. " // this one is probably tough?
 				+ "In the foreground on the right hand side there is a Bunny facing southwest. "
 				+ "In front of the Bunny there is a Broccoli.";
+		Annotation doc = annotate(text);
+
+	    // lets see if there are any annotations at all
+	    assertEquals("Sentences are missing", 4 /* 5 */, doc.get(SentencesAnnotation.class).size());
+	    
+	    // the sentences in this test should all have some annotation or another
+	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertTrue("Sentences was not analyzed: " + sentence.toString(), sentence.containsKey(LocationListAnnotation.class));
+			LocationListAnnotation locs = sentence.get(LocationListAnnotation.class);
+			assertNotNull(locs);
+			System.out.println(sentence.get(LocationListAnnotation.class) + ": " + sentence.toString());
+			
+			assertTrue("there are no locations in this location", locs.size() > 0);
+			
+			for (LocationAnnotation l : locs) {
+				assertNotNull(l);
+				assertTrue("description is too short", l.getLocation().size() > 2);
+				assertTrue("referent is too short", l.getReferent().size() > 2);
+			}
+		}
+	}
+	
+	@Test
+	public void ReferentTestStanford()
+	{	
+		{
+			String text = "In the background on the left hand side there is a PalmTree.";
+			Annotation doc = annotate(text);
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			
+			LocationListAnnotation list = sentence.get(LocationListAnnotation.class);
+			LocationAnnotation loc = list.get(0);
+			Tree actual = loc.getLocation();
+			Tree expected = annotateSingleSentence("In the background on the left hand side").get(TreeAnnotation.class).skipRoot();
+			assertEquals("Location not correct", expected, actual);
+			
+			Tree expectedRef = annotateSingleSentence("a PalmTree").get(TreeAnnotation.class).skipRoot().firstChild(); // skip root element and fragment element
+			assertEquals("Referent is not correct", expectedRef, loc.getReferent());			
+		}
+		{
+			String text = "In the foreground on the right hand side there is a Bunny facing southwest.";
+			Annotation doc = annotate(text);
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			
+			LocationListAnnotation list = sentence.get(LocationListAnnotation.class);
+			LocationAnnotation loc = list.get(0);
+			Tree actual = loc.getLocation();
+			Tree expected = annotateSingleSentence("In the foreground on the right hand side").get(TreeAnnotation.class).skipRoot();
+			assertEquals("Location not correct", expected, actual);
+			
+			Tree expectedRef = annotateSingleSentence("a Bunny").get(TreeAnnotation.class).skipRoot(); //.getChild(2).getChild(1); // picking the location "by hand"
+			assertEquals("Referent is not correct", expectedRef, loc.getReferent());			
+		}
+		{
+			String text = "In the foreground there is Mik Jagger on the right hand side facing southwest.";
+			Annotation doc = annotate(text);
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			
+			LocationListAnnotation list = sentence.get(LocationListAnnotation.class);
+			assertEquals("Too few locations", 2, list.size());
+			
+			LocationAnnotation loc = list.get(0);
+			Tree actual = loc.getLocation();
+			Tree expected = annotateSingleSentence("In the foreground").get(TreeAnnotation.class).skipRoot();
+			assertEquals("Location 1 not correct", expected, actual);			
+			
+			LocationAnnotation loc2 = list.get(1);
+			Tree actual2 = loc2.getLocation();
+			Tree expected2 = annotateSingleSentence(text).get(TreeAnnotation.class).skipRoot().getChild(2).getChild(1).getChild(1);
+			System.err.println(annotateSingleSentence(text).get(TreeAnnotation.class).skipRoot());
+			assertEquals("Location 2 not correct", expected2, actual2);
+			
+			assertEquals("Referents are not identical",loc.getReferent(), loc2.getReferent());
+			Tree expectedRef = annotateSingleSentence("Mik Jagger").get(TreeAnnotation.class).skipRoot(); // skip root element
+			assertEquals("Referent is not correct", expectedRef, loc.getReferent());			
+		}
+	}
+
+	private Annotation annotate(String text) {
 		Annotation doc = new Annotation(text);
-		
 		StanfordCoreNLP pipeline;
 			
 	    // creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
@@ -512,25 +593,6 @@ public class DeclarationPositionFinderTest {
 	    pipeline = new StanfordCoreNLP(props);	
 	    
 	    pipeline.annotate(doc);
-
-	    // lets see if there are any annotations at all
-	    assertEquals("Sentences are missing", 5, doc.get(SentencesAnnotation.class).size());
-	    
-	    // the sentences in this test should all have some annotation or another
-	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
-			assertTrue("Sentences was not analyzed: " + sentence.toString(), sentence.containsKey(LocationListAnnotation.class));
-			LocationListAnnotation locs = sentence.get(LocationListAnnotation.class);
-			assertNotNull(locs);
-			System.out.println(sentence.get(LocationListAnnotation.class) + ": " + sentence.toString());
-			
-			assertTrue("there are no locations in this location", locs.size() > 0);
-			
-			for (LocationAnnotation l : locs) {
-				assertNotNull(l);
-				assertTrue("description is too short", l.getLocation().length() > 2);
-				assertTrue("referent is too short", l.getReferent().word().length() > 2);
-			}
-		}
-	    
+	    return doc;
 	}
 }

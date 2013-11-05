@@ -16,8 +16,11 @@ import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
+import edu.kit.ipd.alicenlp.ivan.rules.ILocationRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepInDetRule;
 import edu.kit.ipd.alicenlp.ivan.rules.WordPrepOnDetRule;
+import edu.stanford.nlp.ling.CoreAnnotations.LabelAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -26,8 +29,11 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.pipeline.Annotator.Requirement;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.TypesafeMap.Key;
 
 public class DeclarationPositionFinder extends IvanAnalyzer
 {
@@ -241,7 +247,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// the entity is most likely the subject(s) of the sentence
 		entity = BaseRule.getSubject(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)).word();
 		
-		WordPrepInDetRule inRule = new WordPrepInDetRule();
+		ILocationRule inRule = new WordPrepInDetRule();
 		if (inRule.apply(sentence)) {
 //			entity = inRule.getWord().originalText(); // the entity is most likely not the word, but the subject(s) of the sentence
 			location = inRule.getPrepositionalModifier().toString();
@@ -386,9 +392,40 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	public void annotate(Annotation annotation) {
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			// TODO: do stuff
-			LocationListAnnotation list = new LocationListAnnotation();
-			
+			LocationListAnnotation list = findLocationAsTrees(sentence);
+			if(!list.isEmpty())
+				sentence.set(LocationListAnnotation.class, list);
 		}		
+	}
+
+	/** Returns the locations which are mentioned in this sentence or an empty list if none 
+	 * 
+	 * @param sentence
+	 * @return
+	 */
+	private LocationListAnnotation findLocationAsTrees(CoreMap sentence) {
+		// FIXME
+		
+		LocationListAnnotation ourlocs = new LocationListAnnotation();
+
+		ILocationRule inRule = new WordPrepInDetRule();
+		if (inRule.apply(sentence)) {
+			LocationAnnotation someloc = new LocationAnnotation();
+			someloc.setReferent(inRule.getWordAsTree());
+			someloc.setLocation(inRule.getPrepositionalModifierAsTree());
+			ourlocs.add(someloc);
+		} 
+		
+		WordPrepOnDetRule onRule = new WordPrepOnDetRule();
+		if(onRule.apply(sentence))
+		{
+			LocationAnnotation someloc = new LocationAnnotation();
+			someloc.setReferent(onRule.getWordAsTree());
+			someloc.setLocation(onRule.getPrepositionalModifierAsTree());
+			ourlocs.add(someloc);
+		}
+
+		return ourlocs;
 	}
 
 	@Override

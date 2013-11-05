@@ -4,11 +4,9 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.Annotator.Requirement;
+import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.TypesafeMap;
 
@@ -26,6 +24,13 @@ public abstract class IvanAnalyzer implements Annotator
 	public class LocationListAnnotation extends ArrayList<LocationAnnotation> implements TypesafeMap.Key<LocationListAnnotation>
 	{
 
+		public LocationListAnnotation(LocationAnnotation someloc) {
+			this.add(someloc);
+		}
+
+		public LocationListAnnotation() {
+		}
+
 		/**
 		 * 
 		 */
@@ -38,29 +43,29 @@ public abstract class IvanAnalyzer implements Annotator
 	 * @author Jonny
 	 *
 	 */
-	public class LocationAnnotation extends Pair<String, IndexedWord> implements TypesafeMap.Key<LocationAnnotation>
+	public class LocationAnnotation extends Pair<Tree, Tree> implements TypesafeMap.Key<LocationAnnotation>
 	{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = -5261083421581474205L;
 
-		public IndexedWord getReferent()
+		public Tree getReferent()
 		{
 			return this.second();
 		}
 		
-		public String getLocation()
+		public Tree getLocation()
 		{
 			return this.first();
 		}
 		
-		public void setReferent(IndexedWord word)
+		public void setReferent(Tree word)
 		{
 			this.second = word;
 		}
 		
-		public void setLocation(String nounphrase)
+		public void setLocation(Tree nounphrase)
 		{
 			this.first = nounphrase;
 		}

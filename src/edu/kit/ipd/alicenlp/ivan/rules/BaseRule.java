@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -21,6 +23,7 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectG
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
+import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -242,6 +245,98 @@ public abstract class BaseRule {
 	}
 	
 
+	protected String printTree(Tree tree) {
+		final StringBuilder sb = new StringBuilder();
+		
+		for ( final Tree t : tree.getLeaves() ) {
+		     sb.append(t.toString()).append(" ");
+		}
+		return sb.toString();
+	}
+
+	/** This method searches for an IndexedWord inside a Tree. It returns the largest subtree which represents the word's phrase, 
+	 * or NULL, if none was found. Runs in 2*O(n), since Tree does not provide index-based lookup.  
+	 * @param wordToFind
+	 * @param treeToSearch
+	 * @return A subtree representing the indexed word.
+	 */
+	protected Tree match(IndexedWord wordToFind, Tree treeToSearch) {
+		return match(wordToFind, treeToSearch, null, true);
+	}
+
+	/** This method searches for an IndexedWord inside a Tree. It returns a subtree which represents the word's phrase, 
+	 * or NULL, if none was found. Runs in 2*O(n), since Tree does not provide index-based lookup.  
+	 * @param wordToFind an IndexedWord or at least a CoreLabel with BeginIndexAnnotation and EndIndexAnnotation
+	 * @param treeToSearch
+	 * @param expectedPOS the Part-of-speech that the caller wants to work with (usually NP or PP) 
+	 * @param canGoUp if TRUE, this method returns the largest match it can find. if false, it returns the first match
+	 * @return A subtree representing the indexed word.
+	 */
+	protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
+		int end = wordToFind.get(EndIndexAnnotation.class);
+		int begin = wordToFind.get(BeginIndexAnnotation.class);
+		
+		// first, find whatever is at the word's index
+		for (Tree tree : treeToSearch) {
+			CoreLabel lbl = ((CoreLabel) tree.label());
+			
+			if(lbl.get(EndIndexAnnotation.class) == end)
+			{
+				if(lbl.get(BeginIndexAnnotation.class) == begin)
+				{
+					// we found the first subtree at the word's index
+					// now, check if the word here is our searchword
+					if(tree.getLeaves().get(0).label().value().equals(wordToFind.value()))
+					{
+						// we have found the label.
+						Tree candidate = tree;
+						
+						if(expectedPOS != null)
+						{
+							// if we know our desired POS, just keep walking up the tree to find the first instance of the expected pos 
+							while(!expectedPOS.equals(candidate.value())){
+								// if we don't have the right POS, just try our parent
+								candidate = candidate.parent(treeToSearch);
+								
+								if(candidate == null)
+								{
+									return null;
+								}
+							}							
+						}
+						else {
+							// else walk up the tree again to find the corresponding phrase
+							while(!candidate.isPhrasal())
+							{
+								candidate = candidate.parent(treeToSearch); // edu.stanford.nlp.trees.Tree.parent(Tree root)
+								
+								if(candidate == null)
+								{
+									return null;
+								}
+							}
+						}						
+						
+						if (canGoUp) {
+							// now keep walking as long as the phrase does not change. this should yield the largest representative phrase for this word.
+							String phrase = candidate.value();
+							while (phrase.equals(candidate.parent(treeToSearch)
+									.value())) {
+								candidate = candidate.parent(treeToSearch);
+
+								if (candidate == null) {
+									return null;
+								}
+							}
+						}
+						return candidate;
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 	/** This method attempts to resolve noun phrases which consist of more than one word.
 	 * More precisely, it looks for nn dependencies below {@code head} and creates an entity.
 	 * @param head The head of the noun phrase
@@ -276,7 +371,8 @@ public abstract class BaseRule {
 			SemanticGraph graph, ArrayList<IndexedWord> namesIW) {
 		// list of names
 		ArrayList<String> names = new ArrayList<String>();
-		assert namesIW != null;
+		if (namesIW == null)
+			namesIW = new ArrayList<IndexedWord>();
 		// adding this subject
 		names.add(resolveNN(head, graph));
 		namesIW.add(head);
