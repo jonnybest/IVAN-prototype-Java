@@ -69,6 +69,9 @@ import org.jdesktop.swingx.JXBusyLabel;
 import org.jdesktop.swingx.JXEditorPane;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
+import org.languagetool.JLanguageTool;
+import org.languagetool.language.AmericanEnglish;
+import org.languagetool.rules.RuleMatch;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
@@ -170,6 +173,21 @@ public class SwingWindow {
 //						startStopWatch();
 //						processText(editor.getText());
 //						stopAndPrintStopWatch();
+						startStopWatch();
+						// spellcheck
+						JLanguageTool langTool = new JLanguageTool(new AmericanEnglish());
+						langTool.activateDefaultPatternRules();
+						List<RuleMatch> matches = langTool.check("A sentence " +
+						    "with a error in the Hitchhiker's Guide tot he Galaxy");
+						for (RuleMatch match : matches) {
+						  System.out.println("Potential error at line " +
+						      match.getLine() + ", column " +
+						      match.getColumn() + ": " + match.getMessage());
+						  System.out.println("Suggested correction: " +
+						      match.getSuggestedReplacements());
+						}
+						//
+						stopAndPrintStopWatch();
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
