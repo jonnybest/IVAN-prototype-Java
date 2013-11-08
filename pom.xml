@@ -40,6 +40,12 @@
 		<artifactId>language-en</artifactId>
 		<version>2.3.1</version>
 	</dependency>  	
+	<!-- Editor -->
+	<dependency>
+	<groupId>org.codehaus.jtstand</groupId>
+		<artifactId>jtstand-editor</artifactId>
+		<version>1.5.7</version>
+	</dependency>
   	<dependency>
   		<groupId>edu.stanford.nlp</groupId>
 		<artifactId>stanford-corenlp</artifactId>
