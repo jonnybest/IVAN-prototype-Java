@@ -21,6 +21,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -173,18 +174,20 @@ public class SwingWindow {
 //						startStopWatch();
 //						processText(editor.getText());
 //						stopAndPrintStopWatch();
-						startStopWatch();
 						// spellcheck
+						startStopWatch();
 						JLanguageTool langTool = new JLanguageTool(new AmericanEnglish());
 						langTool.activateDefaultPatternRules();
-						List<RuleMatch> matches = langTool.check("A sentence " +
-						    "with a error in the Hitchhiker's Guide tot he Galaxy");
+//						List<RuleMatch> matches = langTool.check("A sentence " +
+//						    "with a error in the Hitchhiker's Guide tot he Galaxy");
+						List<RuleMatch> matches = langTool.check(editor.getText());
 						for (RuleMatch match : matches) {
 						  System.out.println("Potential error at line " +
 						      match.getLine() + ", column " +
 						      match.getColumn() + ": " + match.getMessage());
 						  System.out.println("Suggested correction: " +
 						      match.getSuggestedReplacements());
+						  markSpellingError(match.getFromPos(), match.getToPos());
 						}
 						//
 						stopAndPrintStopWatch();
@@ -551,6 +554,11 @@ public class SwingWindow {
 		 * StyleConstants.setItalic(s, true);
 		 */
 
+		// style "spellingerror"
+		Style spelling = doc.addStyle("spellingerror", def);
+		//StyleConstants.setUnderline(spelling, true);
+		spelling.addAttribute("border-bottom", "1px solid blue");
+		
 	}
 
 	public static void processText(){
@@ -808,6 +816,22 @@ public class SwingWindow {
 
 		doc.setCharacterAttributes(beginPosition, length,
 				doc.getStyle("action"), true);
+		nop();
+	}
+	
+	private void markSpellingError(int beginPosition, int endPosition) {
+		int length = endPosition - beginPosition;
+		StyledDocument doc = (StyledDocument) txtEditor.getDocument();
+		try {
+			// System.out.println(txtEditor.getText(beginPosition, length));
+			System.out.println(doc.getText(beginPosition, length));
+		} catch (BadLocationException e) {
+			System.err.println("Bad location: " + beginPosition + " "
+					+ endPosition);
+		}
+
+		doc.setCharacterAttributes(beginPosition, length,
+				doc.getStyle("spellingerror"), true);
 		nop();
 	}
 
