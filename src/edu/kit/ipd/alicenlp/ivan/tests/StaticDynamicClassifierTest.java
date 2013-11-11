@@ -4,6 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.core.Is.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -199,6 +200,25 @@ public class StaticDynamicClassifierTest {
 				+ "Right to the mailbox there is a Frog facing east. "
 				+ "In the foreground on the right hand side there is a Bunny facing southwest. "
 				+ "In front of the Bunny there is a Broccoli.";
+		Annotation doc = annotateText(text);
+
+	    // lets see if there are any annotations at all
+	    assertEquals("Sentences are missing", 5, doc.get(SentencesAnnotation.class).size());
+	    
+	    // the sentences in this test should all have some annotation or another
+	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertTrue("Sentences was not classified: " + sentence.toString(), sentence.containsKey(Classification.class));
+			assertNotNull(sentence.get(Classification.class));
+			System.out.println(sentence.get(Classification.class) + ": " + sentence.toString());
+		}
+	    
+	}
+
+	/**
+	 * @param text
+	 * @return
+	 */
+	private Annotation annotateText(String text) {
 		Annotation doc = new Annotation(text);
 		
 		StanfordCoreNLP pipeline;
@@ -218,16 +238,18 @@ public class StaticDynamicClassifierTest {
 	    pipeline = new StanfordCoreNLP(props);	
 	    
 	    pipeline.annotate(doc);
-
-	    // lets see if there are any annotations at all
-	    assertEquals("Sentences are missing", 5, doc.get(SentencesAnnotation.class).size());
-	    
-	    // the sentences in this test should all have some annotation or another
-	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
-			assertTrue("Sentences was not classified: " + sentence.toString(), sentence.containsKey(Classification.class));
-			assertNotNull(sentence.get(Classification.class));
-			System.out.println(sentence.get(Classification.class) + ": " + sentence.toString());
-		}
-	    
+		return doc;
+	}
+	
+	/** A positive test for ACTION annotations.
+	 *  If this test passes, the analyzer has correctly identified an action.   
+	 */
+	@Test
+	public void positiveActionTest()
+	{
+		Annotation doc = annotateText("The dog jumps three times.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertThat("dog sentence classified wrong", sentence.get(Classification.class), is(Classification.ActionDescription));
+		
 	}
 }
