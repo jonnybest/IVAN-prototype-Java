@@ -509,11 +509,14 @@ public class StaticDynamicClassifierTest {
 	 */
 	@Test
 	public void negativeSetupTest() {
-		Annotation doc = annotateText("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
-		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence.get(Classification.class));
-		assertThat("utterance sentence classified wrong",
-				sentence.get(Classification.class),
-				is(not(Classification.SetupDescription)));
+		{
+			Annotation doc = annotateText("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertNotNull("class is missing",
+					sentence.get(Classification.class));
+			assertThat("utterance sentence classified wrong",
+					sentence.get(Classification.class),
+					is(not(Classification.SetupDescription)));
+		}
 	}
 }
