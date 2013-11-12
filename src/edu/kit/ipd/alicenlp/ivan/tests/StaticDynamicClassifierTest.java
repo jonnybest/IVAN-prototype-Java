@@ -5,6 +5,7 @@ package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.core.Is.*;
+import static org.hamcrest.core.IsNot.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -247,9 +248,41 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveActionTest()
 	{
-		Annotation doc = annotateText("The dog jumps three times.");
+		Annotation doc = annotateText("The penguin jumps once.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("dog sentence classified wrong", sentence.get(Classification.class), is(Classification.ActionDescription));
+		assertThat("jumps sentence classified wrong", sentence.get(Classification.class), is(Classification.ActionDescription));
 		
+		Annotation doc2 = annotateText("The boy and the girl lift their left arms simulteanously as well.");
+		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
+		assertThat("lift sentence classified wrong", sentence2.get(Classification.class), is(Classification.ActionDescription));
+		
+		Annotation doc3 = annotateText("After a short pause, the penguin turns around towards the back of the bucket behind it, jumps onto its stomach and slides towards the bucket, flapping its wings again.");
+		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
+		assertThat("turns around sentence classified wrong", sentence3.get(Classification.class), is(Classification.ActionDescription));
+		
+	}
+	
+	/** A negative test for ACTION annotations.
+	 *  If this test passes, the analyzer has correctly identified an non-action.   
+	 */
+	@Test
+	public void negativeActionTest()
+	{
+		Annotation doc = annotateText("A very short time passes.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertThat("time passes sentence classified wrong", sentence.get(Classification.class), is(not(Classification.ActionDescription)));
+		
+		Annotation doc2 = annotateText("A frog sits left of the Brokkoli facing it.");
+		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence2.get(Classification.class));
+		assertThat("sits sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.ActionDescription)));
+
+		// The start depicts a boy facing to the right of the screen, and a woman facing to the front.
+		Annotation doc3 = annotateText("A giant flame column appears and consumes the astronaut.");
+		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence3.get(Classification.class));
+		assertThat("appears sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.ActionDescription)));
+
 	}
 }
