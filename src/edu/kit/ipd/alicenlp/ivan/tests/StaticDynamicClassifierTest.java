@@ -292,17 +292,17 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveEventTest()
 	{
+		Annotation doc = annotateText("The grinning cat appears in the branches of the tree.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertThat("appears sentence classified wrong", sentence.get(Classification.class), is(Classification.EventDescription));
+		
 		Annotation doc2 = annotateText("The bunny jumps into the hole and disappears.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertThat("disappears sentence classified wrong", sentence2.get(Classification.class), is(Classification.EventDescription));
+		assertThat("jumps, disappears sentence classified wrong", sentence2.get(Classification.class), is(Classification.EventDescription));
 		
 		Annotation doc3 = annotateText("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertThat("turns around sentence classified wrong", sentence3.get(Classification.class), is(Classification.EventDescription));
-		
-		Annotation doc = annotateText("The animation is then complete.");
-		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("animation sentence classified wrong", sentence.get(Classification.class), is(Classification.EventDescription));
+		assertThat("flame sentence classified wrong", sentence3.get(Classification.class), is(Classification.EventDescription));
 		
 	}
 	
@@ -320,17 +320,59 @@ public class StaticDynamicClassifierTest {
 		Annotation doc2 = annotateText("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
-		assertThat("sits sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.EventDescription)));
+		assertThat("frog sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.EventDescription)));
 
 		// The start depicts a boy facing to the right of the screen, and a woman facing to the front.
 		Annotation doc3 = annotateText("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
-		assertThat("appears sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.EventDescription)));
+		assertThat("depicts sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.EventDescription)));
 
 	}
 	
 	// Time examples:
 	// The fire lasts for around 10 seconds.
 	
+	/** A positive test for TIME annotations.
+	 *  If this test passes, the analyzer has correctly identified an event.   
+	 */
+	@Test
+	public void positiveTimeTest()
+	{
+		Annotation doc2 = annotateText("A very short time passes.");
+		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
+		assertThat("passes sentence classified wrong", sentence2.get(Classification.class), is(Classification.TimeDescription));
+		
+		Annotation doc3 = annotateText("The fire lasts for around 10 seconds.");
+		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
+		assertThat("fire around sentence classified wrong", sentence3.get(Classification.class), is(Classification.TimeDescription));
+		
+		Annotation doc = annotateText("The flames continue to burn.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertThat("flames sentence classified wrong", sentence.get(Classification.class), is(Classification.TimeDescription));
+		
+	}
+	
+	/** A negative test for EVENT annotations.
+	 *  If this test passes, the analyzer has correctly identified something that is not a description of a time period.   
+	 */
+	@Test
+	public void negativeTimeTest()
+	{
+		Annotation doc = annotateText("A giant flame column appears and consumes the astronaut.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertThat("flame sentence classified wrong", sentence.get(Classification.class), is(not(Classification.TimeDescription)));
+		
+		Annotation doc2 = annotateText("The scene takes place in the desert.");
+		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence2.get(Classification.class));
+		assertThat("desert sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.TimeDescription)));
+
+		Annotation doc3 = annotateText("Ground is covered with green grass.");
+		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence3.get(Classification.class));
+		assertThat("Ground sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.TimeDescription)));
+
+	}
 }
