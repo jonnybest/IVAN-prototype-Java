@@ -550,7 +550,7 @@ public class StaticDynamicClassifierTest {
 					sentence.get(Classification.class));
 			assertThat("facing sentence classified wrong: " + sentence,
 					sentence.get(Classification.class),
-					is(not(Classification.SetupDescription)));
+					is(Classification.SetupDescription));
 		}
 	}
 
@@ -649,7 +649,7 @@ public class StaticDynamicClassifierTest {
 					sentence.get(Classification.class));
 			assertThat("facing sentence classified wrong: " + sentence,
 					sentence.get(Classification.class),
-					is(not(Classification.SetupDescription)));
+					is(Classification.SetupDescription));
 		}
 	}
 	
@@ -670,7 +670,7 @@ public class StaticDynamicClassifierTest {
 					sentence.get(Classification.class));
 			assertThat("takes place sentence classified wrong: " + sentence,
 					sentence.get(Classification.class),
-					is(not(Classification.SetupDescription)));
+					is(Classification.SetupDescription));
 		}
 	}
 }
