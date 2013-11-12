@@ -334,7 +334,7 @@ public class StaticDynamicClassifierTest {
 	// The fire lasts for around 10 seconds.
 	
 	/** A positive test for TIME annotations.
-	 *  If this test passes, the analyzer has correctly identified an event.   
+	 *  If this test passes, the analyzer has correctly identified time.   
 	 */
 	@Test
 	public void positiveTimeTest()
@@ -353,7 +353,7 @@ public class StaticDynamicClassifierTest {
 		
 	}
 	
-	/** A negative test for EVENT annotations.
+	/** A negative test for TIME annotations.
 	 *  If this test passes, the analyzer has correctly identified something that is not a description of a time period.   
 	 */
 	@Test
@@ -374,5 +374,28 @@ public class StaticDynamicClassifierTest {
 		assertNotNull("class is missing", sentence3.get(Classification.class));
 		assertThat("Ground sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.TimeDescription)));
 
+	}
+	
+	/** A positive test for ERROR annotations.
+	 *  If this test passes, the analyzer identified an undesirable sentence.   
+	 */
+	@Test
+	public void positiveErrorTest()
+	{
+		Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertThat("passes sentence classified wrong", sentence.get(Classification.class), is(Classification.ErrorDescription));
+	}
+	
+	/** A negative test for EVENT annotations.
+	 *  If this test passes, the analyzer has found a valid sentence.   
+	 */
+	@Test
+	public void negativeErrorTest()
+	{
+		Annotation doc = annotateText("The rabbit screams \"Ahhhhhhhh!\" and turns around towards the hole.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertThat("flame sentence classified wrong", sentence.get(Classification.class), is(not(Classification.ErrorDescription)));		
 	}
 }
