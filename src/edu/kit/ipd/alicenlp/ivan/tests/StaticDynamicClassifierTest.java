@@ -300,7 +300,11 @@ public class StaticDynamicClassifierTest {
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("jumps, disappears sentence classified wrong", sentence2.get(Classification.class), is(Classification.EventDescription));
 		
-		Annotation doc3 = annotateText("A giant flame column appears and consumes the astronaut.");
+		Annotation doc4 = annotateText("A giant flame column appears and consumes the astronaut.");
+		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
+		assertThat("flame sentence classified wrong", sentence4.get(Classification.class), is(Classification.EventDescription));
+		
+		Annotation doc3 = annotateText("She stops in front of the rabbit.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("flame sentence classified wrong", sentence3.get(Classification.class), is(Classification.EventDescription));
 		
@@ -387,7 +391,7 @@ public class StaticDynamicClassifierTest {
 		assertThat("passes sentence classified wrong", sentence.get(Classification.class), is(Classification.ErrorDescription));
 	}
 	
-	/** A negative test for EVENT annotations.
+	/** A negative test for ERROR annotations.
 	 *  If this test passes, the analyzer has found a valid sentence.   
 	 */
 	@Test
@@ -397,5 +401,33 @@ public class StaticDynamicClassifierTest {
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
 		assertThat("flame sentence classified wrong", sentence.get(Classification.class), is(not(Classification.ErrorDescription)));		
+	}
+	/** A positive test for SETUP annotations.
+	 *  If this test passes, the analyzer identified a description of the scene's initial state.   
+	 */
+	@Test
+	public void positiveSetupTest()
+	{
+		Annotation doc = annotateText("The ground is covered with grass.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertThat("simple sentence classified wrong", sentence.get(Classification.class), is(Classification.SetupDescription));
+		
+		// The ground is covered with grass, the sky is blue. 
+		Annotation doc2 = annotateText("The ground is covered with grass, the sky is blue.");
+		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
+		assertThat("comma sentence classified wrong", sentence2.get(Classification.class), is(Classification.SetupDescription));
+		
+	}
+	
+	/** A negative test for SETUP annotations.
+	 *  If this test passes, the analyzer has found something other then a setup description.   
+	 */
+	@Test
+	public void negativeSetupTest()
+	{
+		Annotation doc = annotateText("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertThat("utterance sentence classified wrong", sentence.get(Classification.class), is(not(Classification.SetupDescription)));		
 	}
 }
