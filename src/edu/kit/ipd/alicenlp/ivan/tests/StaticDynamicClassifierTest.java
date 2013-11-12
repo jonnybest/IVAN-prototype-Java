@@ -191,7 +191,7 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void StanfordPipelineTest(){
 		
-		// constructin test
+		// Construction test
 		@SuppressWarnings("unused")
 		StaticDynamicClassifier myannotator = new StaticDynamicClassifier("hi", new Properties());
 		
