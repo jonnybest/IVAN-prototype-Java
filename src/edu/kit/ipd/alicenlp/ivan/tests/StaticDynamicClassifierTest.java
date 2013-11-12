@@ -70,16 +70,23 @@ public class StaticDynamicClassifierTest {
 		annotateSentence(inputlocs, setuplist);
 
 		for (CoreMap sentence : setuplist) {
-			IndexedWord root = BaseRule.getRoot(sentence);
+			IndexedWord root = null;
+			try {
+				root = BaseRule.getRoot(sentence);
+			} catch (RuntimeException e)
+			{
+				fail("Rooting \"" + sentence + "\" caused an exception. " + e.getMessage());
+			}
 			Classification result = null;
 			try {
 				result = proto.classifySentence(root, sentence);
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
-			}
+			} 
 			if (result != Classification.SetupDescription) {
 				fail("Wrong classification for setup sentence \"" + sentence
 						+ "\"");
+//				System.out.println("fails: " + sentence);
 			}
 		}
 
@@ -119,7 +126,7 @@ public class StaticDynamicClassifierTest {
 
 	private static String loadTestFile(String testfilename) {
 		/**
-		 * this stuff is c&p'd from edu.kit.alicenlp.konkordanz
+		 * this stuff is mostly c&p'd from edu.kit.alicenlp.konkordanz
 		 */
 		// texts go here:
 		List<String> texts = new LinkedList<String>();
