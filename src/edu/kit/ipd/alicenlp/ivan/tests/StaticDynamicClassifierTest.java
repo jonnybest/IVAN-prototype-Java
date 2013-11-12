@@ -535,14 +535,14 @@ public class StaticDynamicClassifierTest {
 	 */
 	@Test
 	public void hardFacingTest() {
-		String text = "The boy is facing the girl."
-				+ "The boy is facing towards at the girl."
-				+ "Alice is facing away from the bunny."
-				+ "The cowboy is facing west."
-				+ "The camel is facing the camera."
-				+ "It is facing the viewer."
-				+ "The duckling is facing just slightly past the monkey."
-				+ "She is facing towards the viewer but turned 45° to the left of the stage."
+		String text = "The boy is facing the girl. "
+				+ "The boy is facing towards at the girl. "
+				+ "Alice is facing away from the bunny. "
+				+ "The cowboy is facing west. "
+				+ "The camel is facing the camera. "
+				+ "It is facing the viewer. "
+				+ "The duckling is facing just slightly past the monkey. "
+				+ "She is facing towards the viewer but turned 45° to the left of the stage. "
 				+ "At the start the astronaught is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.";
 		Annotation doc = annotateText(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
