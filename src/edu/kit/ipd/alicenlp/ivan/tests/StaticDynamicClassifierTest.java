@@ -34,7 +34,7 @@ import edu.stanford.nlp.util.CoreMap;
 
 /**
  * @author Jonny
- *
+ * 
  */
 public class StaticDynamicClassifierTest {
 
@@ -43,28 +43,29 @@ public class StaticDynamicClassifierTest {
 	private static String inputlocs;
 	private static String inputdirs;
 
-	
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		
+
 		// load corpus examples for locations
 		inputlocs = loadTestFile("setup.txt");
-		
+
 		// load corpus examples for directions
 		inputdirs = loadTestFile("actions.txt");
 	}
 
 	/**
-	 * Test method for {@link edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier#classifySentence(edu.stanford.nlp.ling.IndexedWord, edu.stanford.nlp.util.CoreMap)}.
+	 * Test method for
+	 * {@link edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier#classifySentence(edu.stanford.nlp.ling.IndexedWord, edu.stanford.nlp.util.CoreMap)}
+	 * .
 	 */
 	@Test
-	public void testClassifySentence() {	
+	public void testClassifySentence() {
 		// get instance
 		StaticDynamicClassifier proto = StaticDynamicClassifier.getInstance();
-		
+
 		// annotate corpus examples
 		annotateSentence(inputlocs, setuplist);
 
@@ -77,10 +78,11 @@ public class StaticDynamicClassifierTest {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
 			if (result != Classification.SetupDescription) {
-				fail("Wrong classification for setup sentence \"" + sentence + "\"");
+				fail("Wrong classification for setup sentence \"" + sentence
+						+ "\"");
 			}
 		}
-		
+
 		// annotate corpus examples
 		annotateSentence(inputdirs, negativeslist);
 
@@ -93,7 +95,8 @@ public class StaticDynamicClassifierTest {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
 			if (result == Classification.SetupDescription) {
-				fail("Wrong classification for action sentence \"" + sentence + "\"");
+				fail("Wrong classification for action sentence \"" + sentence
+						+ "\"");
 			}
 		}
 	}
@@ -102,8 +105,10 @@ public class StaticDynamicClassifierTest {
 	 * @param location
 	 * @param sentencelist
 	 */
-	protected static void annotateSentence(String location, List<CoreMap> sentencelist) {
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
+	protected static void annotateSentence(String location,
+			List<CoreMap> sentencelist) {
+		DeclarationPositionFinder proto = DeclarationPositionFinder
+				.getInstance();
 		Annotation anno = new Annotation(location);
 		proto.getPipeline().annotate(anno);
 		List<CoreMap> maps = anno.get(SentencesAnnotation.class);
@@ -111,7 +116,7 @@ public class StaticDynamicClassifierTest {
 			sentencelist.add(coreMap);
 		}
 	}
-	
+
 	private static String loadTestFile(String testfilename) {
 		/**
 		 * this stuff is c&p'd from edu.kit.alicenlp.konkordanz
@@ -123,8 +128,8 @@ public class StaticDynamicClassifierTest {
 		 * Load text from individual files
 		 */
 		File infile = new File("test/files/" + testfilename);
-		//File[] listOfFiles = folder.listFiles();
-		File[] listOfFiles = {infile};
+		// File[] listOfFiles = folder.listFiles();
+		File[] listOfFiles = { infile };
 		// this is our buffer to reading. we read in 1024 byte chunks
 		CharBuffer buffer = CharBuffer.allocate(1024);
 
@@ -176,26 +181,38 @@ public class StaticDynamicClassifierTest {
 		return texts.get(0);
 	}
 
-	/** This is a test for Stanford Pipeline compliance. 
-	 *  
-	 * Here are the steps: (from the FAQ)
-	 * 1. extend the class edu.stanford.nlp.pipeline.Annotator 
-	 * 2. I assume you're writing your own code to do the processing. Whatever code you write, you want to call it from a class that is a subclass of Annotator. Look at any of the existing Annotator classes, such as POSTaggerAnnotator, and try to emulate what it does.
-	 * 3. Have a constructor with the signature (String, Properties)
-	 * 4. If your new annotator is FilterAnnotator, for example, it must have a constructor FilterAnnotator(String name, Properties props) in order to work.
-	 * 5. Add the property customAnnotatorClass.FOO=BAR
-	 * 6. Using the same example, suppose your full class name is com.foo.FilterAnnotator, and you want the new annotator to have the name "filter". When creating the CoreNLP properties, you need to add the flag 
-	 * 		customAnnotatorClass.filter=com.foo.FilterAnnotator
-	 * 7. You can then add "filter" to the list of annotators in the annotators property. When you do that, the constructor FilterAnnotator(String, Properties) will be called with the name "filter" and the properties files you run CoreNLP with. This lets you define any property flag you want. For example, you could name a flag filter.verbose and then extract that flag from the properties to determine the verbosity of your new annotator.
+	/**
+	 * This is a test for Stanford Pipeline compliance.
+	 * 
+	 * Here are the steps: (from the FAQ) 1. extend the class
+	 * edu.stanford.nlp.pipeline.Annotator 2. I assume you're writing your own
+	 * code to do the processing. Whatever code you write, you want to call it
+	 * from a class that is a subclass of Annotator. Look at any of the existing
+	 * Annotator classes, such as POSTaggerAnnotator, and try to emulate what it
+	 * does. 3. Have a constructor with the signature (String, Properties) 4. If
+	 * your new annotator is FilterAnnotator, for example, it must have a
+	 * constructor FilterAnnotator(String name, Properties props) in order to
+	 * work. 5. Add the property customAnnotatorClass.FOO=BAR 6. Using the same
+	 * example, suppose your full class name is com.foo.FilterAnnotator, and you
+	 * want the new annotator to have the name "filter". When creating the
+	 * CoreNLP properties, you need to add the flag
+	 * customAnnotatorClass.filter=com.foo.FilterAnnotator 7. You can then add
+	 * "filter" to the list of annotators in the annotators property. When you
+	 * do that, the constructor FilterAnnotator(String, Properties) will be
+	 * called with the name "filter" and the properties files you run CoreNLP
+	 * with. This lets you define any property flag you want. For example, you
+	 * could name a flag filter.verbose and then extract that flag from the
+	 * properties to determine the verbosity of your new annotator.
 	 */
 	@Test
-	public void StanfordPipelineTest(){
-		
+	public void StanfordPipelineTest() {
+
 		// Construction test
 		@SuppressWarnings("unused")
-		StaticDynamicClassifier myannotator = new StaticDynamicClassifier("hi", new Properties());
-		
-		// functional test 
+		StaticDynamicClassifier myannotator = new StaticDynamicClassifier("hi",
+				new Properties());
+
+		// functional test
 		String text = "In the background on the left hand side there is a PalmTree. "
 				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. "
 				+ "Right to the mailbox there is a Frog facing east. "
@@ -203,16 +220,19 @@ public class StaticDynamicClassifierTest {
 				+ "In front of the Bunny there is a Broccoli.";
 		Annotation doc = annotateText(text);
 
-	    // lets see if there are any annotations at all
-	    assertEquals("Sentences are missing", 5, doc.get(SentencesAnnotation.class).size());
-	    
-	    // the sentences in this test should all have some annotation or another
-	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
-			assertTrue("Sentences was not classified: " + sentence.toString(), sentence.containsKey(Classification.class));
+		// lets see if there are any annotations at all
+		assertEquals("Sentences are missing", 5,
+				doc.get(SentencesAnnotation.class).size());
+
+		// the sentences in this test should all have some annotation or another
+		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertTrue("Sentences was not classified: " + sentence.toString(),
+					sentence.containsKey(Classification.class));
 			assertNotNull(sentence.get(Classification.class));
-			System.out.println(sentence.get(Classification.class) + ": " + sentence.toString());
+			System.out.println(sentence.get(Classification.class) + ": "
+					+ sentence.toString());
 		}
-	    
+
 	}
 
 	/**
@@ -221,213 +241,279 @@ public class StaticDynamicClassifierTest {
 	 */
 	private Annotation annotateText(String text) {
 		Annotation doc = new Annotation(text);
-		
+
 		StanfordCoreNLP pipeline;
-			
-	    // creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
-	    Properties props = new Properties();
-	    // alternativ: wsj-bidirectional 
-	    try {
-			props.put("pos.model", "edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger"); 
+
+		// creates a StanfordCoreNLP object, with POS tagging, lemmatization,
+		// NER, parsing, and coreference resolution
+		Properties props = new Properties();
+		// alternativ: wsj-bidirectional
+		try {
+			props.put(
+					"pos.model",
+					"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	    props.put("customAnnotatorClass.sdclassifier", "edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
-	    
-	    // konfiguriere pipeline
-	    props.put("annotators", "tokenize, ssplit, pos, lemma, parse, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
-	    pipeline = new StanfordCoreNLP(props);	
-	    
-	    pipeline.annotate(doc);
+		props.put("customAnnotatorClass.sdclassifier",
+				"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+
+		// konfiguriere pipeline
+		props.put(
+				"annotators", "tokenize, ssplit, pos, lemma, parse, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+		pipeline = new StanfordCoreNLP(props);
+
+		pipeline.annotate(doc);
 		return doc;
 	}
-	
-	/** A positive test for ACTION annotations.
-	 *  If this test passes, the analyzer has correctly identified an action.   
+
+	/**
+	 * A positive test for ACTION annotations. If this test passes, the analyzer
+	 * has correctly identified an action.
 	 */
 	@Test
-	public void positiveActionTest()
-	{
+	public void positiveActionTest() {
 		Annotation doc = annotateText("The penguin jumps once.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("jumps sentence classified wrong", sentence.get(Classification.class), is(Classification.ActionDescription));
-		
+		assertThat("jumps sentence classified wrong",
+				sentence.get(Classification.class),
+				is(Classification.ActionDescription));
+
 		Annotation doc2 = annotateText("The boy and the girl lift their left arms simulteanously as well.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertThat("lift sentence classified wrong", sentence2.get(Classification.class), is(Classification.ActionDescription));
-		
+		assertThat("lift sentence classified wrong",
+				sentence2.get(Classification.class),
+				is(Classification.ActionDescription));
+
 		Annotation doc3 = annotateText("After a short pause, the penguin turns around towards the back of the bucket behind it, jumps onto its stomach and slides towards the bucket, flapping its wings again.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertThat("turns around sentence classified wrong", sentence3.get(Classification.class), is(Classification.ActionDescription));
-		
+		assertThat("turns around sentence classified wrong",
+				sentence3.get(Classification.class),
+				is(Classification.ActionDescription));
+
 	}
-	
-	/** A negative test for ACTION annotations.
-	 *  If this test passes, the analyzer has correctly identified an non-action.   
+
+	/**
+	 * A negative test for ACTION annotations. If this test passes, the analyzer
+	 * has correctly identified an non-action.
 	 */
 	@Test
-	public void negativeActionTest()
-	{
+	public void negativeActionTest() {
 		Annotation doc = annotateText("A very short time passes.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
-		assertThat("time passes sentence classified wrong", sentence.get(Classification.class), is(not(Classification.ActionDescription)));
-		
+		assertThat("time passes sentence classified wrong",
+				sentence.get(Classification.class),
+				is(not(Classification.ActionDescription)));
+
 		Annotation doc2 = annotateText("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
-		assertThat("sits sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.ActionDescription)));
+		assertThat("sits sentence classified wrong",
+				sentence2.get(Classification.class),
+				is(not(Classification.ActionDescription)));
 
-		// The start depicts a boy facing to the right of the screen, and a woman facing to the front.
+		// The start depicts a boy facing to the right of the screen, and a
+		// woman facing to the front.
 		Annotation doc3 = annotateText("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
-		assertThat("appears sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.ActionDescription)));
+		assertThat("appears sentence classified wrong",
+				sentence3.get(Classification.class),
+				is(not(Classification.ActionDescription)));
 
 	}
-	
-	/** A positive test for EVENT annotations.
-	 *  If this test passes, the analyzer has correctly identified an event.   
+
+	/**
+	 * A positive test for EVENT annotations. If this test passes, the analyzer
+	 * has correctly identified an event.
 	 */
 	@Test
-	public void positiveEventTest()
-	{
+	public void positiveEventTest() {
 		Annotation doc = annotateText("The grinning cat appears in the branches of the tree.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("appears sentence classified wrong", sentence.get(Classification.class), is(Classification.EventDescription));
-		
+		assertThat("appears sentence classified wrong",
+				sentence.get(Classification.class),
+				is(Classification.EventDescription));
+
 		Annotation doc2 = annotateText("The bunny jumps into the hole and disappears.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertThat("jumps, disappears sentence classified wrong", sentence2.get(Classification.class), is(Classification.EventDescription));
-		
+		assertThat("jumps, disappears sentence classified wrong",
+				sentence2.get(Classification.class),
+				is(Classification.EventDescription));
+
 		Annotation doc4 = annotateText("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
-		assertThat("flame sentence classified wrong", sentence4.get(Classification.class), is(Classification.EventDescription));
-		
+		assertThat("flame sentence classified wrong",
+				sentence4.get(Classification.class),
+				is(Classification.EventDescription));
+
 		Annotation doc3 = annotateText("She stops in front of the rabbit.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertThat("flame sentence classified wrong", sentence3.get(Classification.class), is(Classification.EventDescription));
-		
+		assertThat("flame sentence classified wrong",
+				sentence3.get(Classification.class),
+				is(Classification.EventDescription));
+
 	}
-	
-	/** A negative test for EVENT annotations.
-	 *  If this test passes, the analyzer has correctly identified something that is not an event.   
+
+	/**
+	 * A negative test for EVENT annotations. If this test passes, the analyzer
+	 * has correctly identified something that is not an event.
 	 */
 	@Test
-	public void negativeEventTest()
-	{
+	public void negativeEventTest() {
 		Annotation doc = annotateText("A very short time passes.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
-		assertThat("time passes sentence classified wrong", sentence.get(Classification.class), is(not(Classification.EventDescription)));
-		
+		assertThat("time passes sentence classified wrong",
+				sentence.get(Classification.class),
+				is(not(Classification.EventDescription)));
+
 		Annotation doc2 = annotateText("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
-		assertThat("frog sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.EventDescription)));
+		assertThat("frog sentence classified wrong",
+				sentence2.get(Classification.class),
+				is(not(Classification.EventDescription)));
 
-		// The start depicts a boy facing to the right of the screen, and a woman facing to the front.
+		// The start depicts a boy facing to the right of the screen, and a
+		// woman facing to the front.
 		Annotation doc3 = annotateText("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
-		assertThat("depicts sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.EventDescription)));
+		assertThat("depicts sentence classified wrong",
+				sentence3.get(Classification.class),
+				is(not(Classification.EventDescription)));
 
 	}
-	
+
 	// Time examples:
 	// The fire lasts for around 10 seconds.
-	
-	/** A positive test for TIME annotations.
-	 *  If this test passes, the analyzer has correctly identified time.   
+
+	/**
+	 * A positive test for TIME annotations. If this test passes, the analyzer
+	 * has correctly identified time.
 	 */
 	@Test
-	public void positiveTimeTest()
-	{
+	public void positiveTimeTest() {
 		Annotation doc2 = annotateText("A very short time passes.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertThat("passes sentence classified wrong", sentence2.get(Classification.class), is(Classification.TimeDescription));
-		
+		assertThat("passes sentence classified wrong",
+				sentence2.get(Classification.class),
+				is(Classification.TimeDescription));
+
 		Annotation doc3 = annotateText("The fire lasts for around 10 seconds.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertThat("fire around sentence classified wrong", sentence3.get(Classification.class), is(Classification.TimeDescription));
-		
+		assertThat("fire around sentence classified wrong",
+				sentence3.get(Classification.class),
+				is(Classification.TimeDescription));
+
 		Annotation doc = annotateText("The flames continue to burn.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("flames sentence classified wrong", sentence.get(Classification.class), is(Classification.TimeDescription));
-		
+		assertThat("flames sentence classified wrong",
+				sentence.get(Classification.class),
+				is(Classification.TimeDescription));
+
 	}
-	
-	/** A negative test for TIME annotations.
-	 *  If this test passes, the analyzer has correctly identified something that is not a description of a time period.   
+
+	/**
+	 * A negative test for TIME annotations. If this test passes, the analyzer
+	 * has correctly identified something that is not a description of a time
+	 * period.
 	 */
 	@Test
-	public void negativeTimeTest()
-	{
+	public void negativeTimeTest() {
 		Annotation doc = annotateText("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
-		assertThat("flame sentence classified wrong", sentence.get(Classification.class), is(not(Classification.TimeDescription)));
-		
+		assertThat("flame sentence classified wrong",
+				sentence.get(Classification.class),
+				is(not(Classification.TimeDescription)));
+
 		Annotation doc2 = annotateText("The scene takes place in the desert.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
-		assertThat("desert sentence classified wrong", sentence2.get(Classification.class), is(not(Classification.TimeDescription)));
+		assertThat("desert sentence classified wrong",
+				sentence2.get(Classification.class),
+				is(not(Classification.TimeDescription)));
 
 		Annotation doc3 = annotateText("Ground is covered with green grass.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
-		assertThat("Ground sentence classified wrong", sentence3.get(Classification.class), is(not(Classification.TimeDescription)));
+		assertThat("Ground sentence classified wrong",
+				sentence3.get(Classification.class),
+				is(not(Classification.TimeDescription)));
 
 	}
-	
-	/** A positive test for ERROR annotations.
-	 *  If this test passes, the analyzer identified an undesirable sentence.   
+
+	/**
+	 * A positive test for ERROR annotations. If this test passes, the analyzer
+	 * identified an undesirable sentence.
 	 */
 	@Test
-	public void positiveErrorTest()
-	{
+	public void positiveErrorTest() {
 		Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("passes sentence classified wrong", sentence.get(Classification.class), is(Classification.ErrorDescription));
+		assertThat("passes sentence classified wrong",
+				sentence.get(Classification.class),
+				is(Classification.ErrorDescription));
 	}
-	
-	/** A negative test for ERROR annotations.
-	 *  If this test passes, the analyzer has found a valid sentence.   
+
+	/**
+	 * A negative test for ERROR annotations. If this test passes, the analyzer
+	 * has found a valid sentence.
 	 */
 	@Test
-	public void negativeErrorTest()
-	{
+	public void negativeErrorTest() {
 		Annotation doc = annotateText("The rabbit screams \"Ahhhhhhhh!\" and turns around towards the hole.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
-		assertThat("flame sentence classified wrong", sentence.get(Classification.class), is(not(Classification.ErrorDescription)));		
+		assertThat("flame sentence classified wrong",
+				sentence.get(Classification.class),
+				is(not(Classification.ErrorDescription)));
 	}
-	/** A positive test for SETUP annotations.
-	 *  If this test passes, the analyzer identified a description of the scene's initial state.   
+
+	/**
+	 * A positive test for SETUP annotations. If this test passes, the analyzer
+	 * identified a description of the scene's initial state.
 	 */
 	@Test
-	public void positiveSetupTest()
-	{
-		Annotation doc = annotateText("The ground is covered with grass.");
-		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("simple sentence classified wrong", sentence.get(Classification.class), is(Classification.SetupDescription));
-		
-		// The ground is covered with grass, the sky is blue. 
-		Annotation doc2 = annotateText("The ground is covered with grass, the sky is blue.");
-		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertThat("comma sentence classified wrong", sentence2.get(Classification.class), is(Classification.SetupDescription));
-		
+	public void positiveSetupTest() {
+		{
+			Annotation doc = annotateText("The scene takes place on the grass.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("takes place sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+		{
+			Annotation doc3 = annotateText("The ground is covered with grass.");
+			CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
+			assertThat("simple sentence classified wrong",
+					sentence3.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+		{
+			// The ground is covered with grass, the sky is blue.
+			Annotation doc2 = annotateText("The ground is covered with grass, the sky is blue.");
+			CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
+			assertThat("comma sentence classified wrong",
+					sentence2.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
 	}
-	
-	/** A negative test for SETUP annotations.
-	 *  If this test passes, the analyzer has found something other then a setup description.   
+
+	/**
+	 * A negative test for SETUP annotations. If this test passes, the analyzer
+	 * has found something other then a setup description.
 	 */
 	@Test
-	public void negativeSetupTest()
-	{
+	public void negativeSetupTest() {
 		Annotation doc = annotateText("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
-		assertThat("utterance sentence classified wrong", sentence.get(Classification.class), is(not(Classification.SetupDescription)));		
+		assertThat("utterance sentence classified wrong",
+				sentence.get(Classification.class),
+				is(not(Classification.SetupDescription)));
 	}
 }
