@@ -73,20 +73,20 @@ public class StaticDynamicClassifierTest {
 			IndexedWord root = null;
 			try {
 				root = BaseRule.getRoot(sentence);
-			} catch (RuntimeException e)
-			{
-				fail("Rooting \"" + sentence + "\" caused an exception. " + e.getMessage());
+			} catch (RuntimeException e) {
+				fail("Rooting \"" + sentence + "\" caused an exception. "
+						+ e.getMessage());
 			}
 			Classification result = null;
 			try {
 				result = proto.classifySentence(root, sentence);
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
-			} 
+			}
 			if (result != Classification.SetupDescription) {
 				fail("Wrong classification for setup sentence \"" + sentence
 						+ "\"");
-//				System.out.println("fails: " + sentence);
+				// System.out.println("fails: " + sentence);
 			}
 		}
 
@@ -522,6 +522,153 @@ public class StaticDynamicClassifierTest {
 			assertNotNull("class is missing",
 					sentence.get(Classification.class));
 			assertThat("utterance sentence classified wrong",
+					sentence.get(Classification.class),
+					is(not(Classification.SetupDescription)));
+		}
+	}
+
+	/*
+	 * Hard problems get their own tests.
+	 */
+	/**
+	 * Facing
+	 */
+	@Test
+	public void hardFacingTest() {
+		String text = "The boy is facing the girl."
+				+ "The boy is facing towards at the girl."
+				+ "Alice is facing away from the bunny."
+				+ "The cowboy is facing west."
+				+ "The camel is facing the camera."
+				+ "It is facing the viewer."
+				+ "The duckling is facing just slightly past the monkey."
+				+ "She is facing towards the viewer but turned 45° to the left of the stage."
+				+ "At the start the astronaught is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.";
+		Annotation doc = annotateText(text);
+		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertNotNull("class is missing",
+					sentence.get(Classification.class));
+			assertThat("facing sentence classified wrong: " + sentence,
+					sentence.get(Classification.class),
+					is(not(Classification.SetupDescription)));
+		}
+	}
+
+	/**
+	 * Visibility
+	 */
+	@Test
+	public void hardVisibilityTest() {
+		{
+			Annotation doc = annotateText("The grinning cat is not visible.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("visible sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+	}
+
+	/**
+	 * Special verb: Depict
+	 */
+	@Test
+	public void hardDepictTest() {
+		{
+			Annotation doc = annotateText("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("depicts sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+	}
+
+	/**
+	 * Root is a noun
+	 */
+	@Test
+	public void hardNounTest() {
+		{
+			Annotation doc = annotateText("Rightmost of the stage, in the back, is a sunflower, facing towards the characters.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("sunflower sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+		{
+			Annotation doc = annotateText("At the start of the scene, on the left is a light bulb which is off.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("bulb sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+		// Next to the bulb on the ground is a switch, with a brown monkey next
+		// to it, facing the button but slightly turned towards the viewer.
+		{
+			Annotation doc = annotateText("Next to the bulb on the ground is a switch, "
+					+ "with a brown monkey next to it, facing the button but slightly turned "
+					+ "towards the viewer.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("switch sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+	}
+
+	/**
+	 * Root is an adjective
+	 */
+	@Test
+	public void hardAdjectiveTest() {
+		{
+			Annotation doc = annotateText("The grass is green and the sky is blue.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("green sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+		{
+			Annotation doc = annotateText("The sky is blue and the stage is a field of grass.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("blue sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.SetupDescription));
+		}
+	}
+
+	/**
+	 * Other gerunds
+	 */
+	@Test
+	public void hardGerundsTest() {
+		String text = "The crown is cut off at the top at the stage. "
+				+ "The ground is covered with grass, the sky is blue. "
+				+ "The ground is covered with grass, the sky is blue.";
+		Annotation doc = annotateText(text);
+		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertNotNull("class is missing",
+					sentence.get(Classification.class));
+			assertThat("facing sentence classified wrong: " + sentence,
+					sentence.get(Classification.class),
+					is(not(Classification.SetupDescription)));
+		}
+	}
+	
+	/**
+	 * takes place
+	 */
+	@Test
+	public void hardTakesPlaceTest() {
+		String text = "The scene takes place on the grass." +
+				"The scene takes place on the grass."+
+				"The scene takes place in the desert."+
+				"The scene takes place on a meadow."+
+				"The scene takes place on the moon surface.";
+
+		Annotation doc = annotateText(text);
+		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertNotNull("class is missing",
+					sentence.get(Classification.class));
+			assertThat("takes place sentence classified wrong: " + sentence,
 					sentence.get(Classification.class),
 					is(not(Classification.SetupDescription)));
 		}
