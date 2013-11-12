@@ -74,7 +74,6 @@ Half of screen is blue sky.
 I see a palm tree on the left of the screen, a mailbox in front of it. 
 In the foreground there sits a frog on the left and a hare on the right of the screen. 
 
-The ground is covered with grass, the sky is blue. 
 In the background on the left hand side there is a PalmTree. 
 In the foreground on the left hand side there is a closed Mailbox facing southeast. 
 Right to the mailbox there is a Frog facing east. 
@@ -100,7 +99,7 @@ There is a blue sky above a green field of grass.
 In the scene there are a boy and a girl.
 The girl is standing on the right side of the center of the scene and is facing the camera.
 The boy is standing on the left side of the center of the scene and a little bit further away from the camera than the girl.
-The boy is facing the girl.
+
 
 The stage is a grassy field, with blue sky as a backdrop.
 The characters are a ninja tortoise, a rabbit and a T-Rex.
@@ -108,7 +107,7 @@ The tortoise is standing just to the left of the centre of the stage, facing the
 The rabbit is sitting next to it to the right, looking at the tortoise.
 The T-Rex is standing to the right of the stage, looking at the rabbit.
 
-The scene takes place on the moon surface.
+
 The planet earth can be seen in the background in the sky.
 The moon lander is in the background to the left.
 The astronaut is in the foreground to the left.
@@ -120,55 +119,29 @@ In the background, slightly on the moon stands a space ship with a sign reading 
 In the foreground in front of it is an astronaught, facing the viewer. 
 At the right side of the scene in the background is an alien.
 
-At the start the astronaught is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.
-
-The sky is blue and the stage is a field of grass.
-At the start of the scene, on the left is a light bulb which is off.
-Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.
-Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer. 
-The duckling is facing just slightly past the monkey. 
+Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.  
 To the right is a penguin with white stomach and face and blue back and wings. 
-It is facing the viewer. Behind it to the left is a metal bucket. 
-Rightmost of the stage, in the back, is a sunflower, facing towards the characters.
 
-The grass is green and the sky is blue.
+Behind it to the left is a metal bucket. 
+
 There is a boy and a girl.
-The boy is facing towards at the girl.
 The girl is to the right and the boy is to the left.
 The boy is in the background.
 
-The start depicts a boy facing to the right of the screen, and a woman facing to the front. 
-
-The scene takes place on a meadow.
 To the left hand side, there is a boy.
 The right, there is a girl.
-The boy is facing the girl.
 
-The scene takes place in the desert.
+
 There is sand on the ground and the sky is blue.
 In the background, there is a pyramid.
 There is a camel to the right.
 There is a cowboy to the left.
-The cowboy is facing west.
-The camel is facing the camera.
 
-The scene takes place on the grass.
 There is a hole in the foreground to the right.
 In the foreground to the left is Alice.
 Alice is a human girl with blonde hair in a blue dress.
-Alice is facing away from the bunny.
 In the background to the right to there is a bunny which faces Alice.
 In the background to the left, there is a large tree with two branches.
-The grinning cat is not visible.
-
-The rabbit shouts "Hello!". 
-Alice then turns to face the rabbit and says "???". 
-The rabbit hops three times towards Alice and says "Come over here!". Alice shakes her head. The rabbit says, "Come on! What time is it?" Alice then says "Oh..." and hesitantly walks towards the rabbit. 
-After two steps she says, "Okay...". She stops in front of the rabbit. 
-Suddenly, a grinning, orange striped cat appears between the two branches of the tree and says ":-D". It turns its head towards Alice and the rabbit, who turn their heads towards the cat. 
-The rabbit screams "Ahhhhhhhh!" and turns around towards the hole. 
-As the rabbit starts hopping towards the hole, Alice shouts, "Hey! Wait!" and turns towards the hole too. 
-The rabbit jumps into the hole.
 
 The ground is covered with grass.
 In the background there is a sunflower on the far right facing southwest.
@@ -197,3 +170,26 @@ In the background there is a palmtree on the far left.
 In front of the palmtree there is a mailbox. 
 In the foreground to the right there is a broccoli. 
 Right of the mailbox there is a frog facing the broccoli. 
+
+
+At the start of the scene, on the left is a light bulb which is off.
+Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer.
+The duckling is facing just slightly past the monkey.
+It is facing the viewer.
+Rightmost of the stage, in the back, is a sunflower, facing towards the characters.
+The grass is green and the sky is blue.
+The boy is facing towards at the girl.
+The start depicts a boy facing to the right of the screen, and a woman facing to the front.
+The cowboy is facing west.
+The camel is facing the camera.
+Alice is facing away from the bunny.
+The grinning cat is not visible.
+
+The sky is blue and the stage is a field of grass.
+At the start the astronaught is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.
+The scene takes place on the grass.
+The scene takes place in the desert.
+The scene takes place on a meadow.
+The scene takes place on the moon surface.
+The boy is facing the girl.
+The ground is covered with grass, the sky is blue. 

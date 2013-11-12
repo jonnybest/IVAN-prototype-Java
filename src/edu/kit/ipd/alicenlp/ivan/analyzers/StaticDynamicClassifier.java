@@ -60,7 +60,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		
 		// normal classification rules follow:
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		System.out.println(graph.toString());
+//		System.out.println(graph.toString());
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
 		boolean passive = BaseRule.isPassive(root, graph);
@@ -88,8 +88,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			List<Pointer> pointers = mcs.getPointers(PointerType.HYPERNYM);
 			if (pointers.size() > 0) {
 				printHypernymfeedback(word, pointers);
-				System.out.print("Hypernym lexname: ");
-				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
+//				System.out.print("Hypernym lexname: ");
+//				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
 			}
 			return Classification.SetupDescription;
 		}
@@ -98,8 +98,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			List<Pointer> pointers = senses.get(1).getPointers(PointerType.HYPERNYM);
 			if (pointers.size() > 0) {
 				printHypernymfeedback(word, pointers);
-				System.out.print("Hypernym lexname: ");
-				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
+//				System.out.print("Hypernym lexname: ");
+//				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
 			}
 			return Classification.SetupDescription;
 		}
