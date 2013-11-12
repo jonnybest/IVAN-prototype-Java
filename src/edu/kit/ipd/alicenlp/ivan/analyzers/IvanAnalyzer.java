@@ -79,15 +79,18 @@ public abstract class IvanAnalyzer implements Annotator
 	public enum Classification implements TypesafeMap.Key<Classification> 
 	{
 		/**
-		 * A SetupDescription defines the initial state of the scene, like the position of an entity.
+		 * A SetupDescription defines the initial state of the scene, 
+		 * like the position of an entity.
 		 */
 		SetupDescription,
 		/**
-		 * An ActionDescription relates to an entity on the scene doing something specific, like a person taking a step.
+		 * An ActionDescription relates to an entity on the scene doing something specific, 
+		 * like a person taking a step.
 		 */
 		ActionDescription,
 		/**
-		 * An EventDescription relates to an observable event in the scene, like a ball dropping onto the scene from out of view.
+		 * An EventDescription relates to an observable event in the scene, 
+		 * like a ball dropping onto the scene from out of view.
 		 */
 		EventDescription,
 		/**
@@ -95,7 +98,8 @@ public abstract class IvanAnalyzer implements Annotator
 		 */
 		TimeDescription,
 		/**
-		 * This sentence contains something that we don't want users to write. (The ErrorDescription is not intended to replace exceptions.)
+		 * This sentence contains something that we don't want users to write. 
+		 * (The ErrorDescription is not intended to replace exceptions.)
 		 */
 		ErrorDescription
 	}
