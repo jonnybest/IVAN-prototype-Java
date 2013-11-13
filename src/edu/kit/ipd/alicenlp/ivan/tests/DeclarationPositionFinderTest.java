@@ -34,6 +34,7 @@ import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.trees.TreeFactory;
@@ -287,11 +288,15 @@ public class DeclarationPositionFinderTest {
 				new String[]{"ninja tortoise", "rabbit", "T-Rex"});
 		solutions.put("In the scene there are a boy and a girl.", 
 				new String[]{"boy", "girl"});
-		solutions.put("In the far left is a Mailbox and in front of it is a Frog.", 
+		// grammar error?
+//		solutions.put("In the far left is a Mailbox and in front of it is a Frog.", 
+		solutions.put("In the far left there is a Mailbox and in front of it there is a Frog.", 
 				new String[]{"Mailbox", "Frog"});
 		solutions.put("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.", 
 				new String[]{"duckling"});
-		solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.", 
+		// grammar error?
+//		solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.", 
+		solutions.put("In the foreground sits a frog on the left and a hare on the right of the screen.", 
 				new String[]{"frog", "hare"});
 		
 //		List<CoreMap> sentencelist = new ArrayList<CoreMap>();
@@ -305,6 +310,7 @@ public class DeclarationPositionFinderTest {
 //			}
 //			System.out.println("These are declarations: " + ei);
 //		}
+		boolean fail = false;
 		for (Entry<String, String[]> sol : solutions.entrySet()) {
 			CoreMap anno = annotateSingleSentence(sol.getKey());
 			List<EntityInfo> einfos = proto.getDeclarations(anno);
@@ -317,10 +323,22 @@ public class DeclarationPositionFinderTest {
 					}					
 				}
 				if (!matched) {
-					fail("Entity not recognised: " + info.getEntity() + " in sentence \"" + sol.getKey() +"\"");
+					//fail("Entity not recognised: " + info.getEntity() + " in sentence \"" + sol.getKey() +"\"");
+					warn("Entity not recognised:\n " + info.getEntity() + "\n in sentence\n \"" + sol.getKey() +"\"");
+					fail = true;
+					System.out.println(anno.get(CollapsedCCProcessedDependenciesAnnotation.class));
+				}
+				else {
+					System.out.println("Good: " + info.getEntity());
 				}
 			}
 		}
+		if(fail)
+			fail("Failed test. See warnings for details.");
+	}
+
+	private void warn(String string) {
+		System.out.println("Warning: " + string);
 	}
 
 	@Test
@@ -594,5 +612,15 @@ public class DeclarationPositionFinderTest {
 	    
 	    pipeline.annotate(doc);
 	    return doc;
+	}
+	
+	@Test
+	public void test()
+	{
+		Annotation anno = annotate("Behind the Mailbox to the right, is a PalmTree.");
+		System.out.println(
+				anno.get(SentencesAnnotation.class).get(0)
+				.get(CollapsedCCProcessedDependenciesAnnotation.class)
+				);
 	}
 }
