@@ -50,22 +50,21 @@ public class WordPrepInDetRule extends BaseRule implements IGraphRule, ILocation
 			this.word = subject;
 		}
 		
+		if (!apply(root, sentence)) {
+			if (!apply(subject, sentence))
+			{
+				return false;
+			}
+		}
+		
 		// for now we only allow one referent per location, so we only return one. But we should want to know if there are more than one referents in this sentence.  
-		this.multipleReferents = BaseRule.resolveCc(subject, graph, null).size() > 1;
-					
+		this.multipleReferents = BaseRule.resolveCc(word, graph, null).size() > 1;
+			
 		// word TREE
 		Tree mytree = sentence.get(TreeAnnotation.class);
-		wordTree = match(subject, mytree, "NP", false);
+		wordTree = match(word, mytree, "NP", false);
 		
-		if (apply(root, sentence)) {
-			return true;			
-		}
-		else if (apply(subject, sentence)){
-			return true;
-		}
-		else {
-			return false;
-		}
+		return true;
 	}
 
 	public boolean apply(IndexedWord governor, CoreMap sentence)
