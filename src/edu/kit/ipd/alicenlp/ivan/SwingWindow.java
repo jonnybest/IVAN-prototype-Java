@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -17,7 +16,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.print.Doc;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -29,7 +27,6 @@ import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
@@ -39,20 +36,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
-
-import net.sf.extjwnl.dictionary.Dictionary;
 
 import org.fife.ui.rsyntaxtextarea.FileLocation;
-import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import org.jdesktop.application.Application;
 import org.jdesktop.swingx.JXBusyLabel;
-import org.jdesktop.swingx.JXEditorPane;
 import org.languagetool.JLanguageTool;
 import org.languagetool.JLanguageTool.ParagraphHandling;
 import org.languagetool.language.AmericanEnglish;
@@ -142,12 +132,8 @@ public class SwingWindow {
 				+ "placeholder text (filler text) commonly used to demonstrate \n"
 				+ "the graphic elements of a document or visual presentation, \n"
 				+ "such as font, typography, and layout, by removing the \n"
-				+ "distraction of meaningful content."
+				+ "distraction of meaningful content. "
 				+ "There is a cat looking north.");
-
-		Document doc = txtEditor.getDocument();
-//		addStylesToDocument((StyledDocument) txtEditor.getDocument());		
-		
 
 		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
 
@@ -189,8 +175,9 @@ public class SwingWindow {
 				try {
 					txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 				} catch (BadLocationException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
+					System.out
+							.println("SwingWindow.initialize().new KeyAdapter() {...}.markSpellingError()");
 				}				
 			}
 			@Override
@@ -223,8 +210,9 @@ public class SwingWindow {
 						processText(txtEditor.getText());
 						stopAndPrintStopWatch();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
+						System.out
+								.println("SwingWindow.initialize().new KeyAdapter() {...}.keyTyped()");
 					}
 				}
 			}
@@ -407,11 +395,6 @@ public class SwingWindow {
 		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
 		
 		// create some mock content
-//		JXTaskPane seriousProblemsPane = new JXTaskPane();
-//		seriousProblemsPane.setTitle("Serious problems ");
-//		seriousProblemsPane.add(new Label("None."));
-//		containerTaskPanel.add(seriousProblemsPane);
-
 		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
 		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
 		
@@ -426,12 +409,9 @@ public class SwingWindow {
 		
 		System.out.println(containerTaskPanel);
 		System.out.println();
-		//containerTaskPanel.list();
-				
+		
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
-		// update the line numbers with whatever we changed here
-		refreshLineNumbersFont();
 	}
 
 	/**
@@ -504,22 +484,12 @@ public class SwingWindow {
 	public void load(TextEditorPane editor, File file) {
 		try {
 			editor.load(FileLocation.create(file), "utf-8");
-
-			// try {
-			// // LineWrapEditorKit mykit = new LineWrapEditorKit();
-			// EditorKit mykit = ((LineNumbersTextPane)editor).getEditorKit();
-			// FileReader in = new FileReader(file);
-			// try {
-			// Document doc = editor.getDocument();
-			// doc.remove(0, doc.getLength());
-			// mykit.read(in, doc, 0);
-			// clearStyles();
-
 			tag("load." + file.getName());
 			this.currentFileName = file.getPath();
 		} catch (IOException e) {
 			// catch block in case load fails
 			e.printStackTrace();
+			System.out.println("SwingWindow.load()");
 		}
 	}
 
@@ -550,86 +520,6 @@ public class SwingWindow {
 
 		// tell the errors panel where our editor is so it can apply quick fixes
 		this.containerTaskPanel.setEditor(this.txtEditor);
-	}
-
-	/**
-	 * Use this function to reset the size and style of the line numbers. The
-	 * line numbers are sometimes a little off (too small or too big).
-	 */
-	private void refreshLineNumbersFont() {
-		Font font = txtEditor.getFont();
-		txtEditor.setFont(font);
-	}
-
-	/**
-	 * Provdes the document with styles (mainly background colors) for the text.
-	 * 
-	 * @param doc
-	 *            A document to add the styles to
-	 */
-//	protected void addStylesToDocument(StyledDocument doc) {
-//		// Initialize some styles.
-//		Style def = StyleContext.getDefaultStyleContext().getStyle(
-//				StyleContext.DEFAULT_STYLE);
-//
-//		DefaultStyle = def;
-//
-//		SetupStyle = doc.addStyle("setup", def);
-//		StyleConstants.setBackground(SetupStyle, Color.CYAN);
-//		StyleConstants.setBold(SetupStyle, true);
-//		// StyleConstants.setFontFamily(SetupStyle, "Times New Roman");
-//
-//		Style action = doc.addStyle("action", SetupStyle);
-//		StyleConstants.setBackground(action, Color.ORANGE);
-//
-//		Style event = doc.addStyle("event", SetupStyle);
-//		StyleConstants.setBackground(event, Color.MAGENTA);
-//
-//		Style time = doc.addStyle("time", SetupStyle);
-//		StyleConstants.setBackground(time, Color.YELLOW);
-//
-//		/*
-//		 * Style s = doc.addStyle("italic", regular);
-//		 * StyleConstants.setItalic(s, true);
-//		 */
-//
-//		// style "spellingerror"
-//		Style spelling = doc.addStyle("spellingerror", def);
-//		// StyleConstants.setUnderline(spelling, true);
-//		spelling.addAttribute("border-bottom", "1px solid blue");
-//
-//	}
-	protected void addStylesToDocument(RSyntaxDocument doc) {
-//		// Initialize some styles.
-//		Style def = StyleContext.getDefaultStyleContext().getStyle(
-//				StyleContext.DEFAULT_STYLE);
-//
-//		DefaultStyle = def;
-//		
-//		SetupStyle = doc.addStyle("setup", def);
-//		StyleConstants.setBackground(SetupStyle, Color.CYAN);
-//		StyleConstants.setBold(SetupStyle, true);
-//		// StyleConstants.setFontFamily(SetupStyle, "Times New Roman");
-//
-//		Style action = doc.addStyle("action", SetupStyle);
-//		StyleConstants.setBackground(action, Color.ORANGE);
-//
-//		Style event = doc.addStyle("event", SetupStyle);
-//		StyleConstants.setBackground(event, Color.MAGENTA);
-//
-//		Style time = doc.addStyle("time", SetupStyle);
-//		StyleConstants.setBackground(time, Color.YELLOW);
-//
-//		/*
-//		 * Style s = doc.addStyle("italic", regular);
-//		 * StyleConstants.setItalic(s, true);
-//		 */
-//
-//		// style "spellingerror"
-//		Style spelling = doc.addStyle("spellingerror", def);
-//		// StyleConstants.setUnderline(spelling, true);
-//		spelling.addAttribute("border-bottom", "1px solid blue");
-
 	}
 
 	public static void processText() {
@@ -674,13 +564,6 @@ public class SwingWindow {
 		 */
 		/* tag with pos tags */
 
-		Dictionary dictionary = null;
-		try {
-			dictionary = myclassifier.getDictionary();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		StanfordCoreNLP pipeline = null;
 		try {
 			pipeline = setupCoreNLP();
@@ -690,8 +573,7 @@ public class SwingWindow {
 		}
 		Annotation mydoc = new Annotation(lines);
 		pipeline.annotate(mydoc);
-		new edu.kit.ipd.alicenlp.ivan.analyzers.DirectSpeechAnnotator()
-				.annotate(mydoc);
+
 		java.util.List<CoreMap> sentences = mydoc
 				.get(SentencesAnnotation.class);
 
@@ -859,7 +741,6 @@ public class SwingWindow {
 			// }
 		}
 
-		refreshLineNumbersFont();
 		diplayWarnings();
 	}
 
@@ -909,10 +790,8 @@ public class SwingWindow {
 	}
 
 	private void clearStyles() {
-//		StyledDocument doc = (StyledDocument) txtEditor.getDocument();
-//		doc.setCharacterAttributes(0, doc.getLength(), DefaultStyle, true);
 		txtEditor.getHighlighter().removeAllHighlights();
-		System.out.println("Removed HLs");
+		System.out.println("SwingWindow.clearStyles()");
 	}
 
 	private void markText(int beginPosition, int endPosition) {
@@ -920,26 +799,13 @@ public class SwingWindow {
 		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(new Color(0xB3C4FF));
 		try {
 			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-		} catch (BadLocationException e) {
-			// TODO Auto-generated catch block
+		} catch (BadLocationException e) {			
 			e.printStackTrace();
+			System.out.println("SwingWindow.markText()");
 		}
-//		int length = endPosition - beginPosition;
-//		StyledDocument doc = (StyledDocument) txtEditor.getDocument();
-//		try {
-//			// System.out.println(txtEditor.getText(beginPosition, length));
-//			System.out.println(doc.getText(beginPosition, length));
-//		} catch (BadLocationException e) {
-//			System.err.println("Bad location: " + beginPosition + " "
-//					+ endPosition);
-//		}
-//
-//		doc.setCharacterAttributes(beginPosition, length,
-//				doc.getStyle("action"), true);
 	}
 
 	private void stopAndPrintStopWatch() {
-		// TODO Auto-generated method stub
 		org.joda.time.DateTime now = org.joda.time.DateTime.now();
 		long diff = now.getMillis() - stopwatch.getMillis();
 		System.err.println("Stopwatch: " + (diff) + " ms.");
