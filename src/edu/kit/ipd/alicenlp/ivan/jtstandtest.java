@@ -13,6 +13,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxDocument;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import org.languagetool.JLanguageTool;
+import org.languagetool.JLanguageTool.ParagraphHandling;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
 
@@ -59,25 +60,61 @@ public class jtstandtest {
 		
 		final TextEditorPane editor = new TextEditorPane();
 		editor.addKeyListener(new KeyAdapter() {
+			private JLanguageTool langTool;
+			private int limit = 8;
+			
+			public JLanguageTool getLanguageTool()
+			{
+				 try
+				 {
+					 if(langTool == null)
+					 {
+						 langTool = new JLanguageTool(new AmericanEnglish());
+						 langTool.activateDefaultPatternRules();
+					 }
+					 return langTool;
+				 }
+				 catch (IOException e)
+				 {
+					 return null;
+				 }
+			}
+			
 			@Override
-			public void keyTyped(KeyEvent arg0) {
-				try {
-					JLanguageTool langTool = new JLanguageTool(new AmericanEnglish());
-					langTool.activateDefaultPatternRules();
-//				List<RuleMatch> matches = langTool.check("A sentence " +
-//				    "with a error in the Hitchhiker's Guide tot he Galaxy");
-					List<RuleMatch> matches = langTool.check(editor.getText());
-					for (RuleMatch match : matches) {
-					  System.out.println("Potential error at line " +
-					      match.getLine() + ", column " +
-					      match.getColumn() + ": " + match.getMessage());
-//					  System.out.println("Suggested correction: " +
-//					      match.getSuggestedReplacements());
-					  markSpellingError(match.getFromPos(), match.getToPos());
+			synchronized public void keyTyped(KeyEvent arg0) {
+				if (canCheckSpelling(arg0)) {
+					try {
+						//				List<RuleMatch> matches = langTool.check("A sentence " +
+						//				    "with a error in the Hitchhiker's Guide tot he Galaxy");
+						List<RuleMatch> matches = getLanguageTool().check(editor
+								.getText(), true, ParagraphHandling.ONLYNONPARA);
+						for (RuleMatch match : matches) {
+							System.out.println("Potential error at line "
+									+ match.getLine() + ", column "
+									+ match.getColumn() + ": "
+									+ match.getMessage());
+							//					  System.out.println("Suggested correction: " +
+							//					      match.getSuggestedReplacements());
+							markSpellingError(match.getFromPos(),
+									match.getToPos());
+							break;
+						}
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				}
+			}
+
+			private boolean canCheckSpelling(KeyEvent event) {
+				if(limit  == 0)
+				{
+					limit  = 8;
+					return true;
+				}
+				else {
+					limit --;
+					return false;
 				}
 			}
 
