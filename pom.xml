@@ -34,11 +34,18 @@
 		<artifactId>extjwnl</artifactId>
 		<version>1.6.10</version>
 	</dependency>
+	<!-- Spellchecker -->
   	<dependency>
 		<groupId>org.languagetool</groupId>
-		<artifactId>languagetool-core</artifactId>
-		<version>2.2</version>
+		<artifactId>language-en</artifactId>
+		<version>2.3.1</version>
 	</dependency>  	
+	<!-- Editor -->
+	<dependency>
+	<groupId>org.codehaus.jtstand</groupId>
+		<artifactId>jtstand-editor</artifactId>
+		<version>1.5.7</version>
+	</dependency>
   	<dependency>
   		<groupId>edu.stanford.nlp</groupId>
 		<artifactId>stanford-corenlp</artifactId>

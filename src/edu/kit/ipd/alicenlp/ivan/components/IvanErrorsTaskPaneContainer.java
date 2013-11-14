@@ -20,8 +20,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JXTextPane;
-import javax.swing.LineNumbersTextPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
@@ -419,7 +419,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 	private Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
 	final private Font errorInfoFont = new Font("Calibri", 0, 11);
-	private JXTextPane txtEditor = null;
+	private JTextComponent txtEditor = null;
 
 	public class CodePoint extends Tuple<Integer, Integer>{
 
@@ -454,7 +454,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 	/**
 	 */
-	public IvanErrorsTaskPaneContainer(JXTextPane editor) {
+	public IvanErrorsTaskPaneContainer(JTextComponent editor) {
 		txtEditor = editor;
 	}
 	
@@ -708,7 +708,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		return outstr.toString();
 	}
 
-	public void setEditor(LineNumbersTextPane txtEditor) {
+	public void setEditor(JTextComponent txtEditor) {
 		this.txtEditor = txtEditor;
 	}
 
