@@ -16,7 +16,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class TowardsPresentRule extends BaseRule implements IGraphRule {
+public class TowardsPresentRule extends BaseRule implements ISentenceRule {
 
 	/* (non-Javadoc)
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.IGraphRule#apply(edu.stanford.nlp.util.CoreMap)

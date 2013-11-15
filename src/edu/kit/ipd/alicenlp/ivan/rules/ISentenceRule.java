@@ -10,7 +10,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public interface IGraphRule {
+public interface ISentenceRule {
 	
 	/**
 	 * Checks whether the given sentence satisfies the rule. This method is generally stateful and modifies the internal state of the rule object.
