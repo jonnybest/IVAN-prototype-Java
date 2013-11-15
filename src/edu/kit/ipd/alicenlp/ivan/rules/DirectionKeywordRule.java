@@ -21,7 +21,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class DirectionKeywordRule extends BaseRule implements IGraphRule {
+public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
 
 	/**
 	 * This list of keywords signals that the subject's direction is being described.

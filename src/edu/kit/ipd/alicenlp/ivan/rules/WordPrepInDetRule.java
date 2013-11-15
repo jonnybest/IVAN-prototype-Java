@@ -21,7 +21,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class WordPrepInDetRule extends BaseRule implements IGraphRule, ILocationRule
+public class WordPrepInDetRule extends BaseRule implements ISentenceRule, ILocationRule
 {
 	private IndexedWord word = null;
 	private String prepositionalModifier = null;
