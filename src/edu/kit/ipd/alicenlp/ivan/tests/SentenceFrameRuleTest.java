@@ -41,7 +41,7 @@ public class SentenceFrameRuleTest
 		/* 
 		 * Set up grammar analysis
 		 */
-		String text = "A giant flame column appears and consumes the astronaut.";
+		String text = "A giant flame column appears and it consumes the astronaut.";
 		Annotation doc = annotateText(text);
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 //		SemanticGraph deps = sentence.get(BasicDependenciesAnnotation.class);
