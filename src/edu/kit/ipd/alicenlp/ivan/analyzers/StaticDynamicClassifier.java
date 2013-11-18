@@ -16,6 +16,7 @@ import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
+import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -34,6 +35,28 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	
 	public Classification classifySentence(IndexedWord root, CoreMap sentence) throws JWNLException
 	{
+		// this is the default result, if nothing else matches
+		Classification defaultclass = Classification.ActionDescription;
+		
+		/** This is a new style of classifying. Simply create a rule to check and call "apply".
+		 *  The apply method is responsible for producing the result and all we have to do
+		 *  is to decide what to do with the result.
+		 *  In most cases, we simply want to annotate.
+		 */
+		// does this sentence contain an event?
+		EventRule checkevent = new EventRule();
+		// yes!
+		if(checkevent.apply(sentence))
+		{
+			System.out.println("Event found");
+			// since we only support one classification, return the classification instantly
+			return Classification.EventDescription;
+			//sentence.set(Classification.class, Classification.EventDescription);
+		}
+		
+		/** Old style classification follows. 
+		 * 
+		 */
 		// short classification fix for broken sentences (wrong copula)
 		// hint1: root is no verb
 		if (!BaseRule.isPOSFamily(root, "VB")) {
@@ -122,7 +145,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			}
 		}
 
-		return Classification.ActionDescription;
+		return defaultclass;
 	}
 
 	/**
