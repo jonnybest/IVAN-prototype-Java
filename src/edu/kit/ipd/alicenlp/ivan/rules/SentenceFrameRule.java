@@ -87,7 +87,7 @@ public class SentenceFrameRule implements ISentenceRule
 			}
 		});
 //		walkTree(tokens, tree);
-		return false;
+		return true;
 	}
 
 	public CoreLabel getVerb() {
