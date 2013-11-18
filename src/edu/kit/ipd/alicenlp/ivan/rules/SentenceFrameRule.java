@@ -3,8 +3,6 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
-import javax.xml.crypto.dsig.Transform;
-
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -17,14 +15,16 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class SentenceFrameRule implements ISentenceRule 
 {
-
-	private String[] tokens;
-
+	private String[] frames;
 	/**
 	 * 
 	 */
 	public SentenceFrameRule(String sentenceframe) {
-		tokens = tokenize(sentenceframe);
+		frames = new String[]{sentenceframe};
+	}
+
+	public SentenceFrameRule(String[] verbFrames) {
+		frames = verbFrames;
 	}
 
 	/**
@@ -63,6 +63,8 @@ public class SentenceFrameRule implements ISentenceRule
 				default:
 					break;
 			}
+			// done. next:
+			i++;
 		}
 	}
 
@@ -86,6 +88,7 @@ public class SentenceFrameRule implements ISentenceRule
 				return t;
 			}
 		});
+		walkTree(tokenize(frames[0]), tree);
 //		walkTree(tokens, tree);
 		return true;
 	}
