@@ -62,7 +62,7 @@ public class StaticDynamicClassifierTest {
 	 * .
 	 */
 	@Test
-	public void testClassifySentence() {
+	public void classifyFilesSetupTest() {
 		// get instance
 		StaticDynamicClassifier proto = StaticDynamicClassifier.getInstance();
 
@@ -355,12 +355,18 @@ public class StaticDynamicClassifierTest {
 				sentence4.get(Classification.class),
 				is(Classification.EventDescription));
 
+	}
+	
+	/** The test for "stop" events.
+	 * 
+	 */
+	@Test
+	public void positiveHardEventTest() {
 		Annotation doc3 = annotateText("She stops in front of the rabbit.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("flame sentence classified wrong",
 				sentence3.get(Classification.class),
 				is(Classification.EventDescription));
-
 	}
 
 	/**
@@ -558,7 +564,7 @@ public class StaticDynamicClassifierTest {
 	 * Visibility
 	 */
 	@Test
-	public void hardVisibilityTest() {
+	public void positiveHardSetupVisibilityTest() {
 		{
 			Annotation doc = annotateText("The grinning cat is not visible.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
@@ -572,7 +578,7 @@ public class StaticDynamicClassifierTest {
 	 * Special verb: Depict
 	 */
 	@Test
-	public void hardDepictTest() {
+	public void positiveHardSetupDepictTest() {
 		{
 			Annotation doc = annotateText("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
@@ -586,7 +592,7 @@ public class StaticDynamicClassifierTest {
 	 * Root is a noun
 	 */
 	@Test
-	public void hardNounTest() {
+	public void positiveHardSetupNounTest() {
 		{
 			Annotation doc = annotateText("Rightmost of the stage, in the back, is a sunflower, facing towards the characters.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
@@ -618,7 +624,7 @@ public class StaticDynamicClassifierTest {
 	 * Root is an adjective
 	 */
 	@Test
-	public void hardAdjectiveTest() {
+	public void positiveHardSetupAdjectiveTest() {
 		{
 			Annotation doc = annotateText("The grass is green and the sky is blue.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
@@ -639,7 +645,7 @@ public class StaticDynamicClassifierTest {
 	 * Other gerunds
 	 */
 	@Test
-	public void hardGerundsTest() {
+	public void positiveHardSetupGerundsTest() {
 		String text = "The crown is cut off at the top at the stage. "
 				+ "The ground is covered with grass, the sky is blue. "
 				+ "The ground is covered with grass, the sky is blue.";
@@ -657,7 +663,7 @@ public class StaticDynamicClassifierTest {
 	 * takes place
 	 */
 	@Test
-	public void hardTakesPlaceTest() {
+	public void positiveHardSetupTakesPlaceTest() {
 		String text = "The scene takes place on the grass." +
 				"The scene takes place on the grass."+
 				"The scene takes place in the desert."+
