@@ -41,9 +41,9 @@ public abstract class BaseRule {
 		return graph.hasChildWithReln(root, agentrel);
 	}
 	
-	public static boolean isPOSFamily(CoreLabel word, String string) {
+	public static boolean isPOSFamily(CoreLabel word, String tag) {
 		String pos = word.get(PartOfSpeechAnnotation.class).toUpperCase();
-		return pos.startsWith(string.toUpperCase());
+		return pos.startsWith(tag.toUpperCase());
 	}
 	
 	/**
@@ -394,5 +394,4 @@ public abstract class BaseRule {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		return graph.getFirstRoot();		
 	}
-
 }
