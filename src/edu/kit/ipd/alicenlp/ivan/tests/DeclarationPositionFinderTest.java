@@ -254,13 +254,12 @@ public class DeclarationPositionFinderTest {
 
 	@Test
 	public void testGetDirection() {
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
 		String text = "Behind the Broccoli, there is a Bunny facing south.",
 				name = "Bunny",
 				direction = "south";
 
 		CoreMap sentence = annotateSingleSentence(text);
-		EntityInfo entity = proto.getDirection(sentence);
+		EntityInfo entity = DeclarationPositionFinder.getDirection(sentence);
 
 		if (entity.getDirection().equalsIgnoreCase(direction)) {
 			fail("Analyzer did not find correct direction in sample.");
