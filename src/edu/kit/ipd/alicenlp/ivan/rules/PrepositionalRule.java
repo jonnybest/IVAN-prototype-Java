@@ -3,6 +3,7 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import edu.stanford.nlp.ling.IndexedWord;
@@ -21,12 +22,15 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class WordPrepInDetRule extends BaseRule implements ISentenceRule, ILocationRule
+public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocationRule
 {
 	private IndexedWord word = null;
-	private String prepositionalModifier = null;
-	private Tree locationtree = null;
-	private Tree wordTree = null;
+	private List<Tree> locationtrees = new ArrayList<Tree>();
+	private List<Tree> wordTrees = new ArrayList<Tree>();
+	
+	final private String[] protoPrepositions = {
+			"on", "in", "in front of", "behind", "beyond", "between", "at", "over"
+		};
 	
 	private boolean multipleReferents = false;
 
@@ -37,6 +41,8 @@ public class WordPrepInDetRule extends BaseRule implements ISentenceRule, ILocat
 	 */
 	@Override
 	public boolean apply(CoreMap sentence) {
+		boolean hasLocation = false;
+		
 		GrammaticalRelation nsubjreln = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord root = graph.getFirstRoot();
@@ -50,19 +56,23 @@ public class WordPrepInDetRule extends BaseRule implements ISentenceRule, ILocat
 			this.word = subject;
 		}
 		
-		if (!apply(root, sentence)) {
-			if (!apply(subject, sentence))
-			{
-				return false;
-			}
-		}
+		// do it once for the root 
+		hasLocation = hasLocation | apply(root, sentence);
+		
+		// and once for the subject (if different)
+		if(!root.equals(subject))
+			hasLocation = hasLocation | apply(subject, sentence);
+		
+		// if we found nothing, stop right here
+		if(!hasLocation)
+			return false;
 		
 		// for now we only allow one referent per location, so we only return one. But we should want to know if there are more than one referents in this sentence.  
 		this.multipleReferents = BaseRule.resolveCc(word, graph, null).size() > 1;
 			
 		// word TREE
 		Tree mytree = sentence.get(TreeAnnotation.class);
-		wordTree = match(word, mytree, "NP", false);
+		wordTrees.add(match(word, mytree, "NP", false));
 		
 		return true;
 	}
@@ -75,30 +85,26 @@ public class WordPrepInDetRule extends BaseRule implements ISentenceRule, ILocat
 			return false;
 		}
 
-		List<IndexedWord> prep_ins = getPrepinRelations(governor, graph);
-		if(prep_ins.isEmpty())
+		for (String proto : protoPrepositions) {
+			List<IndexedWord> preps = getPrepRelations(governor, graph, proto);
+			
+			// skip this preposition, if it does not occur
+			if (preps.isEmpty())
+				continue;
+			
+			// TREE extraction part
+			Tree mytree = sentence.get(TreeAnnotation.class);
+			for (IndexedWord occurrence : preps) {
+				// location TREE
+				locationtrees.add(match(occurrence, mytree, "PP", true));
+			}
+		}
+		
+		// check if we had results
+		if (getPrepositionalModifierAsTree() == null)
 			return false;
-		
-		// TREE extraction part
-		Tree mytree = sentence.get(TreeAnnotation.class);
-
-		// location TREE
-		IndexedWord inword = prep_ins.get(0); // I don't think stanford produces more than one of these per head
-		locationtree = match(inword, mytree, "PP", true);
-		
-		if(locationtree == null)
-			return false;
-		
-		// PRINTING part		
-		this.prepositionalModifier = printTree(locationtree);
-		
-//		for (IndexedWord iw : prep_ins) {
-//			if (hasDeterminer(iw, graph)) {
-//				this.prepositionalModifier = "in " + printSubGraph(iw, sentence);
-//				return true;
-//			}
-//		}
-		return true;
+		else
+			return true;
 	}
 
 	@Override
@@ -109,17 +115,32 @@ public class WordPrepInDetRule extends BaseRule implements ISentenceRule, ILocat
 	@Override
 	public Tree getWordAsTree()
 	{
-		return wordTree;
+		return wordTrees.get(0);
 	}
 
 	@Override
 	public String getPrepositionalModifier() {
-		return prepositionalModifier;
+		return printTree(getPrepositionalModifierAsTree());
 	}
 	
+	public String printAllModifiers()
+	{
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < locationtrees.size() - 1; i++) {
+			sb.append(printTree(locationtrees.get(i)));
+			sb.append(", ");
+		}
+		sb.append(printTree(locationtrees.get(locationtrees.size() - 1)));
+		return sb.toString();
+	}
+	
+	public List<Tree> getAllPrepositionalModifiers() {
+		return locationtrees;
+	}
+
 	@Override
 	public Tree getPrepositionalModifierAsTree() {
-		return locationtree;
+		return locationtrees.size() > 0 ? locationtrees.get(0) : null;
 	}
 
 	/**
