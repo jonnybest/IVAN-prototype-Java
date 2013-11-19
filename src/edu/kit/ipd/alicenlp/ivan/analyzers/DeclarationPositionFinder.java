@@ -23,6 +23,7 @@ import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -302,6 +303,24 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	public static List<String> recogniseNames(CoreMap sentence) throws IvanException {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord head = BaseRule.getSubject(graph);
+		
+		// if the nominal subject is a plural word (like "characters" or "people"),
+		// try extracting the stuff elsewhere
+		if(head != null && head.tag().equals("NNS"))
+		{
+			// we start looking for other mentions with the root (unless it already is the subject
+			if(!head.equals(graph.getFirstRoot()))
+			{
+				head = graph.getFirstRoot();
+			}
+			else 
+			{
+				// if not, try the direct objects instead
+				head = graph.getChildWithReln(head, EnglishGrammaticalRelations.DIRECT_OBJECT);
+			}
+		}
+		
+		// try to do something with the sentence and hope it is meaningful:
 		if (head == null) {
 			// second try: use the root in subject-less sentences
 			head = graph.getFirstRoot();
@@ -311,13 +330,19 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 				return null;
 			}
 		}
+		
+		// extract names:
+		// make space for names
 		ArrayList<IndexedWord> namesIW = new ArrayList<IndexedWord>();
+		// follow "and" and "or" conjunctions starting from the head
 		ArrayList<String> names = BaseRule.resolveCc(head, graph, namesIW);
+		// resolve personal pronouns
 		for (IndexedWord n : namesIW) {
 			if(n.tag().equals("PRP"))
 			{
+				// this part doesn't even work:
 				CoreferenceResolver cresolver = CoreferenceResolver.getInstance();
-				cresolver.resolve(n);
+				n.setValue(cresolver.resolve(n)); // this is probably a bad idea
 			}
 		}
 		return names;
