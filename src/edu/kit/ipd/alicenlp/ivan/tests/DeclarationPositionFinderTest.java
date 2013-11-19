@@ -15,20 +15,16 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.TreeMap;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
-import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
-import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -37,7 +33,6 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
-import edu.stanford.nlp.trees.TreeFactory;
 import edu.stanford.nlp.util.CoreMap;
 
 public class DeclarationPositionFinderTest {
@@ -72,6 +67,7 @@ public class DeclarationPositionFinderTest {
 	static List<CoreMap> negativeslist = new ArrayList<CoreMap>();
 	
 	static boolean setupDone = false;
+	private static StanfordCoreNLP pipeline = null;
 	
 	//@BeforeClass
 	public static void setup()
@@ -183,30 +179,16 @@ public class DeclarationPositionFinderTest {
 	 * @param sentencelist
 	 */
 	protected static void annotateSentence(String location, List<CoreMap> sentencelist) {
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-		Annotation anno = new Annotation(location);
-		proto.getPipeline().annotate(anno);
-		List<CoreMap> maps = anno.get(SentencesAnnotation.class);
-		for (CoreMap coreMap : maps) {
-			sentencelist.add(coreMap);
-		}
+		sentencelist = annotate(location).get(SentencesAnnotation.class);
 	}
 	
 	private CoreMap annotateSingleSentence(String text)
 	{
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-		Annotation anno = new Annotation(text);
-		proto.getPipeline().annotate(anno);
-		List<CoreMap> maps = anno.get(SentencesAnnotation.class);
-		for (CoreMap coreMap : maps) {
-			return coreMap;
-		}
-		return null;
+		return annotate(text).get(SentencesAnnotation.class).get(0);
 	}
 	
 	@Test
 	public void testFindAll() {
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
 		String text = "Behind the Broccoli, there is a Bunny facing south.",
 				name = "Bunny",
 				direction = "south",
@@ -239,14 +221,17 @@ public class DeclarationPositionFinderTest {
 	@Test
 	public void testGetLocation() {
 		EntityInfo simplein = DeclarationPositionFinder.getLocation(annotateSingleSentence("There is a ghost in this house."));
+		assertNotNull("simple failed",simplein);
 		if (!"in this house".equals(simplein.getLocation())) {
 			fail("LocationListAnnotation is wrong"); 			
 		}
 		EntityInfo inandon = DeclarationPositionFinder.getLocation(annotateSingleSentence("The house is in the background on the left hand side."));
+		assertNotNull("in/on failed",inandon);
 		if (!"in the background on the left hand side".equals(inandon.getLocation())) {
 			fail("LocationListAnnotation is wrong");
 		}
 		EntityInfo behind = DeclarationPositionFinder.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
+		assertNotNull("behind failed", behind);
 		if (!"Behind it to the right".equals(behind.getLocation())) {
 			fail("LocationListAnnotation is wrong: " + behind);
 		}
@@ -334,7 +319,7 @@ public class DeclarationPositionFinderTest {
 	}
 
 	private void warn(String string) {
-		System.out.println("Warning: " + string);
+		System.err.println("Warning: " + string);
 	}
 
 	@Test
@@ -380,11 +365,9 @@ public class DeclarationPositionFinderTest {
 //		solutions.put("samplesentence", new String[]{"entity", "entity"});
 		
 
-		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-
 		for (Entry<String, String[]> sol : solutions.entrySet()) {
 			CoreMap annoSentence = annotateSingleSentence(sol.getKey());
-			List<String> einfos = proto.recogniseNames(annoSentence);
+			List<String> einfos = DeclarationPositionFinder.recogniseNames(annoSentence);
 			if (einfos.size() != sol.getValue().length) {
 				fail("Some entities were not recognised in in sentence \"" + sol.getKey() +"\"");
 			}
@@ -414,13 +397,13 @@ public class DeclarationPositionFinderTest {
 		
 		ArrayList<EntityInfo> output = new ArrayList<EntityInfo>();
 		output.add(new EntityInfo("ground"));
-		output.add(new EntityInfo("monkey", "in the foreground", "facing southwest"));
-		output.add(new EntityInfo("broccoli", "on the right side of the ground", null));
-		output.add(new EntityInfo("bucket", "behind the monkey, to the right", null));
+		output.add(new EntityInfo("monkey", "In the foreground", "southwest"));
+		output.add(new EntityInfo("broccoli", "On the right side of the ground", null));
+		output.add(new EntityInfo("bucket", "Behind the monkey, to the right", null));
 		
-		Annotation doc = new Annotation(input);
 		DeclarationPositionFinder proto = DeclarationPositionFinder.getInstance();
-		proto.getPipeline().annotate(doc);
+		Annotation doc = annotate(input);
+		
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			proto.learnDeclarations(sentence);
 		}
@@ -435,8 +418,8 @@ public class DeclarationPositionFinderTest {
 			EntityInfo sibling = state.getSingle(ei.getEntity());
 			if(sibling != null)
 			{
-				System.out.println("Siblings are " + (sibling.equals(ei) ? "equal" : "not equal: " + ei + " and " + sibling));
-				assertEquals("test", ei.toString(), sibling.toString());
+//				System.out.println("Siblings are " + (sibling.equals(ei) ? "equal" : "not equal: " + ei + " and " + sibling));
+				assertEquals("Siblings are " + (sibling.equals(ei) ? "equal" : "not equal: " + ei + " and " + sibling), ei.toString(), sibling.toString());
 			}
 			assertTrue("missing entity info: " + ei + ", possible match: " + sibling, state.contains(ei));
 		}
@@ -588,29 +571,32 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	private Annotation annotate(String text) {
+	private static Annotation annotate(String text) {
 		Annotation doc = new Annotation(text);
-		StanfordCoreNLP pipeline;
-			
-	    // creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
-	    Properties props = new Properties();
-	    // alternativ: wsj-bidirectional 
-	    try {
-			props.put("pos.model", "edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger"); 
-		} catch (Exception e) {
-			e.printStackTrace();
+		
+		if (pipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
+			Properties props = new Properties();
+			// alternativ: wsj-bidirectional 
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			props.put("customAnnotatorClass.decl",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			// konfiguriere pipeline
+			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+			pipeline = new StanfordCoreNLP(props);
 		}
-	    props.put("customAnnotatorClass.decl", "edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
-	    
-	    // konfiguriere pipeline
-	    props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
-	    pipeline = new StanfordCoreNLP(props);	
-	    
-	    pipeline.annotate(doc);
+		
+		pipeline.annotate(doc);
 	    return doc;
 	}
 	
-	@Test
+	//@Test
 	public void test()
 	{
 		Annotation anno = annotate("Behind the Mailbox to the right, is a PalmTree.");
