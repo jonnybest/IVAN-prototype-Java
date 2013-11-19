@@ -260,14 +260,11 @@ public class DeclarationPositionFinderTest {
 
 		CoreMap sentence = annotateSingleSentence(text);
 		EntityInfo entity = DeclarationPositionFinder.getDirection(sentence);
-
-		if (entity.getDirection().equalsIgnoreCase(direction)) {
-			fail("Analyzer did not find correct direction in sample.");
-		}
 		
-		if (entity.getEntity().equalsIgnoreCase(name)) {
-			fail("Analyzer did not find correct name in direction sample.");
-		}
+		// direction
+		assertEquals("Analyzer did not find correct direction in sample.", direction, entity.getDirection());
+		// name
+		assertEquals("Analyzer did not find correct name in direction sample.", name, entity.getEntity());
 	}
 
 	@Test
