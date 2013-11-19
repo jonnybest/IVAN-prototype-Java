@@ -1,5 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
@@ -491,12 +493,11 @@ public class DeclarationPositionFinderTest {
 		String text = "In the background on the left hand side there is a PalmTree. "
 				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. "
 			//	+ "To the right of the mailbox there is a Frog facing east. " // this one is probably tough?
-				+ "In the foreground on the right hand side there is a Bunny facing southwest. "
-				+ "In front of the Bunny there is a Broccoli.";
+				+ "In the foreground on the right hand side there is a Bunny facing southwest. ";
 		Annotation doc = annotate(text);
 
 	    // lets see if there are any annotations at all
-	    assertEquals("Sentences are missing", 4 /* 5 */, doc.get(SentencesAnnotation.class).size());
+	    assertEquals("Sentences are missing", 3 /* 5 */, doc.get(SentencesAnnotation.class).size());
 	    
 	    // the sentences in this test should all have some annotation or another
 	    for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
@@ -513,6 +514,36 @@ public class DeclarationPositionFinderTest {
 				assertTrue("referent is too short", l.getReferent().size() > 2);
 			}
 		}
+	}
+	
+	@Test
+	public void inFrontOfTest()
+	{
+		String text = "In front of the Bunny there is a Broccoli.";
+		Annotation doc = annotate(text);
+
+	    // lets see if there are any annotations at all
+	    assertEquals("Sentences are missing", 1 /* 5 */, doc.get(SentencesAnnotation.class).size());
+	    
+	    // the sentences in this test should all have some annotation or another
+	    CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		assertTrue("Sentences was not analyzed: " + sentence.toString(), sentence.containsKey(LocationListAnnotation.class));
+		LocationListAnnotation locs = sentence.get(LocationListAnnotation.class);
+		assertNotNull(locs);
+		System.out.println(sentence.get(LocationListAnnotation.class) + ": " + sentence.toString());
+		
+		assertTrue("there are no locations in this location", locs.size() > 0);
+		
+		Tree t = sentence.get(TreeAnnotation.class);
+		t = t.skipRoot();
+		//t = t.firstChild();
+		
+		for (LocationAnnotation l : locs) {
+			assertNotNull(l);
+			Assert.assertThat("location is not correct", t, is(l.getLocation()));
+			assertTrue("referent is too short", l.getReferent().size() > 2);
+		}
+	
 	}
 	
 	@Test
