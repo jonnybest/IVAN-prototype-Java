@@ -22,6 +22,8 @@ public class UtteranceTest {
 
 	@Test
 	public final void test() {
+		fail("Not yet implemented"); // TODO
+		
 		String text = "When the scene starts, the t-rex is lifting his head and spreading his jaws voicing a loud \"ROOOOAAAAAR!!!\". "+
 				"The torsoise says \"Hey, evil T-Rex, stop scaring my friend!\". "+
 				"Again The t-rex is lifting his head and spreading his jaws voicing a loud \"ROOOOAAAAAR!!!\". "+
@@ -63,8 +65,6 @@ public class UtteranceTest {
 				}
 			}
 		}
-		
-		fail("Not yet implemented"); // TODO
 	}
 
 	private Annotation annotate(String text) {
