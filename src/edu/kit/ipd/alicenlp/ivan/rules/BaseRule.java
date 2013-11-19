@@ -273,6 +273,9 @@ public abstract class BaseRule {
 	 * @return A subtree representing the indexed word.
 	 */
 	protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
+		return match(wordToFind, treeToSearch, expectedPOS, canGoUp, 0);
+	}
+	protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp, int skip) {
 		int end = wordToFind.get(EndIndexAnnotation.class);
 		int begin = wordToFind.get(BeginIndexAnnotation.class);
 		
@@ -302,7 +305,8 @@ public abstract class BaseRule {
 								{
 									return null;
 								}
-							}							
+							}
+							candidate = skip(candidate, treeToSearch, expectedPOS, skip);
 						}
 						else {
 							// else walk up the tree again to find the corresponding phrase
@@ -335,6 +339,37 @@ public abstract class BaseRule {
 			}
 		}
 		return null;
+	}
+
+	private Tree skip(Tree candidate, Tree parent, String expectedPOS, int skip) {
+		if(skip == 0)
+			return candidate;
+		
+		Tree lastvalid = candidate;
+		
+		// we are allowed to skip non-matching phrases
+		while (skip > 0) {
+			skip--;
+			
+			// we walk up the 
+			while (skip >= 0 && !expectedPOS.equals(candidate.value())) {
+				// if we don't have the right POS, just try our parent
+				candidate = candidate.parent(parent);
+
+				if (candidate == null) {
+					// we are already on top
+					return lastvalid;
+				}
+				else if (expectedPOS.equals(candidate.value())) {
+					// we have found a good match. this does not count as a skip
+					lastvalid = candidate;
+				}
+				else {
+					skip--;
+				}
+			}
+		}
+		return lastvalid;
 	}
 
 	/** This method attempts to resolve noun phrases which consist of more than one word.
