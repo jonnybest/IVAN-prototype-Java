@@ -19,7 +19,6 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.JXTextPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
