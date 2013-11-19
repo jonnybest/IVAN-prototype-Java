@@ -352,7 +352,7 @@ public abstract class BaseRule {
 			skip--;
 			
 			// we walk up the 
-			while (skip >= 0 && !expectedPOS.equals(candidate.value())) {
+			do {
 				// if we don't have the right POS, just try our parent
 				candidate = candidate.parent(parent);
 
@@ -364,10 +364,7 @@ public abstract class BaseRule {
 					// we have found a good match. this does not count as a skip
 					lastvalid = candidate;
 				}
-				else {
-					skip--;
-				}
-			}
+			} while (skip >= 0 && !expectedPOS.equals(candidate.value()));
 		}
 		return lastvalid;
 	}
