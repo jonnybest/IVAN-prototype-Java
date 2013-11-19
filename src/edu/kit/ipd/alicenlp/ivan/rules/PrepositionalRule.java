@@ -29,8 +29,9 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 	private List<Tree> wordTrees = new ArrayList<Tree>();
 	
 	final private String[] protoPrepositions = {
-			"on", "in", "in front of", "behind", "beyond", "between", "at", "over"
+			"on", "in", "behind", "beyond", "between", "at", "over"
 		};
+	final private String infrontof = "in_front_of";
 	
 	private boolean multipleReferents = false;
 
@@ -97,6 +98,21 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 			for (IndexedWord occurrence : preps) {
 				// location TREE
 				locationtrees.add(match(occurrence, mytree, "PP", true));
+			}
+		}
+		{
+			// for "in front of"
+			List<IndexedWord> preps = getPrepRelations(governor, graph, infrontof);
+			
+			// skip this preposition, if it does not occur
+			if (!preps.isEmpty())
+			{				
+				// TREE extraction part
+				Tree mytree = sentence.get(TreeAnnotation.class);
+				for (IndexedWord occurrence : preps) {
+					// location TREE
+					locationtrees.add(match(occurrence, mytree, "PP", true, 1)); // we need to skip an NP
+				}
 			}
 		}
 		
