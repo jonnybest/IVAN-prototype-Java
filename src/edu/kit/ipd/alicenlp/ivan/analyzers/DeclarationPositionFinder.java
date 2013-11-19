@@ -238,10 +238,10 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// the entity is most likely the subject(s) of the sentence
 		entity = BaseRule.getSubject(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)).word();
 		
-		ILocationRule inRule = new PrepositionalRule();
+		PrepositionalRule inRule = new PrepositionalRule();
 		if (inRule.apply(sentence)) {
 //			entity = inRule.getWord().originalText(); // the entity is most likely not the word, but the subject(s) of the sentence
-			location = inRule.printFirstModifier().toString();
+			location = inRule.printAllModifiers();
 		}
 		
 		return new EntityInfo(entity, location);

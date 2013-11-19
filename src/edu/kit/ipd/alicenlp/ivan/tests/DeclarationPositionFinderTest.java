@@ -316,7 +316,7 @@ public class DeclarationPositionFinderTest {
 				if (!matched) {
 					// fail("Entity not recognised: " + info.getEntity() +
 					// " in sentence \"" + sol.getKey() +"\"");
-					warn("Entity not recognised:\n " + info.getEntity()
+					fail("Entity not recognised:\n " + info.getEntity()
 							+ "\n in sentence\n \"" + sol.getKey() + "\"");
 					fail = true;
 					System.out

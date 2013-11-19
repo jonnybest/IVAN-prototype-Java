@@ -4,15 +4,20 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
+import edu.stanford.nlp.util.ArrayCoreMap;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -29,7 +34,7 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 	private List<Tree> wordTrees = new ArrayList<Tree>();
 	
 	final private String[] protoPrepositions = {
-			"on", "in", "behind", "beyond", "between", "at", "over"
+			"on", "in", "beyond", "between", "at", "over", "to", "behind"
 		};
 	final private String infrontof = "in_front_of";
 	
@@ -74,6 +79,9 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 		// word TREE
 		Tree mytree = sentence.get(TreeAnnotation.class);
 		wordTrees.add(match(word, mytree, "NP", false));
+		
+		// sort phrases by index
+		sort();
 		
 		return true;
 	}
@@ -165,5 +173,20 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 	@Override
 	public boolean hasMultipleReferents() {
 		return multipleReferents;
+	}
+	
+	public void sort()
+	{
+		java.util.Collections.sort(locationtrees, new Comparator<Tree>() {
+
+			@Override
+			public int compare(Tree t1, Tree t2) {
+				Tree left = t1.getLeaves().get(0);
+				Tree right = t2.getLeaves().get(0);
+				return ((CoreLabel) left.label()).get(BeginIndexAnnotation.class)
+						.compareTo(((CoreLabel) right.label()).get(BeginIndexAnnotation.class));
+			}
+			
+		});
 	}
 }
