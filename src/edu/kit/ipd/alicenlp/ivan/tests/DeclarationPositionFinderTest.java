@@ -29,6 +29,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -533,14 +534,10 @@ public class DeclarationPositionFinderTest {
 		System.out.println(sentence.get(LocationListAnnotation.class) + ": " + sentence.toString());
 		
 		assertTrue("there are no locations in this location", locs.size() > 0);
-		
-		Tree t = sentence.get(TreeAnnotation.class);
-		t = t.skipRoot();
-		//t = t.firstChild();
-		
+				
 		for (LocationAnnotation l : locs) {
 			assertNotNull(l);
-			Assert.assertThat("location is not correct", t, is(l.getLocation()));
+			Assert.assertThat("location is not correct", "In front of the Bunny", is(BaseRule.printTree(l.getLocation())));
 			assertTrue("referent is too short", l.getReferent().size() > 2);
 		}
 	
