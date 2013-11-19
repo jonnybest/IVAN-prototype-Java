@@ -245,7 +245,7 @@ public abstract class BaseRule {
 	}
 	
 
-	protected String printTree(Tree tree) {
+	public static String printTree(Tree tree) {
 		final StringBuilder sb = new StringBuilder();
 		
 		for ( final Tree t : tree.getLeaves() ) {

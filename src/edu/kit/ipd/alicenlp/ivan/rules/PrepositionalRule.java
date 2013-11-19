@@ -117,7 +117,7 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 		}
 		
 		// check if we had results
-		if (getPrepositionalModifierAsTree() == null)
+		if (getFirstModifier() == null)
 			return false;
 		else
 			return true;
@@ -135,8 +135,8 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 	}
 
 	@Override
-	public String getPrepositionalModifier() {
-		return printTree(getPrepositionalModifierAsTree());
+	public String printFirstModifier() {
+		return printTree(getFirstModifier());
 	}
 	
 	public String printAllModifiers()
@@ -155,7 +155,7 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 	}
 
 	@Override
-	public Tree getPrepositionalModifierAsTree() {
+	public Tree getFirstModifier() {
 		return locationtrees.size() > 0 ? locationtrees.get(0) : null;
 	}
 

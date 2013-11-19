@@ -241,7 +241,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		ILocationRule inRule = new PrepositionalRule();
 		if (inRule.apply(sentence)) {
 //			entity = inRule.getWord().originalText(); // the entity is most likely not the word, but the subject(s) of the sentence
-			location = inRule.getPrepositionalModifier().toString();
+			location = inRule.printFirstModifier().toString();
 		}
 		
 		return new EntityInfo(entity, location);

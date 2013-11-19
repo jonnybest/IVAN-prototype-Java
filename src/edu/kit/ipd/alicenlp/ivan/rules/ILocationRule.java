@@ -7,9 +7,9 @@ public interface ILocationRule extends ISentenceRule {
 
 	public boolean hasMultipleReferents();
 
-	public Tree getPrepositionalModifierAsTree();
+	public Tree getFirstModifier();
 
-	public String getPrepositionalModifier();
+	public String printFirstModifier();
 
 	public Tree getWordAsTree();
 
