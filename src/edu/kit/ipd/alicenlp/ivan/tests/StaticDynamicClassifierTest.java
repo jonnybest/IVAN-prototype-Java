@@ -542,7 +542,8 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void hardFacingTest() {
 		String text = "The boy is facing the girl. "
-				+ "The boy is facing towards at the girl. "
+				+ "The boy is facing towards the girl. "
+//				+ "The boy is facing towards at the girl. " // sic!
 				+ "Alice is facing away from the bunny. "
 				+ "The cowboy is facing west. "
 				+ "The camel is facing the camera. "
