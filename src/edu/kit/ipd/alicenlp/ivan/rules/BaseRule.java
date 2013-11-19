@@ -251,7 +251,7 @@ public abstract class BaseRule {
 		for ( final Tree t : tree.getLeaves() ) {
 		     sb.append(t.toString()).append(" ");
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 
 	/** This method searches for an IndexedWord inside a Tree. It returns the largest subtree which represents the word's phrase, 
