@@ -1,11 +1,5 @@
 package edu.kit.ipd.alicenlp.ivan.data;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.jar.Attributes.Name;
-
-import javax.swing.text.html.parser.Entity;
 
 
 /**
