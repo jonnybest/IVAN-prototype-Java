@@ -12,6 +12,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +34,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -267,16 +269,13 @@ public class DeclarationPositionFinderTest {
 		// "In the foreground there sits a frog on the left and a hare on the right of the screen.";
 
 		Map<String, String[]> solutions = new TreeMap<String, String[]>();
-		solutions.put("There is a boy and a girl.", new String[] { "boy",
-				"girl" });
-//		solutions.put( // bug in stanford: ninja tortoise is not annotated with noun compound modifier :(
-//				"The characters are a ninja tortoise, a rabbit and a T-Rex.",
-//				new String[] { "tortoise", "rabbit", "T-Rex" });
+		// solutions.put( // bug in stanford: ninja tortoise is not annotated
+		// with noun compound modifier :(
+		// "The characters are a ninja tortoise, a rabbit and a T-Rex.",
+		// new String[] { "tortoise", "rabbit", "T-Rex" });
 		solutions.put(
 				"The characters are a street lamp, a rabbit and a T-Rex.",
 				new String[] { "street lamp", "rabbit", "T-Rex" });
-		solutions.put("In the scene there are a boy and a girl.", new String[] {
-				"boy", "girl" });
 		// grammar error?
 		// solutions.put("In the far left is a Mailbox and in front of it is a Frog.",
 		solutions
@@ -334,92 +333,167 @@ public class DeclarationPositionFinderTest {
 			fail("Failed test. See warnings for details.");
 	}
 
-	private void warn(String string) {
-		System.err.println("Warning: " + string);
+	private String warn(String string) {
+		String out = "Warning: " + string;
+		System.err.println(out);
+		return out;
+	}
+
+	/**
+	 * Some select cases for the recognition, which are hard, but should work.
+	 * Non-working cases go into testRecogniseNamesHard.
+	 * 
+	 * @throws IvanException
+	 */
+	@Test
+	public void testRecogniseThereIsBoyGirl() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"There is a boy and a girl.", new String[] { "boy", "girl" });
+		checkEntrySet(sol);
 	}
 
 	@Test
-	public void testRecogniseNames() throws IvanException {
-		// I want to print a list of all recognitions to get an idea for what
-		// kinds of sentences are still improperly recognised
-		// printRecognitionAnalysis();
-
-		Map<String, String[]> solutions = new TreeMap<String, String[]>();
-		solutions.put("There is a boy and a girl.", new String[] { "boy",
-				"girl" });
-		solutions.put(
+	public void testRecogniseTortoise() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
 				"The characters are a ninja tortoise, a rabbit and a T-Rex.",
 				new String[] { "ninja tortoise", "rabbit", "T-Rex" });
-		solutions.put("In the scene there are a boy and a girl.", new String[] {
-				"boy", "girl" });
-		solutions.put(
-				"In the far left is a Mailbox and in front of it is a Frog.",
-				new String[] { "Mailbox", "Frog" });
-		solutions
-				.put("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.",
-						new String[] { "duckling" });
-		solutions
-				.put("In the foreground there sits a frog on the left and a hare on the right of the screen.",
-						new String[] { "frog", "hare" });
-		solutions
-				.put("At the start the astronaut is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.",
-						new String[] { "astronaut", "monster" });
-		solutions.put("A piece of Brokkoli is in front of him.",
-				new String[] { "piece of Brokkoli" });
-		solutions
-				.put("I see a palm tree on the left of the screen and a mailbox in front of it. ",
-						new String[] { "palm tree", "mailbox" });
-		solutions
-				.put("In the foreground there is a frog on the left facing east-southeast and a broccoli on the right.",
-						new String[] { "frog", "broccoli" });
-		solutions
-				.put("In the foreground there sits a frog on the left and a hare on the right of the screen.",
-						new String[] { "frog", "hare" }); // probleme mit dem
-															// parser?
-		solutions
-				.put("In the foreground on the left, there sits a green frog with a yellow belly facing eastsoutheast.",
-						new String[] { "frog" });
-		solutions
-				.put("In the background on the right, there sits a white bunny facing southsouthwest. ",
-						new String[] { "bunny" });
-		solutions
-				.put("In the background, slightly on the moon stands a space ship with a sign reading \"UNITED STATES\".",
-						new String[] { "space ship" });
-		solutions
-				.put("In the foreground, to the left of the stage stands the girl Alice.",
-						new String[] { "girl" });
-		// these are pretty hard
-		solutions
-				.put("Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer. ",
-						new String[] { "switch", "monkey" });
-		solutions.put("On the right side of the palm tree there sits a frog.",
-				new String[] { "frog" });
-		// This one isn't specific enough, I think. From our PoV, the entites
-		// could also be penguin, face, blue back, and wings.
-		// solutions.put("To the right is a penguin with white stomach and face and blue back and wings.",
-		// new String[]{"penguin"});
-		// solutions.put("samplesentence", new String[]{"entity", "entity"});
+		checkEntrySet(sol);
+	}
 
-		for (Entry<String, String[]> sol : solutions.entrySet()) {
-			CoreMap annoSentence = annotateSingleSentence(sol.getKey());
-			List<String> einfos = DeclarationPositionFinder
-					.recogniseNames(annoSentence);
-			if (einfos.size() != sol.getValue().length) {
-				fail("Some entities were not recognised in in sentence \""
-						+ sol.getKey() + "\"");
+	@Test
+	public void testRecogniseAlice() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"In the foreground, to the left of the stage stands the girl Alice.",
+				new String[] { "girl" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseSitsFrog() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"In the foreground on the left, there sits a green frog with a yellow belly facing eastsoutheast.",
+				new String[] { "frog" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseFrogBroccoli() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"In the foreground there is a frog on the left facing east-southeast and a broccoli on the right.",
+				new String[] { "frog", "broccoli" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseFrogHare() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"In the foreground there sits a frog on the left and a hare on the right of the screen.",
+				new String[] { "frog", "hare" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseDuckling() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter.",
+				new String[] { "duckling" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseBoy() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"In the scene there are a boy and a girl.", new String[] {
+						"boy", "girl" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseSwitch() throws IvanException {
+		Entry<String, String[]> // these are pretty hard
+		sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer. ",
+				new String[] { "switch", "monkey" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseThereSitsAFrog() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"On the right side of the palm tree there sits a frog.",
+				new String[] { "frog" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseMonsteronwheels() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"At the start the astronaut is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.",
+				new String[] { "astronaut", "monster" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecognisePieceofbrok() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"A piece of Brokkoli is in front of him.",
+				new String[] { "A piece of Brokkoli" });
+		checkEntrySet(sol);
+	}
+
+	@Test
+	public void testRecogniseIsee() throws IvanException {
+		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
+				"I see a palm tree on the left of the screen and a mailbox in front of it. ",
+				new String[] { "palm tree", "mailbox" });
+		checkEntrySet(sol);
+	}
+
+	/**
+	 * @throws IvanException
+	 */
+	@Test
+	public void testRecogniseBunny() throws IvanException {
+		checkEntrySet(new AbstractMap.SimpleEntry<String, String[]>(
+				"In the background on the right, there sits a white bunny facing southsouthwest. ",
+				new String[] { "bunny" }));
+	}
+
+	/**
+	 * @throws IvanException
+	 */
+	@Test
+	public void testRecogniseSpaceship() throws IvanException {
+		checkEntrySet(new AbstractMap.SimpleEntry<String, String[]>(
+				"In the background, slightly on the moon stands a space ship with a sign reading \"UNITED STATES\".",
+				new String[] { "space ship" }));
+	}
+
+	/**
+	 * @param sol
+	 * @throws IvanException
+	 */
+	private void checkEntrySet(Entry<String, String[]> sol)
+			throws IvanException {
+		CoreMap annoSentence = annotateSingleSentence(sol.getKey());
+		annoSentence.get(TreeAnnotation.class).pennPrint();
+		List<String> einfos = DeclarationPositionFinder
+				.recogniseNames(annoSentence);
+		if (einfos.size() != sol.getValue().length) {
+			fail("Some entities were not recognised in in sentence \""
+					+ sol.getKey() + "\"");
+		}
+		for (String foundname : einfos) {
+			boolean matched = false;
+			for (String solutionname : sol.getValue()) {
+				if (solutionname.equalsIgnoreCase(foundname)) {
+					matched = true;
+					continue;
+				}
 			}
-			for (String foundname : einfos) {
-				boolean matched = false;
-				for (String solutionname : sol.getValue()) {
-					if (solutionname.equalsIgnoreCase(foundname)) {
-						matched = true;
-						continue;
-					}
-				}
-				if (!matched) {
-					fail("Entity not recognised: " + foundname
-							+ " in sentence \"" + sol.getKey() + "\"");
-				}
+			if (!matched) {
+				fail(foundname + " not recognised in sentence \""
+						+ sol.getKey() + "\"");
 			}
 		}
 	}
@@ -600,7 +674,7 @@ public class DeclarationPositionFinderTest {
 				+ sentence.toString());
 
 		assertTrue("there are no locations in this location", locs.size() > 0);
-		
+
 		Tree t = sentence.get(TreeAnnotation.class).skipRoot().firstChild();
 
 		for (LocationAnnotation l : locs) {
