@@ -15,7 +15,9 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
+import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -44,6 +46,15 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		 *  is to decide what to do with the result.
 		 *  In most cases, we simply want to annotate.
 		 */
+		// does this sentence container an error?
+		ErrorRule checkError = new ErrorRule();
+		if(checkError.apply(sentence))
+		{
+			System.out.println("bad sentence found");
+			sentence.set(ErrorMessageAnnotation.class, checkError.getMessage());
+			return Classification.ErrorDescription;
+		}
+		
 		// does this sentence contain an event?
 		EventRule checkevent = new EventRule();
 		// yes!
