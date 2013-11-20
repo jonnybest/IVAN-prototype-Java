@@ -335,14 +335,14 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// make space for names
 		ArrayList<IndexedWord> namesIW = new ArrayList<IndexedWord>();
 		// follow "and" and "or" conjunctions starting from the head
-		ArrayList<String> names = BaseRule.resolveCc(head, graph, namesIW);
+		ArrayList<String> names = BaseRule.resolveCc(head, sentence, namesIW);
 		// resolve personal pronouns
 		for (IndexedWord n : namesIW) {
 			if(n.tag().equals("PRP"))
 			{
 				// this part doesn't even work:
-				CoreferenceResolver cresolver = CoreferenceResolver.getInstance();
-				n.setValue(cresolver.resolve(n)); // this is probably a bad idea
+//				CoreferenceResolver cresolver = CoreferenceResolver.getInstance();
+//				n.setValue(cresolver.resolve(n)); // this is probably a bad idea
 			}
 		}
 		return names;

@@ -22,6 +22,7 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
+import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
@@ -260,7 +261,7 @@ public abstract class BaseRule {
 	 * @param treeToSearch
 	 * @return A subtree representing the indexed word.
 	 */
-	protected Tree match(IndexedWord wordToFind, Tree treeToSearch) {
+	static protected Tree match(IndexedWord wordToFind, Tree treeToSearch) {
 		return match(wordToFind, treeToSearch, null, true);
 	}
 
@@ -272,10 +273,10 @@ public abstract class BaseRule {
 	 * @param canGoUp if TRUE, this method returns the largest match it can find. if false, it returns the first match
 	 * @return A subtree representing the indexed word.
 	 */
-	protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
+	static protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
 		return match(wordToFind, treeToSearch, expectedPOS, canGoUp, 0);
 	}
-	protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp, int skip) {
+	static protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp, int skip) {
 		int end = wordToFind.get(EndIndexAnnotation.class);
 		int begin = wordToFind.get(BeginIndexAnnotation.class);
 		
@@ -341,7 +342,7 @@ public abstract class BaseRule {
 		return null;
 	}
 
-	private Tree skip(Tree candidate, Tree parent, String expectedPOS, int skip) {
+	static private Tree skip(Tree candidate, Tree parent, String expectedPOS, int skip) {
 		if(skip == 0)
 			return candidate;
 		
@@ -400,13 +401,16 @@ public abstract class BaseRule {
 	 * @return A list of distinct words or names, grouped by "and"
 	 */
 	public static ArrayList<String> resolveCc(IndexedWord head,
-			SemanticGraph graph, ArrayList<IndexedWord> namesIW) {
+			CoreMap sentence, ArrayList<IndexedWord> namesIW) {
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		Tree tree = sentence.get(TreeAnnotation.class);
 		// list of names
 		ArrayList<String> names = new ArrayList<String>();
 		if (namesIW == null)
 			namesIW = new ArrayList<IndexedWord>();
 		// adding this subject
 		names.add(resolveNN(head, graph));
+		//names.add(printTree(match(head, tree, "NP", true, 0)));
 		namesIW.add(head);
 		// check for more!
 		// more names can be reached with "and". Get us an "and":

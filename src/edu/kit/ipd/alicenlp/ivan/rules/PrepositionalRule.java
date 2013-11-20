@@ -74,7 +74,7 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 			return false;
 		
 		// for now we only allow one referent per location, so we only return one. But we should want to know if there are more than one referents in this sentence.  
-		this.multipleReferents = BaseRule.resolveCc(word, graph, null).size() > 1;
+		this.multipleReferents = BaseRule.resolveCc(word, sentence, null).size() > 1;
 			
 		// word TREE
 		Tree mytree = sentence.get(TreeAnnotation.class);
