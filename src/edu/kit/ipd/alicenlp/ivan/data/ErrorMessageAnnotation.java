@@ -12,7 +12,7 @@ import edu.stanford.nlp.util.TypesafeMap;
  */
 public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnotation>
 {
-	private final Integer docId;
+	private final String docId;
 	private final String Message;
 	private final Span Range;
 
@@ -28,11 +28,11 @@ public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnot
 		return Range;
 	}
 
-	public Integer getDocId() {
+	public String getDocId() {
 		return docId;
 	}
 	
-	public ErrorMessageAnnotation(Integer document, Integer start, Integer end, String message)
+	public ErrorMessageAnnotation(String document, Integer start, Integer end, String message)
 	{
 		docId = document;
 		Range = Span.fromValues(start, end);

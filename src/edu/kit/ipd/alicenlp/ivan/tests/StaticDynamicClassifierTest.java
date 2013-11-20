@@ -30,6 +30,8 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -475,6 +477,7 @@ public class StaticDynamicClassifierTest {
 	public void positiveErrorTest() {
 		Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		System.out.println(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class));
 		assertThat("passes sentence classified wrong",
 				sentence.get(Classification.class),
 				is(Classification.ErrorDescription));

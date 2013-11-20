@@ -147,12 +147,6 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			}
 			return Classification.SetupDescription;
 		}
-		else if (lexnum == 39 || BaseRule.is1stPerson(root, graph))
-		{
-			// "I see a palm tree on the left of the screen."
-			// hypothetical false positive: "I see how the man raises a hand."
-			return Classification.SetupDescription;
-		}
 		else if (lexnum == 36) // verb.creation			
 		{
 			// ex: "The roof of the shed is painted blue, like the sky." 

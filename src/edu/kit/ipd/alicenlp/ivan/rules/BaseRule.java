@@ -62,12 +62,10 @@ public abstract class BaseRule {
 		return det != null;
 	}
 
-	public static Boolean is1stPerson(IndexedWord root, SemanticGraph graph)
+	public static Boolean is1stPerson(SemanticGraph graph)
 	{
-		// not actually always first person, but for our corpus, it's good enough 
-//		if ("VBP".equalsIgnoreCase(root.get(CoreAnnotations.PartOfSpeechAnnotation.class))) {
-//			return true;
-//		}
+		IndexedWord root = graph.getFirstRoot();
+		// first person = nominal subject is "I"
 		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
 		IndexedWord subject = graph.getChildWithReln(root, subjclass);
 		return subject == null || subject.word().equalsIgnoreCase("I");
