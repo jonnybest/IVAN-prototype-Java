@@ -26,6 +26,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
@@ -469,23 +470,30 @@ public class DeclarationPositionFinderTest {
 				new String[] { "space ship" }));
 	}
 
-	/**
-	 * @param sol
+	/** This checker method verifies a sample sentence against its solution, 
+	 * unless the sample sentence was recognized as bad input.
+	 * @param solution
 	 * @throws IvanException
 	 */
-	private void checkEntrySet(Entry<String, String[]> sol)
+	private void checkEntrySet(Entry<String, String[]> solution)
 			throws IvanException {
-		CoreMap annoSentence = annotateSingleSentence(sol.getKey());
+		CoreMap annoSentence = annotateSingleSentence(solution.getKey());
 		annoSentence.get(TreeAnnotation.class).pennPrint();
 		List<String> einfos = DeclarationPositionFinder
 				.recogniseNames(annoSentence);
-		if (einfos.size() != sol.getValue().length) {
+		if(annoSentence.get(Classification.class) != null
+				&& annoSentence.get(Classification.class).equals(Classification.ErrorDescription))
+		{
+			System.out.println("Error: \"" + solution.getKey() + "\"\nis not valid IVAN input.");
+			return;
+		}
+		if (einfos.size() != solution.getValue().length) {
 			fail("Some entities were not recognised in in sentence \""
-					+ sol.getKey() + "\"");
+					+ solution.getKey() + "\"");
 		}
 		for (String foundname : einfos) {
 			boolean matched = false;
-			for (String solutionname : sol.getValue()) {
+			for (String solutionname : solution.getValue()) {
 				if (solutionname.equalsIgnoreCase(foundname)) {
 					matched = true;
 					continue;
@@ -493,7 +501,7 @@ public class DeclarationPositionFinderTest {
 			}
 			if (!matched) {
 				fail(foundname + " not recognised in sentence \""
-						+ sol.getKey() + "\"");
+						+ solution.getKey() + "\"");
 			}
 		}
 	}
