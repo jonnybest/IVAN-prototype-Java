@@ -267,7 +267,7 @@ public class StaticDynamicClassifierTest {
 
 		// konfiguriere pipeline
 		props.put(
-				"annotators", "tokenize, ssplit, pos, lemma, parse, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+				"annotators", "tokenize, ssplit, pos, lemma, ner, parse, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
 		pipeline = new StanfordCoreNLP(props);
 
 		pipeline.annotate(doc);
@@ -409,23 +409,31 @@ public class StaticDynamicClassifierTest {
 	 */
 	@Test
 	public void positiveTimeTest() {
+		/*
+		 A very short time passes.
+		 The fire lasts for around 10 seconds.
+		 The flames continue to burn.
+		 */
+		// explicitly references passing time
 		Annotation doc2 = annotateText("A very short time passes.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("passes sentence classified wrong",
 				sentence2.get(Classification.class),
 				is(Classification.TimeDescription));
 
+		// contains duration
 		Annotation doc3 = annotateText("The fire lasts for around 10 seconds.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("fire around sentence classified wrong",
 				sentence3.get(Classification.class),
 				is(Classification.TimeDescription));
 
-		Annotation doc = annotateText("The flames continue to burn.");
-		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertThat("flames sentence classified wrong",
-				sentence.get(Classification.class),
-				is(Classification.TimeDescription));
+		// there is no time in this sentence. just a state. the duration is implied, not explicit.
+//		Annotation doc = annotateText("The flames continue to burn.");
+//		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+//		assertThat("flames sentence classified wrong",
+//				sentence.get(Classification.class),
+//				is(Classification.TimeDescription));
 
 	}
 

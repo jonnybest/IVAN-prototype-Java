@@ -17,6 +17,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
+import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -52,6 +53,15 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			// since we only support one classification, return the classification instantly
 			return Classification.EventDescription;
 			//sentence.set(Classification.class, Classification.EventDescription);
+		}
+		
+		// does this sentence explicitly reference time or duration?
+		TimeRule checkTime = new TimeRule();
+		// yes!
+		if(checkTime.apply(sentence))
+		{
+			System.out.print("Time reference found");
+			return Classification.TimeDescription;
 		}
 		
 		/** Old style classification follows. 
