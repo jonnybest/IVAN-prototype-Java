@@ -282,7 +282,9 @@ public abstract class BaseRule {
 		for (Tree tree : treeToSearch) {
 			CoreLabel lbl = ((CoreLabel) tree.label());
 			
-			if(lbl.get(EndIndexAnnotation.class) == end)
+			if(lbl != null && 
+					lbl.get(EndIndexAnnotation.class) != null &&
+					lbl.get(EndIndexAnnotation.class) == end)
 			{
 				if(lbl.get(BeginIndexAnnotation.class) == begin)
 				{
