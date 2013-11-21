@@ -1,5 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
+import static edu.stanford.nlp.util.logging.Redwood.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -30,6 +31,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.Redwood;
 
 public class StaticDynamicClassifier extends IvanAnalyzer  
 {
@@ -323,13 +325,20 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	public void annotate(Annotation annotation) 
 	{
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			// process 
 			try {
 				Classification sentenceclass = classifySentence(BaseRule.getRoot(sentence), sentence);
 				sentence.set(Classification.class, sentenceclass);
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
+				log(Redwood.ERR, "Error while classifying sentences.", e);
 			}
 		}
+		classifyDocument(annotation);
+	}
+
+	private void classifyDocument(Annotation annotation) {
+		
 	}
 
 	@Override
