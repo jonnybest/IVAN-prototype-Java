@@ -338,7 +338,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	}
 
 	private void classifyDocument(Annotation annotation) {
-		
+		// TODO: implement document-wide error checking
 	}
 
 	@Override
