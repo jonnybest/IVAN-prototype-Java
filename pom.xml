@@ -42,9 +42,9 @@
 	</dependency>  	
 	<!-- Editor -->
 	<dependency>
-	<groupId>org.codehaus.jtstand</groupId>
-		<artifactId>jtstand-editor</artifactId>
-		<version>1.5.7</version>
+    	<groupId>com.fifesoft</groupId>
+    	<artifactId>rsyntaxtextarea</artifactId>
+    	<version>2.5.0</version>
 	</dependency>
   	<dependency>
   		<groupId>edu.stanford.nlp</groupId>
@@ -57,11 +57,6 @@
 		<version>3.2.0</version>
 		<classifier>models</classifier>
 	</dependency>
-<!--   	<dependency> -->
-<!--   		<groupId>org.swinglabs</groupId> -->
-<!--   		<artifactId>swingx</artifactId> -->
-<!--   		<version>1.6.1</version> -->
-<!--   	</dependency> -->
 	<dependency>
     	<groupId>org.swinglabs.swingx</groupId>
 	    <artifactId>swingx-all</artifactId>
