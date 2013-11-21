@@ -29,13 +29,24 @@ import org.junit.Test;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
+import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.SpanAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.IntPair;
+import edu.stanford.nlp.util.IntTuple;
+import edu.stanford.nlp.util.logging.Redwood;
+import static edu.stanford.nlp.util.logging.Redwood.*;
 
 /**
  * @author Jonny
@@ -247,9 +258,9 @@ public class StaticDynamicClassifierTest {
 
 	}
 
-	/**
-	 * @param text
-	 * @return
+	/** Annotates a document with our customized pipeline.
+	 * @param text A text to process
+	 * @return The annotated text
 	 */
 	private Annotation annotateText(String text) {
 		Annotation doc = new Annotation(text);
@@ -259,7 +270,7 @@ public class StaticDynamicClassifierTest {
 		// creates a StanfordCoreNLP object, with POS tagging, lemmatization,
 		// NER, parsing, and coreference resolution
 		Properties props = new Properties();
-		// alternativ: wsj-bidirectional
+		// alternative: wsj-bidirectional
 		try {
 			props.put(
 					"pos.model",
@@ -267,10 +278,11 @@ public class StaticDynamicClassifierTest {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		// adding our own annotator property
 		props.put("customAnnotatorClass.sdclassifier",
 				"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
 
-		// konfiguriere pipeline
+		// configure pipeline
 		props.put(
 				"annotators", "tokenize, ssplit, pos, lemma, ner, parse, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
 		pipeline = new StanfordCoreNLP(props);
@@ -361,8 +373,9 @@ public class StaticDynamicClassifierTest {
 				is(Classification.EventDescription));
 
 	}
-	
-	/** The test for "stop" events.
+
+	/**
+	 * The test for "stop" events.
 	 * 
 	 */
 	@Test
@@ -415,9 +428,8 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveTimeTest() {
 		/*
-		 A very short time passes.
-		 The fire lasts for around 10 seconds.
-		 The flames continue to burn.
+		 * A very short time passes. The fire lasts for around 10 seconds. The
+		 * flames continue to burn.
 		 */
 		// explicitly references passing time
 		Annotation doc2 = annotateText("A very short time passes.");
@@ -433,12 +445,13 @@ public class StaticDynamicClassifierTest {
 				sentence3.get(Classification.class),
 				is(Classification.TimeDescription));
 
-		// there is no time in this sentence. just a state. the duration is implied, not explicit.
-//		Annotation doc = annotateText("The flames continue to burn.");
-//		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-//		assertThat("flames sentence classified wrong",
-//				sentence.get(Classification.class),
-//				is(Classification.TimeDescription));
+		// there is no time in this sentence. just a state. the duration is
+		// implied, not explicit.
+		// Annotation doc = annotateText("The flames continue to burn.");
+		// CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		// assertThat("flames sentence classified wrong",
+		// sentence.get(Classification.class),
+		// is(Classification.TimeDescription));
 
 	}
 
@@ -477,13 +490,63 @@ public class StaticDynamicClassifierTest {
 	 * identified an undesirable sentence.
 	 */
 	@Test
-	public void positiveErrorTest() {
-		Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
-		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		System.out.println(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class));
-		assertThat("passes sentence classified wrong",
-				sentence.get(Classification.class),
-				is(Classification.ErrorDescription));
+	public void positive1stPersonErrorTest() {
+		{
+			/* rule: no first person
+			 * reason: verb does not pertain to things happening in the scene
+			 */
+			Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			System.out.println(sentence
+					.get(CollapsedCCProcessedDependenciesAnnotation.class));
+			assertThat("I see sentence classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.ErrorDescription));
+		}
+	}
+	
+	/**
+	 * A positive test for ERROR annotations. If this test passes, the analyzer
+	 * identified an undesirable sentence.
+	 */
+	@Test
+	public void positiveNoSynonymousAgentsErrorTest() {
+		{
+			/* rule: different agents cannot be synonyms of each other
+			 * reason: we resolve synonyms to the same Alice entity. They need a name at least.
+			 */
+			Annotation doc = annotateText("On the left side in the background, there is a rabbit. "
+					+ "On the right side, in the foreground, there is a bunny.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(1);
+
+			CoreLabel bunny = findWord("bunny", sentence.get(TokensAnnotation.class));
+			log("span: "+bunny.get(SpanAnnotation.class));
+			log(Redwood.DBG, bunny.get(CharacterOffsetBeginAnnotation.class)+ " " +
+					bunny.get(CharacterOffsetEndAnnotation.class)+ " offsets");
+			Span bunnyspan = makeSpan(bunny);
+			log(bunnyspan);
+
+			assertThat("rabbit/bunny error classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.ErrorDescription));
+			
+			ErrorMessageAnnotation error = sentence.get(ErrorMessageAnnotation.class);
+			assertThat(error.getSpan(), is(bunnyspan));
+		}
+	}
+
+	private Span makeSpan(CoreLabel label) {
+		return Span.fromValues(label.get(CharacterOffsetBeginAnnotation.class), label.get(CharacterOffsetEndAnnotation.class));
+	}
+
+	private CoreLabel findWord(String name, List<CoreLabel> list) {
+		for (CoreLabel c : list) {
+			if(c.originalText().equalsIgnoreCase(name))
+			{
+				return c;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -557,7 +620,7 @@ public class StaticDynamicClassifierTest {
 	public void hardFacingTest() {
 		String text = "The boy is facing the girl. "
 				+ "The boy is facing towards the girl. "
-//				+ "The boy is facing towards at the girl. " // sic!
+				// + "The boy is facing towards at the girl. " // sic!
 				+ "Alice is facing away from the bunny. "
 				+ "The cowboy is facing west. "
 				+ "The camel is facing the camera. "
@@ -673,17 +736,17 @@ public class StaticDynamicClassifierTest {
 					is(Classification.SetupDescription));
 		}
 	}
-	
+
 	/**
 	 * takes place
 	 */
 	@Test
 	public void positiveHardSetupTakesPlaceTest() {
-		String text = "The scene takes place on the grass." +
-				"The scene takes place on the grass."+
-				"The scene takes place in the desert."+
-				"The scene takes place on a meadow."+
-				"The scene takes place on the moon surface.";
+		String text = "The scene takes place on the grass."
+				+ "The scene takes place on the grass."
+				+ "The scene takes place in the desert."
+				+ "The scene takes place on a meadow."
+				+ "The scene takes place on the moon surface.";
 
 		Annotation doc = annotateText(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {

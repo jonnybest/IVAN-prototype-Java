@@ -36,6 +36,76 @@ public class ErrorRule implements ISentenceRule {
 	@Override
 	public boolean apply(CoreMap sentence) {
 		// checking roots:
+		if(applyRoots(sentence))
+			return true;
+		
+		if(applyNeedsOneVerb(sentence))
+			return true;
+		
+		// TODO: sentences with the "fragment" tree annotation are not desirable
+		// also todo: find out what that fragment thing looks like
+		
+		// verbs that are joined by a conjunction are probably missing arguments and cannot be properly parsed with dependencies
+		if(applyCCVerbs(sentence))
+			return true;
+		
+		// first person sentences do not have a verb that reflects the action on the scene
+		if(applyNo1stPerson(sentence))
+			return true;
+		
+		// everything seems to be fine.
+		return false;
+	}
+
+	/**
+	 * @param sentence
+	 * @return
+	 */
+	public boolean applyNo1stPerson(CoreMap sentence) {
+		// no 1st person descriptions (because of missing verb)
+		if(BaseRule.is1stPerson(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)))
+		{
+			error("Sentences with \"I\" are difficult to understand. "
+					+ "Please try not to use \"I\" in a sentence.", sentence);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param sentence
+	 * @return
+	 */
+	public boolean applyCCVerbs(CoreMap sentence) {
+		// conjoined verbs are not proper use and lead to parameter errors
+		if(hasCC(getMainVerb(sentence), sentence))
+		{
+			error("The verbs in this sentence both refer to the same thing."
+					+ " Instead, please use one verb per sentence."
+					+ " Otherwise we'll probably get it wrong.", sentence);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param sentence
+	 * @return
+	 */
+	public boolean applyNeedsOneVerb(CoreMap sentence) {
+		// checking verbs. each sentence needs at least one
+		if((getMainVerb(sentence) == null))
+		{
+			error("This sentence needs a verb.", sentence);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * @param sentence
+	 */
+	public boolean applyRoots(CoreMap sentence) {
 		Collection<IndexedWord> roots = sentence.get(BasicDependenciesAnnotation.class).getRoots();
 		// if the sentence has no root, it's an error
 		if(roots.size() == 0)
@@ -50,36 +120,6 @@ public class ErrorRule implements ISentenceRule {
 					+ " Try splitting the sentence into two sentences.", sentence);
 			return true;
 		}
-		
-		// checking verbs. each sentence needs at least one
-		if((getMainVerb(sentence) == null))
-		{
-			error("This sentence needs a verb.", sentence);
-			return true;
-		}
-		
-		// TODO: sentences with the "fragment" tree annotation are not desirable
-		// also todo: find out what that fragment thing looks like
-		
-		// conjoined verbs are not proper use and lead to parameter errors
-		if(hasCC(getMainVerb(sentence), sentence))
-		{
-			error("The verbs in this sentence both refer to the same thing."
-					+ " Instead, please use one verb per sentence."
-					+ " Otherwise we'll probably get it wrong.", sentence);
-			return true;
-		}
-		
-		// no 1st person descriptions (because of missing verb)
-		if(BaseRule.is1stPerson(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)))
-		{
-			error("Sentences with \"I\" are difficult to understand. "
-					+ "Please try not to use \"I\" in a sentence.", sentence);
-			return true;
-		}
-		
-		
-		// everything seems to be fine.
 		return false;
 	}
 
