@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -38,6 +39,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleContext;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
@@ -47,11 +49,13 @@ import org.languagetool.JLanguageTool;
 import org.languagetool.JLanguageTool.ParagraphHandling;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
+import org.omg.CORBA.CharSeqHelper;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -63,6 +67,7 @@ import edu.stanford.nlp.util.CoreMap;
 
 public class SwingWindow {
 
+	private static final String DOCUMENT_TXT = "document.txt";
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
@@ -412,6 +417,13 @@ public class SwingWindow {
 		
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
+		
+		// prepare git tracking
+		try {
+			setupTracking();
+		} catch (IOException | GitAPIException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	/**
@@ -458,21 +470,89 @@ public class SwingWindow {
 		commit(outputfile.getName());
 		return true;
 	}
-
+	
 	/**
 	 * This method performs a commit to the local git repository
 	 */
-	private void commit(String branch) {
-		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.basepath;
+	private void commit(String file) {
+		String branch = file2ref(file);
+		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.TRACKINGPATH;
 		FileWriter out;
 		try {
-			out = new FileWriter(basepath + "document.txt");
+			out = new FileWriter(basepath + DOCUMENT_TXT);
 			out.write(txtEditor.getText());
 			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
+	}
+
+	/** Makes sure that any given name is converted into a valid ref name.
+	 git imposes the following rules on how references are named:
+
+    1. They can include slash / for hierarchical (directory) grouping, 
+    	but no slash-separated component can begin with a dot .. 
+
+    2. They must contain at least one /. This enforces the presence of a 
+    	category like heads/, tags/ etc. but the actual names are not restricted. 
+
+    3. They cannot have two consecutive dots .. anywhere. 
+
+    4. They cannot have ASCII control characters (i.e. bytes whose values 
+    	are lower than \040, or \177 DEL), space, tilde ~, caret ^, colon :, 
+    	question-mark ?, asterisk *, or open bracket [ anywhere. 
+
+    5. They cannot end with a slash / nor a dot .. 
+
+    6. They cannot end with the sequence .lock. 
+
+    7. They cannot contain a sequence @{. 
+
+    8. They cannot contain a \. 
+	 
+	 * @param file
+	 * @return
+	 */
+
+	public static String file2ref(String file) {
+		String ofile = file, // "old file" 
+				nfile = file; // "new file"
+		do
+		{
+			ofile = nfile; // "new" is the new "old"
+			
+			// 3. no double dots
+			nfile = ofile.replace("..", ".");
+
+		}while(!ofile.equals(nfile));
+		
+		// work with a char array
+		char[] f = nfile.toCharArray();
+		// 4. no low values
+		for(int i = 0; i < f.length; i++)
+		{
+			if(f[i] < 41 || f[i] > 176)
+			{
+				f[i] = 'o';
+			}
+//			System.out.println(Arrays.toString(f));
+		}
+
+		// space, tilde ~, caret ^, colon :, question-mark ?, asterisk *, or open bracket [ anywhere. 
+		nfile = Arrays.toString(f)
+				.replace("[", "")
+				.replace("]", "") // not a violation, but it's produced by Arrays.toString
+				.replace(", ", "") // also a byproduct of the array print
+				.replace(" ", "o")
+				.replace("^", "o")
+				.replace(":", "o")
+				.replace("?", "o")
+				.replace("*", "o")
+				.replace(".lock", "ooooo") // 6. They cannot end with the sequence .lock. 
+				.replace("@{", "oo") // 7. They cannot contain a sequence @{. 
+				;
+		return nfile;
 	}
 
 	/**
@@ -484,13 +564,18 @@ public class SwingWindow {
 	public void load(TextEditorPane editor, File file) {
 		try {
 			editor.load(FileLocation.create(file), "utf-8");
-			tag("load." + file.getName());
+			checkout(file2ref(file.getName()));
+			tag("load." + file2ref(file.getName()));
 			this.currentFileName = file.getPath();
 		} catch (IOException e) {
 			// catch block in case load fails
 			e.printStackTrace();
 			System.out.println("SwingWindow.load()");
 		}
+	}
+
+	private void checkout(String file2ref) {
+		GitManager.checkout(file2ref, null);
 	}
 
 	private void tag(String tagname) {
@@ -503,7 +588,8 @@ public class SwingWindow {
 	 * @param editor
 	 * @param path
 	 */
-	public void reload(TextEditorPane editor, File file) {
+	public void reload(TextEditorPane editor, File file) 
+	{
 		Document doc = editor.getDocument();
 		doc.putProperty(Document.StreamDescriptionProperty, null);
 		load(editor, file);
@@ -530,6 +616,23 @@ public class SwingWindow {
 					.println("The caller tried to process this text and caused an exception.");
 			e.printStackTrace();
 		}
+	}
+	
+	/** This method prepares the git repository and tracking files.
+	 * @throws IOException 
+	 * @throws GitAPIException 
+	 * 
+	 */
+	private void setupTracking() throws IOException, GitAPIException
+	{
+		File dir = new File(GitManager.TRACKINGPATH);
+		dir.mkdir();
+		
+		String documentpath = GitManager.TRACKINGPATH + DOCUMENT_TXT;
+		File what = new File(documentpath);
+		what.createNewFile();
+		
+		GitManager.safeInit();
 	}
 
 	/**

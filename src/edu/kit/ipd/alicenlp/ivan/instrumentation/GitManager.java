@@ -3,23 +3,22 @@ package edu.kit.ipd.alicenlp.ivan.instrumentation;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.*;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
-import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.GitCommand;
-import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.api.ListTagCommand;
 import org.eclipse.jgit.api.TagCommand;
+import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRefNameException;
 import org.eclipse.jgit.api.errors.InvalidTagNameException;
 import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.NoMessageException;
 import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
+import org.eclipse.jgit.api.errors.RefNotFoundException;
 import org.eclipse.jgit.api.errors.UnmergedPathsException;
 import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.lib.Ref;
@@ -27,7 +26,9 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 public class GitManager {
-	final public static String basepath = "tracking/"; 
+	private static final String DOCUMENT_TXT = "document.txt";
+	final public static String TRACKINGPATH = "tracking/";
+	private static Git myGit; 
 	
 	public static boolean commit(String branch)
 	{
@@ -38,18 +39,10 @@ public class GitManager {
 		try {
 			Git git = getGit();
 			
-			try {
-				// try and create a branch for this file 
-				CheckoutCommand co = git.checkout();
-				co.setName(branch);
-				co.setCreateBranch(true);
-				co.call();
-			} catch (RefAlreadyExistsException e) {
-				// that's alright
-			}
+			checkout(branch, git);
 			
 			AddCommand add = git.add();
-			add.addFilepattern("document.txt");
+			add.addFilepattern(DOCUMENT_TXT);
 			add.call();
 			CommitCommand ci = git.commit();
 			ci.setMessage("test commit").call();
@@ -81,14 +74,53 @@ public class GitManager {
 	}
 
 	/**
+	 * @param branch
+	 * @param git
+	 * @throws GitAPIException
+	 * @throws RefNotFoundException
+	 * @throws InvalidRefNameException
+	 * @throws CheckoutConflictException
+	 */
+	public static void checkout(String branch, Git git)
+	{
+		try {
+			if(git == null)
+				git = getGit();
+
+			// try and create a branch for this file 
+			CheckoutCommand co = git.checkout();
+			co.setName(branch);
+			co.setCreateBranch(true);
+			co.call();
+		} catch (RefAlreadyExistsException e) {
+			// that's alright
+			CheckoutCommand co = git.checkout();
+			co.setName(branch);
+			try {
+				co.call();
+			} catch (GitAPIException e1) {
+				System.err.println(branch);
+				e1.printStackTrace();
+			}
+		}
+		catch (GitAPIException|IOException e) {
+			System.err.println(branch);
+			e.printStackTrace();
+		} 
+	}
+
+	/**
 	 * @return
 	 * @throws IOException
 	 */
 	protected static Git getGit() throws IOException {
+		if(myGit != null)
+			return myGit;
+		
 		FileRepositoryBuilder builder = new FileRepositoryBuilder();
-		Repository repository = builder.setGitDir(new File(basepath + ".git"))
+		Repository repository = builder.setGitDir(new File(TRACKINGPATH + ".git"))
 		  .readEnvironment() // scan environment GIT_* variables
-		  .findGitDir() // scan up the file system tree
+		  //.findGitDir() // scan up the file system tree
 		  .build();
 		//ObjectId head = repository.resolve("HEAD");
 		Git git = new Git(repository);
@@ -151,5 +183,21 @@ public class GitManager {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
+	}
+
+	public static void safeInit() throws GitAPIException, IOException {
+		if(myGit != null)
+			return;
+		
+		myGit = Git.init().setDirectory(new File(TRACKINGPATH))
+		.setBare(false).call();
+		
+		if(!myGit.status().call().isClean())
+		{
+			myGit.commit().setAll(true).setMessage("commited dangling changes").call();
+		}
+		checkout("master", myGit);
+		
+		myGit.commit().setAll(true).setMessage("new session").call();
 	}
 }
