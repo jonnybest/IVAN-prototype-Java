@@ -60,6 +60,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 				createError(doc);
 				if(canWrite)
 					rewriteSentenceTag(doc);
+				return true;
 			}
 		}
 		return false;
@@ -135,7 +136,8 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 			// lemma may be NULL if we encounter it the first time
 			String lemma = mappings.get(syn);
 			// if we found something that is different from what we already have, this is going to cause problems and is not okay
-			if(!entity.equalsIgnoreCase(lemma))
+			if(lemma != null 
+					&& !entity.equalsIgnoreCase(lemma))
 			{
 				firstOffendingEntityInfo = state.getSingle(lemma);
 				secondOffendingEntityInfo = state.getSingle(entity);

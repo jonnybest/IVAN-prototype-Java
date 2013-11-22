@@ -281,11 +281,14 @@ public class StaticDynamicClassifierTest {
 		}
 		// adding our own annotator property
 		props.put("customAnnotatorClass.sdclassifier",
-				"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+			"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+		// adding our declaration finder
+		props.put("customAnnotatorClass.declarations", 
+				"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 
 		// configure pipeline
 		props.put(
-				"annotators", "tokenize, ssplit, pos, lemma, ner, parse, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+				"annotators", "tokenize, ssplit, pos, lemma, ner, parse, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
 		pipeline = new StanfordCoreNLP(props);
 
 		pipeline.annotate(doc);
@@ -517,10 +520,10 @@ public class StaticDynamicClassifierTest {
 			 * reason: we resolve synonyms to the same Alice entity. They need a name at least.
 			 */
 			Annotation doc = annotateText("On the left side in the background, there is a rabbit. "
-					+ "On the right side, in the foreground, there is a bunny.");
+					+ "On the right side, in the foreground, there is a hare.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(1);
 
-			CoreLabel bunny = findWord("bunny", sentence.get(TokensAnnotation.class));
+			CoreLabel bunny = findWord("hare", sentence.get(TokensAnnotation.class));
 			log("span: "+bunny.get(SpanAnnotation.class));
 			log(Redwood.DBG, bunny.get(CharacterOffsetBeginAnnotation.class)+ " " +
 					bunny.get(CharacterOffsetEndAnnotation.class)+ " offsets");

@@ -14,6 +14,7 @@ import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
@@ -435,7 +436,13 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 			LocationListAnnotation list = findLocationAsTrees(sentence);
 			if(!list.isEmpty())
 				sentence.set(LocationListAnnotation.class, list);
+			try {
+				learnDeclarations(sentence);
+			} catch (IvanException e) {
+				log(Redwood.ERR, e);
+			}
 		}		
+		annotation.set(IvanEntitiesAnnotation.class, getCurrentState());
 	}
 
 	/** Returns the locations which are mentioned in this sentence or an empty list if none 
