@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.TypesafeMap;
 
 
 /** This class manages a set of names and EntityInfos

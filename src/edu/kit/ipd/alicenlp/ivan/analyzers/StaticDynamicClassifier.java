@@ -1,6 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
 import static edu.stanford.nlp.util.logging.Redwood.*;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -9,6 +10,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import org.apache.xalan.xsltc.compiler.util.ErrorMessages;
+
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -16,8 +19,12 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
+import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
@@ -53,7 +60,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		if(checkError.apply(sentence))
 		{
 			System.out.println("bad sentence found");
-			sentence.set(ErrorMessageAnnotation.class, checkError.getMessage());
+			sentence.set(ErrorMessageAnnotation.class, checkError.getErrorMessage());
 			return Classification.ErrorDescription;
 		}
 		
@@ -339,6 +346,22 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 
 	private void classifyDocument(Annotation annotation) {
 		// TODO: implement document-wide error checking
+		List<ErrorMessageAnnotation> errors = annotation.get(DocumentErrorAnnotation.class);
+		if(errors == null)
+			errors = new ArrayList<ErrorMessageAnnotation>();
+
+		// lets check the entities for consistency. 
+		InitialState entities = annotation.get(IvanEntitiesAnnotation.class);
+		if(entities == null)
+			return; // no entities - nothing to do
+		
+		// 1. distinct entities should not be synonymous to each other 
+		EntitiesSynonymsErrorRule rule = new EntitiesSynonymsErrorRule(entities);
+		if(rule.apply(annotation, true))
+		{
+			errors.add(rule.getErrorMessage());			
+			annotation.set(DocumentErrorAnnotation.class, errors);
+		}
 	}
 
 	@Override

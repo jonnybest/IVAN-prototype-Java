@@ -26,7 +26,8 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class ErrorRule implements ISentenceRule {
+public class ErrorRule implements ISentenceRule, IErrorRule
+{
 
 	ErrorMessageAnnotation msg;
 	
@@ -154,7 +155,7 @@ public class ErrorRule implements ISentenceRule {
 				message);
 	}
 
-	public ErrorMessageAnnotation getMessage() {
+	public ErrorMessageAnnotation getErrorMessage() {
 		return msg;
 	}
 

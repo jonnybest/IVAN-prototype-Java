@@ -29,6 +29,7 @@ import org.junit.Test;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
@@ -530,8 +531,8 @@ public class StaticDynamicClassifierTest {
 					sentence.get(Classification.class),
 					is(Classification.ErrorDescription));
 			
-			ErrorMessageAnnotation error = sentence.get(ErrorMessageAnnotation.class);
-			assertThat(error.getSpan(), is(bunnyspan));
+			List<ErrorMessageAnnotation> errors = doc.get(DocumentErrorAnnotation.class);
+			assertThat(errors.get(0).getSpan(), is(bunnyspan));
 		}
 	}
 
