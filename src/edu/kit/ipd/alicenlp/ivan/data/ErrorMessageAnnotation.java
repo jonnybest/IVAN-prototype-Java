@@ -38,4 +38,10 @@ public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnot
 		Range = Span.fromValues(start, end);
 		Message = message;
 	}
+
+	public ErrorMessageAnnotation(String Id, Span errorspan, String message) {
+		docId = Id;
+		Range = errorspan;
+		Message = message;
+	}
 }

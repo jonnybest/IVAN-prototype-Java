@@ -10,8 +10,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.xalan.xsltc.compiler.util.ErrorMessages;
-
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
@@ -341,10 +339,14 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 				log(Redwood.ERR, "Error while classifying sentences.", e);
 			}
 		}
-		classifyDocument(annotation);
+		try {
+			classifyDocument(annotation);
+		} catch (JWNLException e) {
+			log(Redwood.ERR, e);
+		}
 	}
 
-	private void classifyDocument(Annotation annotation) {
+	private void classifyDocument(Annotation annotation) throws JWNLException {
 		// TODO: implement document-wide error checking
 		List<ErrorMessageAnnotation> errors = annotation.get(DocumentErrorAnnotation.class);
 		if(errors == null)

@@ -1,5 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
+import static edu.stanford.nlp.util.logging.Redwood.log;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -14,9 +16,12 @@ import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
-import edu.kit.ipd.alicenlp.ivan.rules.ILocationRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
+import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
@@ -26,6 +31,7 @@ import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcess
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.Redwood;
 
 public class DeclarationPositionFinder extends IvanAnalyzer
 {
@@ -204,6 +210,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 					info.setLocation(locs.getLocation());
 				if(hasDirection(sentence))
 					info.setDirection(dirs.getDirection());
+				// set name range
+				Span range = locateRange(n, sentence);
+				info.setEntitySpan(range);
 				infos.add(info);
 			}			
 		} catch (IvanException e) {
@@ -214,6 +223,30 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		return infos;
 	}
 	
+	/** This method finds the first occurence of a string in a document. 
+	 * Basically it works like String.indexOf(String), but it returns an index
+	 * for the whole document, instead of only this sentence.
+	 *  
+	 * @param n The search string
+	 * @param sentence
+	 * @return The "absolute" position of the search string in this sentence.
+	 */
+	private static Span locateRange(String n, CoreMap sentence) {
+		String[] tokens = n.split(" ");
+		for (String s : tokens) {
+			for (CoreLabel originalToken : sentence.get(TokensAnnotation.class)) {
+				if(s.equals(originalToken.originalText()))
+				{
+					int begin = originalToken.get(CharacterOffsetBeginAnnotation.class);
+					return Span.fromValues(begin, begin + n.length());
+				}
+			}
+		}
+		// the search string is not present in the given sentence
+		log(Redwood.WARN, "the search string is not present in the given sentence");
+		return null;
+	}
+
 	private static boolean hasDirection(CoreMap sentence) {
 		return getDirection(sentence) != null;
 	}

@@ -526,6 +526,8 @@ public class StaticDynamicClassifierTest {
 					bunny.get(CharacterOffsetEndAnnotation.class)+ " offsets");
 			Span bunnyspan = makeSpan(bunny);
 			log(bunnyspan);
+			
+			assertNotNull("Error tag is missing.", doc.get(DocumentErrorAnnotation.class));
 
 			assertThat("rabbit/bunny error classified wrong",
 					sentence.get(Classification.class),

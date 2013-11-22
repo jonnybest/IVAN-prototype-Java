@@ -1,5 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.data;
 
+import edu.stanford.nlp.ie.machinereading.structure.Span;
+
 
 
 /**
@@ -13,6 +15,7 @@ public class EntityInfo
 	private String Entity = null,
 		Location = null,
 		Direction = null;
+	private Span entitydefinition;
 
 	public String getEntity() {
 		return Entity;
@@ -132,5 +135,18 @@ public class EntityInfo
 		if (e.hasLocation()) {
 			this.Location = e.getLocation();
 		}
+	}
+
+	/** This is the character index where this entity is defined.
+	 * 
+	 * @return
+	 */
+	public Span getEntitySpan() {
+		return entitydefinition;
+	}
+	
+	public void setEntitySpan(Span range)
+	{
+		entitydefinition = range;
 	}
 }
