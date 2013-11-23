@@ -16,6 +16,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanError;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
@@ -78,9 +79,9 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 		 */
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			// find the right sentence 
-			if(sentence.get(CharacterOffsetBeginAnnotation.class) > msg.getSpan().start())
+			if(sentence.get(CharacterOffsetEndAnnotation.class) >= msg.getSpan().end())
 			{
-				if(sentence.get(CharacterOffsetEndAnnotation.class) < msg.getSpan().end())
+				if(sentence.get(CharacterOffsetBeginAnnotation.class) <= msg.getSpan().start())
 				{
 					// we are here. now put the error in the sentence annotation
 					sentence.set(ErrorMessageAnnotation.class, msg);
@@ -98,19 +99,22 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 		 * one which is introduced later in the text
 		 */
 		EntityInfo badone;
+		EntityInfo other;
 		if(firstOffendingEntityInfo.getEntitySpan().isAfter(secondOffendingEntityInfo.getEntitySpan()))
 		{
 			badone = firstOffendingEntityInfo;
+			other = secondOffendingEntityInfo;
 		}
 		else {
 			badone = secondOffendingEntityInfo;
+			other = firstOffendingEntityInfo;
 		}
 		Span errorspan = badone.getEntitySpan();
 		msg = new ErrorMessageAnnotation(
+				IvanError.SYNONYMS,
 				doc.get(DocIDAnnotation.class), 
 				errorspan,
-				"This name is a synonym of a previously used name");
-		
+				"\""+ badone +"\" is a synonym of a previously used name \"" + other + "\"");
 	}
 
 	private void saveInfo(String entity) throws JWNLException {

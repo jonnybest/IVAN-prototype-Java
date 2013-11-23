@@ -3,6 +3,7 @@
  */
 package edu.kit.ipd.alicenlp.ivan.tests;
 
+import static edu.stanford.nlp.util.logging.Redwood.log;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
@@ -17,6 +18,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -31,6 +33,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanError;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
@@ -44,10 +47,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.IntPair;
-import edu.stanford.nlp.util.IntTuple;
 import edu.stanford.nlp.util.logging.Redwood;
-import static edu.stanford.nlp.util.logging.Redwood.*;
 
 /**
  * @author Jonny
@@ -259,8 +259,11 @@ public class StaticDynamicClassifierTest {
 
 	}
 
-	/** Annotates a document with our customized pipeline.
-	 * @param text A text to process
+	/**
+	 * Annotates a document with our customized pipeline.
+	 * 
+	 * @param text
+	 *            A text to process
 	 * @return The annotated text
 	 */
 	private Annotation annotateText(String text) {
@@ -281,9 +284,9 @@ public class StaticDynamicClassifierTest {
 		}
 		// adding our own annotator property
 		props.put("customAnnotatorClass.sdclassifier",
-			"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+				"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
 		// adding our declaration finder
-		props.put("customAnnotatorClass.declarations", 
+		props.put("customAnnotatorClass.declarations",
 				"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 
 		// configure pipeline
@@ -496,8 +499,9 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positive1stPersonErrorTest() {
 		{
-			/* rule: no first person
-			 * reason: verb does not pertain to things happening in the scene
+			/*
+			 * rule: no first person reason: verb does not pertain to things
+			 * happening in the scene
 			 */
 			Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
@@ -508,7 +512,7 @@ public class StaticDynamicClassifierTest {
 					is(Classification.ErrorDescription));
 		}
 	}
-	
+
 	/**
 	 * A positive test for ERROR annotations. If this test passes, the analyzer
 	 * identified an undesirable sentence.
@@ -516,39 +520,92 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveNoSynonymousAgentsErrorTest() {
 		{
-			/* rule: different agents cannot be synonyms of each other
-			 * reason: we resolve synonyms to the same Alice entity. They need a name at least.
+			/*
+			 * rule: different agents cannot be synonyms of each other reason:
+			 * we resolve synonyms to the same Alice entity. They need a name at
+			 * least.
 			 */
 			Annotation doc = annotateText("On the left side in the background, there is a rabbit. "
 					+ "On the right side, in the foreground, there is a hare.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(1);
 
-			CoreLabel bunny = findWord("hare", sentence.get(TokensAnnotation.class));
-			log("span: "+bunny.get(SpanAnnotation.class));
-			log(Redwood.DBG, bunny.get(CharacterOffsetBeginAnnotation.class)+ " " +
-					bunny.get(CharacterOffsetEndAnnotation.class)+ " offsets");
+			CoreLabel bunny = findWord("hare",
+					sentence.get(TokensAnnotation.class));
+			log("span: " + bunny.get(SpanAnnotation.class));
+			log(Redwood.DBG, bunny.get(CharacterOffsetBeginAnnotation.class)
+					+ " " + bunny.get(CharacterOffsetEndAnnotation.class)
+					+ " offsets");
 			Span bunnyspan = makeSpan(bunny);
 			log(bunnyspan);
-			
-			assertNotNull("Error tag is missing.", doc.get(DocumentErrorAnnotation.class));
 
-			assertThat("rabbit/bunny error classified wrong",
+			List<ErrorMessageAnnotation> myerrors = doc.get(DocumentErrorAnnotation.class);
+			assertNotNull("Error tag is missing.",
+					myerrors);
+
+			assertThat("hare/bunny error classified wrong",
 					sentence.get(Classification.class),
 					is(Classification.ErrorDescription));
-			
-			List<ErrorMessageAnnotation> errors = doc.get(DocumentErrorAnnotation.class);
-			assertThat(errors.get(0).getSpan(), is(bunnyspan));
+
+			assertThat(myerrors.get(0).getSpan(), is(bunnyspan));
+		}
+	}
+	
+	/**
+	 * A positive test for ERROR annotations. If this test passes, the analyzer
+	 * identified an undesirable sentence.
+	 */
+	@Test
+	public void negativeNoSynonymousAgentsErrorTest() {
+		{
+			/*
+			 * rule: different agents cannot be synonyms of each other reason:
+			 * we resolve synonyms to the same Alice entity. They need a name at
+			 * least.
+			 */
+			{
+				/** Make sure that names are alright.
+				 * 
+				 */
+				Annotation doc = annotateText("On the left side in the background, there is a rabbit."
+						+ " The rabbit is called Harry."
+						+ " On the right side, in the foreground, there is a hare."
+						+ " The hare is called Lucas.");
+	
+				List<ErrorMessageAnnotation> errors = doc
+						.get(DocumentErrorAnnotation.class);
+				for (ErrorMessageAnnotation err : errors) {
+					
+					assertThat("Error tag should not be present if proper names are used!",
+							err.getType(), is(not(IvanError.SYNONYMS)));
+				}
+			}
+			{
+				/** Make sure that non-synonymous usages are alright.
+				 * 
+				 */
+				Annotation doc = annotateText("On the left side in the background, there is a bunny."
+						+ " On the right side, in the foreground, there is a hare."
+						);
+	
+				List<ErrorMessageAnnotation> errors = doc
+						.get(DocumentErrorAnnotation.class);
+				for (ErrorMessageAnnotation err : errors) {
+					
+					assertThat("Error tag should not be present for non-synonyms!",
+							err.getType(), is(not(IvanError.SYNONYMS)));
+				}
+			}
 		}
 	}
 
 	private Span makeSpan(CoreLabel label) {
-		return Span.fromValues(label.get(CharacterOffsetBeginAnnotation.class), label.get(CharacterOffsetEndAnnotation.class));
+		return Span.fromValues(label.get(CharacterOffsetBeginAnnotation.class),
+				label.get(CharacterOffsetEndAnnotation.class));
 	}
 
 	private CoreLabel findWord(String name, List<CoreLabel> list) {
 		for (CoreLabel c : list) {
-			if(c.originalText().equalsIgnoreCase(name))
-			{
+			if (c.originalText().equalsIgnoreCase(name)) {
 				return c;
 			}
 		}

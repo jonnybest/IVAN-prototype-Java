@@ -15,6 +15,7 @@ public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnot
 	private final String docId;
 	private final String Message;
 	private final Span Range;
+	private IvanError type = IvanError.UNKNOWN;
 
 	public String getMessage() {
 		return Message;
@@ -43,5 +44,21 @@ public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnot
 		docId = Id;
 		Range = errorspan;
 		Message = message;
+	}
+	
+	public ErrorMessageAnnotation(IvanError errorId, String Id, Span errorspan, String message) {
+		type = errorId;
+		docId = Id;
+		Range = errorspan;
+		Message = message;
+	}
+
+	@Override
+	public String toString() {
+		return Range.toString() +" "+ getMessage();
+	}
+
+	public IvanError getType() {
+		return type;
 	}
 }
