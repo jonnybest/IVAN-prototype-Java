@@ -133,6 +133,12 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 	 * @throws JWNLException
 	 */
 	private boolean isOkay(String entity) throws JWNLException {
+		// if this entity is named, we can shortcut the whole process and simply check for name collisions.
+		if(hasName(entity) && nameDoesNotCollide(entity))
+		{
+			return true;
+		}
+		
 		IndexWord meanings = mydictionary.lookupIndexWord(POS.NOUN, entity);
 		// check the mappings for all synsets
 		for (Synset syn : meanings.getSenses()) {
@@ -150,6 +156,15 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 			// if this is the same as the entity, everything is fine
 		}
 		return true;
+	}
+
+	private boolean nameDoesNotCollide(String entity) {
+		
+		return false;
+	}
+
+	private boolean hasName(String entity) {
+		return this.state.hasName(entity);
 	}
 
 	@Override

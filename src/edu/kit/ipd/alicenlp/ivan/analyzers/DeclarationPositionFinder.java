@@ -5,6 +5,8 @@ import static edu.stanford.nlp.util.logging.Redwood.log;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -214,6 +216,10 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 				// set name range
 				Span range = locateRange(n, sentence);
 				info.setEntitySpan(range);
+				// set NNP flag
+				CoreLabel lbl = locateLastToken(n, sentence);
+				info.setIsProperName(BaseRule.isPOSFamily(lbl, "NNP"));
+				// add things
 				infos.add(info);
 			}			
 		} catch (IvanException e) {
@@ -234,12 +240,32 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 */
 	private static Span locateRange(String n, CoreMap sentence) {
 		String[] tokens = n.split(" ");
-		for (String s : tokens) {
+		List<String> tokenslist = Arrays.asList(tokens);
+		Collections.reverse(tokenslist);
+		for (String s : tokenslist) {
+			int begin;
 			for (CoreLabel originalToken : sentence.get(TokensAnnotation.class)) {
 				if(s.equals(originalToken.originalText()))
 				{
-					int begin = originalToken.get(CharacterOffsetBeginAnnotation.class);
+					begin = originalToken.get(CharacterOffsetBeginAnnotation.class);
 					return Span.fromValues(begin, begin + n.length());
+				}
+			}
+		}
+		// the search string is not present in the given sentence
+		log(Redwood.WARN, "the search string is not present in the given sentence");
+		return null;
+	}
+	
+	private static CoreLabel locateLastToken(String n, CoreMap sentence) {
+		String[] tokens = n.split(" ");
+		List<String> tokenslist = Arrays.asList(tokens);
+		Collections.reverse(tokenslist);
+		for (String s : tokenslist) {
+			for (CoreLabel originalToken : sentence.get(TokensAnnotation.class)) {
+				if(s.equals(originalToken.originalText()))
+				{
+					return originalToken;
 				}
 			}
 		}

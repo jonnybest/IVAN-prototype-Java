@@ -26,7 +26,7 @@ public class InitialState extends HashSet<EntityInfo>
 	/** The set of all known names, linked to their respective entity
 	 * 
 	 */
-	private HashMap<String,ArrayList<EntityInfo>> nameset = new HashMap<String, ArrayList<EntityInfo>>();
+	private HashMap<String,ArrayList<EntityInfo>> namesset = new HashMap<String, ArrayList<EntityInfo>>();
 
 	/** Clears ALL the state!
 	 * 
@@ -34,7 +34,7 @@ public class InitialState extends HashSet<EntityInfo>
 	@Override
 	public void clear() {
 		// don't forget to pop the nameset
-		nameset.clear();
+		namesset.clear();
 		super.clear();
 	}
 
@@ -67,15 +67,15 @@ public class InitialState extends HashSet<EntityInfo>
 		boolean addednewly = super.add(e);
 		if (!addednewly) {
 			// this one is already present. there is nothing to do here
-			if (!nameset.containsKey(e.getEntity())) {
+			if (!namesset.containsKey(e.getEntity())) {
 				System.err.println("Warning: Unknown entity key. InitialState is inconsistent.");
 			}
 			return false;
 		}
 		ArrayList<EntityInfo> elist;
 		
-		if (nameset.containsKey(e.getEntity())) {
-			elist = nameset.get(e.getEntity());
+		if (namesset.containsKey(e.getEntity())) {
+			elist = namesset.get(e.getEntity());
 			elist.add(e);
 			System.out.println("Yet another " + e.getEntity() + " added. This one now knows " + elist.size() + " " + e.getEntity() +"s.");
 		}
@@ -85,7 +85,7 @@ public class InitialState extends HashSet<EntityInfo>
 		}
 		
 		elist.add(e);
-		ArrayList<EntityInfo> result = nameset.put(e.getEntity(), elist);
+		ArrayList<EntityInfo> result = namesset.put(e.getEntity(), elist);
 		return true;
 	}
 	
@@ -118,7 +118,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 */
 	private boolean update(String Name, EntityInfo e) {		
 		if (Name == null) {	// name is not given, so we will resolve by Entity description only
-			ArrayList<EntityInfo> elist = nameset.get(e.getEntity());
+			ArrayList<EntityInfo> elist = namesset.get(e.getEntity());
 			if (elist == null)
 			{
 				// entry does not exist
@@ -135,13 +135,13 @@ public class InitialState extends HashSet<EntityInfo>
 		}
 		else {	// a name is given. Try to find the entity to update first by name, then by entity. Also, save the name if not known, yet.
 			ArrayList<EntityInfo> elist;
-			if (nameset.containsKey(Name)) {
-				elist = nameset.get(Name);
+			if (namesset.containsKey(Name)) {
+				elist = namesset.get(Name);
 			}
 			else {
 				// introduce a new name
-				elist = nameset.get(e.getEntity());
-				nameset.put(Name, elist);
+				elist = namesset.get(e.getEntity());
+				namesset.put(Name, elist);
 			}
 			// assert that the state is consistent
 			assert elist != null; // "The information for this name or entity is null.");
@@ -156,7 +156,7 @@ public class InitialState extends HashSet<EntityInfo>
 	}
 
 	public boolean containsName(String n) {
-		return nameset.containsKey(n);
+		return namesset.containsKey(n);
 	}
 	
 	public boolean containsAllNames(Collection<String> names)
@@ -175,7 +175,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 */
 	public EntityInfo getSingle(String name)
 	{
-		List<EntityInfo> infos = nameset.get(name);
+		List<EntityInfo> infos = namesset.get(name);
 		assert infos.size() == 1;
 		return infos.get(0);
 	}
@@ -189,7 +189,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 */
 	public ArrayList<EntityInfo> get(String name)
 	{
-		return nameset.get(name);
+		return namesset.get(name);
 	}
 
 	/** This method creates a simple view onto the entites with names: The left hand string is the entity, the right hand string its assigned name. 
@@ -204,11 +204,24 @@ public class InitialState extends HashSet<EntityInfo>
 	 * @return TRUE if at least one entity has a proper name.
 	 */
 	public boolean hasNames() {
-		return !nameset.isEmpty();
+		return !namesset.isEmpty();
 	}
 	
 	@Override
 	public boolean contains(Object o) {
 		return super.contains(o);
+	}
+
+	public boolean hasName(String entity) {
+		return null != getAssignedName(entity);
+	}
+
+	private EntityInfo getAssignedName(String entity) {
+		ArrayList<EntityInfo> relatedentities = namesset.get(entity);
+		for (EntityInfo entityInfo : relatedentities) {
+			if(entityInfo.isProperName())
+				return entityInfo;
+		}
+		return null;
 	}
 }

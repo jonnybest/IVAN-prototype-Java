@@ -16,6 +16,7 @@ public class EntityInfo
 		Location = null,
 		Direction = null;
 	private Span entitydefinition;
+	private boolean isProperName;
 
 	public String getEntity() {
 		return Entity;
@@ -148,5 +149,12 @@ public class EntityInfo
 	public void setEntitySpan(Span range)
 	{
 		entitydefinition = range;
+	}
+
+	public boolean isProperName() {
+		return isProperName;
+	}
+	public void setIsProperName(boolean value) {
+		isProperName = value;
 	}
 }
