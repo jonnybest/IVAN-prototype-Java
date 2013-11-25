@@ -34,7 +34,7 @@ public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocat
 	private List<Tree> wordTrees = new ArrayList<Tree>();
 	
 	final private String[] protoPrepositions = {
-			"on", "in", "beyond", "between", "at", "over", "to", "behind"
+			"on", "in", "beyond", "between", "at", "above", "to", "behind"
 		};
 	final private String infrontof = "in_front_of";
 	
