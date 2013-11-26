@@ -1,7 +1,3 @@
-## TestNG Configuration
-# Tests with a group-annotation in excluded-groups are not executed:
-## excluded-groups=manual,slow
-
 edu/kit/ipd/alicenlp/ivan/tests/UtteranceTest
 edu/kit/ipd/alicenlp/ivan/tests/CoreferenceResolverTest
 edu/kit/ipd/alicenlp/ivan/tests/SentenceFrameRuleTest
