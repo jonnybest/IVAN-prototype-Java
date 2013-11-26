@@ -346,7 +346,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		}
 	}
 
-	private void classifyDocument(Annotation annotation) throws JWNLException {
+	private static void classifyDocument(Annotation annotation) throws JWNLException {
 		// TODO: implement document-wide error checking
 		List<ErrorMessageAnnotation> errors = annotation.get(DocumentErrorAnnotation.class);
 		if(errors == null)

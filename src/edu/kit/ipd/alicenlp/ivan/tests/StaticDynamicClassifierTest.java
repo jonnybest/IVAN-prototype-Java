@@ -266,7 +266,7 @@ public class StaticDynamicClassifierTest {
 	 *            A text to process
 	 * @return The annotated text
 	 */
-	private Annotation annotateText(String text) {
+	private static Annotation annotateText(String text) {
 		Annotation doc = new Annotation(text);
 
 		StanfordCoreNLP pipeline;
