@@ -579,6 +579,9 @@ public class StaticDynamicClassifierTest {
 							err.getType(), is(not(IvanError.SYNONYMS)));
 				}
 			}
+			/*
+			 * rule: no synonyms, no errors.
+			 */
 			{
 				/** Make sure that non-synonymous usages are alright.
 				 * 

@@ -27,6 +27,14 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
 
+/** This class checks the user's names and entites for consistency. It implements this rule:
+ * 1. no entity may be a synonym of another entity
+ * 2. unless both have names
+ * 3. and the names do not collide
+ * 
+ * @author Jonny
+ *
+ */
 public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 {
 	ErrorMessageAnnotation msg;
