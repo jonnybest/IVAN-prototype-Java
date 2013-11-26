@@ -5,6 +5,7 @@ import static edu.stanford.nlp.util.logging.Redwood.*;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.extjwnl.JWNLException;
@@ -120,6 +121,10 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 	private void saveInfo(String entity) throws JWNLException {
 		// create mappings from this entity
 		IndexWord meanings = mydictionary.lookupIndexWord(POS.NOUN, entity);
+		// nothing to save
+		if(meanings == null)
+			return;
+		
 		for(Synset syn : meanings.getSenses())
 		{
 			mappings.put(syn, entity);
@@ -128,7 +133,8 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 
 	/** For a single entity, this method checks whether the usage is permissive.
 	 * That means, if there are synsets mapped to this entity, the lemma must be identical.
-	 * @param entity
+	 * 
+	 * @param entity search word
 	 * @return Entity may be used in this way.
 	 * @throws JWNLException
 	 */
@@ -139,9 +145,17 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 			return true;
 		}
 		
+		// find this word in wordnet
 		IndexWord meanings = mydictionary.lookupIndexWord(POS.NOUN, entity);
+		
+		// if the search word does not exist in wordnet, there are no synonyms which could lead to a "name collision"
+		// also, the search word may be not-a-noun after all (e.g. pronoun)  
+		if(meanings == null)
+			return true;
+		
 		// check the mappings for all synsets
-		for (Synset syn : meanings.getSenses()) {
+		final List<Synset> senses = meanings.getSenses();
+		for (Synset syn : senses) {
 			// get the lemmas 
 			// lemma may be NULL if we encounter it the first time
 			String lemma = mappings.get(syn);
