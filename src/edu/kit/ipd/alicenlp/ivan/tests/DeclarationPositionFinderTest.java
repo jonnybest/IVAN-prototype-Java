@@ -4,6 +4,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -35,7 +36,6 @@ import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
-import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -515,12 +515,12 @@ public class DeclarationPositionFinderTest {
 				+ "On the right side of the ground, there is a broccoli. "
 				+ "Behind the monkey, to the right, there is a bucket.";
 
-		ArrayList<EntityInfo> output = new ArrayList<EntityInfo>();
-		output.add(new EntityInfo("ground"));
-		output.add(new EntityInfo("monkey", "In the foreground", "southwest"));
-		output.add(new EntityInfo("broccoli",
+		ArrayList<EntityInfo> reference = new ArrayList<EntityInfo>();
+		reference.add(new EntityInfo("ground"));
+		reference.add(new EntityInfo("monkey", "In the foreground", "southwest"));
+		reference.add(new EntityInfo("broccoli",
 				"On the right side of the ground", null));
-		output.add(new EntityInfo("bucket", "Behind the monkey, to the right",
+		reference.add(new EntityInfo("bucket", "Behind the monkey, to the right",
 				null));
 
 		DeclarationPositionFinder proto = DeclarationPositionFinder
@@ -531,14 +531,14 @@ public class DeclarationPositionFinderTest {
 			proto.learnDeclarations(sentence);
 		}
 
-		InitialState state = proto.getCurrentState();
-		assertEquals("count mismatch", output.size(), state.size());
+		InitialState actual = proto.getCurrentState();
+		assertThat("count mismatch", actual.size(), is(reference.size()));
 
 		// EntityInfo ground = state.getSingle("ground");
 		// assertEquals("basic equality test", ground, output.get(0));
 
-		for (EntityInfo ei : output) {
-			EntityInfo sibling = state.getSingle(ei.getEntity());
+		for (EntityInfo ei : reference) {
+			EntityInfo sibling = actual.getSingle(ei.getEntity());
 			if (sibling != null) {
 				// System.out.println("Siblings are " + (sibling.equals(ei) ?
 				// "equal" : "not equal: " + ei + " and " + sibling));
@@ -548,7 +548,7 @@ public class DeclarationPositionFinderTest {
 						sibling.toString());
 			}
 			assertTrue("missing entity info: " + ei + ", possible match: "
-					+ sibling, state.contains(ei));
+					+ sibling, actual.contains(ei));
 		}
 	}
 
