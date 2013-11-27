@@ -35,7 +35,7 @@ public abstract class BaseRule {
 	
 
 	/** This method decides whether a given <code>word</code> has an agent.
-	 * 	Ex: ""
+	 * 	Ex: "The man has been killed by the police"
 	 *  
 	 * @param word
 	 * @param graph
@@ -43,8 +43,7 @@ public abstract class BaseRule {
 	 */
 	public static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
 		// implement a check for agent(root, nounphrase)
-		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class);
-		// TODO: verify this 
+		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class); 
 		return graph.hasChildWithReln(word, agentrel);
 	}
 	
