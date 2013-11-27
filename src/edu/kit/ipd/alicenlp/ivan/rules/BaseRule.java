@@ -22,7 +22,6 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
-import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
@@ -35,13 +34,27 @@ import edu.stanford.nlp.util.CoreMap;
 public abstract class BaseRule {
 	
 
-	public static boolean hasAgent(IndexedWord root, SemanticGraph graph) {
+	/** This method decides whether a given <code>word</code> has an agent.
+	 * 	Ex: ""
+	 *  
+	 * @param word
+	 * @param graph
+	 * @return
+	 */
+	public static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
 		// implement a check for agent(root, nounphrase)
 		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class);
 		// TODO: verify this 
-		return graph.hasChildWithReln(root, agentrel);
+		return graph.hasChildWithReln(word, agentrel);
 	}
 	
+	/** The <code>word</code> has a tag with prefix <code>tag</code>.
+	 * Ex. "drives/VBZ" is a member of pos-family "VB" 
+	 * 
+	 * @param word
+	 * @param tag A prefix tag
+	 * @return pos.startsWith(tag)
+	 */
 	public static boolean isPOSFamily(CoreLabel word, String tag) {
 		String pos = word.get(PartOfSpeechAnnotation.class).toUpperCase();
 		return pos.startsWith(tag.toUpperCase());
@@ -62,7 +75,11 @@ public abstract class BaseRule {
 		return det != null;
 	}
 
-	public static Boolean is1stPerson(SemanticGraph graph)
+	/** Decides whether this sentence contains the subject "I"
+	 * @param graph
+	 * @return
+	 */
+	public static Boolean is1stPerson(final SemanticGraph graph)
 	{
 		IndexedWord root = graph.getFirstRoot();
 		// first person = nominal subject is "I"
@@ -71,10 +88,15 @@ public abstract class BaseRule {
 		return subject == null || subject.word().equalsIgnoreCase("I");
 	}
 	
-	public static IndexedWord getParticle(IndexedWord word, SemanticGraph graph)
+	/** Returns any particle this <code>verb</code> may have
+	 * @param verb
+	 * @param graph
+	 * @return
+	 */
+	public static IndexedWord getParticle(final IndexedWord verb, final SemanticGraph graph)
 	{
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
-		return graph.getChildWithReln(word, reln);
+		return graph.getChildWithReln(verb, reln);
 	}
 	
 	protected static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
@@ -82,6 +104,11 @@ public abstract class BaseRule {
 		return graph.hasChildWithReln(word, reln);
 	}
 
+	/** Decides whether this word has a direct object.
+	 * @param word the word to analyse
+	 * @param graph the sentence to which this word belongs
+	 * @return TRUE, if a direct object is present for this verb
+	 */
 	public static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
 		if (graph.hasChildWithReln(word, reln)) {
@@ -136,7 +163,12 @@ public abstract class BaseRule {
 		}
 	}
 	
-	public static boolean isPassive(IndexedWord root, SemanticGraph graph) {
+	/** This method decides whether a given <code>verb</code> has a passive subject or a passive auxiliary.  
+	 * @param verb
+	 * @param graph
+	 * @return
+	 */
+	public static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
 		// Examples: 
 		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
 		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
@@ -145,9 +177,9 @@ public abstract class BaseRule {
 		// “Kennedy was killed” auxpass(killed, was)
 		GrammaticalRelation auxrel = GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
 		Boolean passive = false;
-		passive = passive || graph.hasChildWithReln(root, nsubjpass);
-		passive = passive || graph.hasChildWithReln(root, csubjpass);
-		passive = passive || graph.hasChildWithReln(root, auxrel);
+		passive = passive || graph.hasChildWithReln(verb, nsubjpass);
+		passive = passive || graph.hasChildWithReln(verb, csubjpass);
+		passive = passive || graph.hasChildWithReln(verb, auxrel);
 		return passive;
 	}
 
@@ -244,6 +276,10 @@ public abstract class BaseRule {
 	}
 	
 
+	/** This method creates a string which represents the part of the sentence this <code>tree</code> stands for.
+	 * @param tree A (partial) syntax tree 
+	 * @return The original sentence part
+	 */
 	public static String printTree(Tree tree) {
 		final StringBuilder sb = new StringBuilder();
 		
@@ -396,14 +432,13 @@ public abstract class BaseRule {
 	/** This method attempts to resolve noun phrases and conjunction. 
 	 * More precisely, it looks for nn and con_and dependencies below {@code head} and creates a list of entities.
 	 * @param head The head of the noun phrase
-	 * @param graph The sentence to look in.
+	 * @param sentence The sentence to which <code>head</code> belongs
 	 * @param namesIW The IndexedWords which form the head of each noun phrase
 	 * @return A list of distinct words or names, grouped by "and"
 	 */
 	public static ArrayList<String> resolveCc(IndexedWord head,
 			CoreMap sentence, ArrayList<IndexedWord> namesIW) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		Tree tree = sentence.get(TreeAnnotation.class);
 		// list of names
 		ArrayList<String> names = new ArrayList<String>();
 		if (namesIW == null)
@@ -426,6 +461,11 @@ public abstract class BaseRule {
 		return names;
 	}
 
+	/** Returns the (first) root of the SemanticGraph
+	 * 
+	 * @param sentence
+	 * @return
+	 */
 	public static IndexedWord getRoot(CoreMap sentence) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		return graph.getFirstRoot();		
