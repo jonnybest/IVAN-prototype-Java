@@ -506,6 +506,10 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
+	/** This test checks wether the class properly learns entities that are in the same document.
+	 * 
+	 * @throws IvanException
+	 */
 	@Test
 	public void testLearnDeclarations() throws IvanException {
 		String input = "The ground is covered with grass. "
