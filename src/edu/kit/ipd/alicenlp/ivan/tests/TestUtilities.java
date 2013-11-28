@@ -16,14 +16,14 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
-/** This test contains several utility methods for easier testing.
- * Remember, testing is the future!
+/**
+ * This test contains several utility methods for easier testing. Remember,
+ * testing is the future!
  * 
  * @author Jonny
- *
+ * 
  */
 public abstract class TestUtilities {
-
 
 	/**
 	 * Annotates a document with our customized pipeline.
@@ -67,7 +67,7 @@ public abstract class TestUtilities {
 	static Annotation annotateDeclarations(String text) {
 		Annotation doc = new Annotation(text);
 		StanfordCoreNLP declarationsPipeline = null;
-		
+
 		if (declarationsPipeline == null) {
 			// creates a StanfordCoreNLP object, with POS tagging,
 			// lemmatization, NER, parsing, and coreference resolution
@@ -86,14 +86,15 @@ public abstract class TestUtilities {
 			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
 			declarationsPipeline = new StanfordCoreNLP(props);
 		}
-	
+
 		declarationsPipeline.annotate(doc);
 		return doc;
 	}
-	
 
-	/** This checker method verifies a sample sentence against its solution, 
+	/**
+	 * This checker method verifies a sample sentence against its solution,
 	 * unless the sample sentence was recognized as bad input.
+	 * 
 	 * @param solution
 	 * @throws IvanException
 	 */
@@ -103,10 +104,11 @@ public abstract class TestUtilities {
 		annoSentence.get(TreeAnnotation.class).pennPrint();
 		List<String> einfos = DeclarationPositionFinder
 				.recogniseNames(annoSentence);
-		if(annoSentence.get(Classification.class) != null
-				&& annoSentence.get(Classification.class).equals(Classification.ErrorDescription))
-		{
-			System.out.println("Error: \"" + solution.getKey() + "\"\nis not valid IVAN input.");
+		if (annoSentence.get(Classification.class) != null
+				&& annoSentence.get(Classification.class).equals(
+						Classification.ErrorDescription)) {
+			System.out.println("Error: \"" + solution.getKey()
+					+ "\"\nis not valid IVAN input.");
 			return;
 		}
 		if (einfos.size() != solution.getValue().length) {
@@ -127,7 +129,6 @@ public abstract class TestUtilities {
 			}
 		}
 	}
-	
 
 	static CoreMap annotateSingleDeclaration(String text) {
 		return annotateDeclarations(text).get(SentencesAnnotation.class).get(0);

@@ -1,7 +1,8 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.*;
 import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateDeclarations;
+import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateSingleDeclaration;
+import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.checkEntrySet;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -29,7 +30,6 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
-import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
@@ -45,10 +45,12 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-/** Tests whether the declarations and locations and directions are properly found
+/**
+ * Tests whether the declarations and locations and directions are properly
+ * found
  * 
  * @author Jonny
- *
+ * 
  */
 public class DeclarationPositionFinderTest {
 
@@ -78,7 +80,8 @@ public class DeclarationPositionFinderTest {
 
 	static boolean setupDone = false;
 
-	/** Loads the batch test files and prepares the test lists
+	/**
+	 * Loads the batch test files and prepares the test lists
 	 * 
 	 */
 	// @BeforeClass
@@ -191,11 +194,12 @@ public class DeclarationPositionFinderTest {
 	 */
 	private static void annotateSentence(String location,
 			List<CoreMap> sentencelist) {
-		sentencelist = annotateDeclarations(location).get(SentencesAnnotation.class);
+		sentencelist = annotateDeclarations(location).get(
+				SentencesAnnotation.class);
 	}
 
-
-	/** A simple test about creating the proper entity info
+	/**
+	 * A simple test about creating the proper entity info
 	 * 
 	 */
 	@Test
@@ -215,7 +219,8 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	/** Tests the location files for locations with hasLocation
+	/**
+	 * Tests the location files for locations with hasLocation
 	 * 
 	 */
 	@Test
@@ -231,7 +236,8 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	/** Tests the location files with getLocation
+	/**
+	 * Tests the location files with getLocation
 	 * 
 	 */
 	@Test
@@ -257,7 +263,8 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	/** Tests a single sentence with getDirection
+	/**
+	 * Tests a single sentence with getDirection
 	 * 
 	 */
 	@Test
@@ -275,7 +282,8 @@ public class DeclarationPositionFinderTest {
 				name, entity.getEntity());
 	}
 
-	/** Tests a few sentences with whole declarations
+	/**
+	 * Tests a few sentences with whole declarations
 	 * 
 	 * @throws IvanException
 	 */
@@ -371,8 +379,8 @@ public class DeclarationPositionFinderTest {
 				"There is a boy and a girl.", new String[] { "boy", "girl" });
 		checkEntrySet(sol);
 	}
-	
-		@SuppressWarnings("javadoc")
+
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testRecogniseDuckling() throws IvanException {
 		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
@@ -380,8 +388,7 @@ public class DeclarationPositionFinderTest {
 				new String[] { "duckling" });
 		checkEntrySet(sol);
 	}
-	
-	
+
 	@SuppressWarnings("javadoc")
 	@Test
 	public void testRecogniseBoy() throws IvanException {
@@ -391,7 +398,9 @@ public class DeclarationPositionFinderTest {
 		checkEntrySet(sol);
 	}
 
-	/** This test checks wether the class properly learns entities that are in the same document.
+	/**
+	 * This test checks wether the class properly learns entities that are in
+	 * the same document.
 	 * 
 	 * @throws IvanException
 	 */
@@ -406,11 +415,12 @@ public class DeclarationPositionFinderTest {
 
 		ArrayList<EntityInfo> reference = new ArrayList<EntityInfo>();
 		reference.add(new EntityInfo("ground"));
-		reference.add(new EntityInfo("monkey", "In the foreground", "southwest"));
+		reference
+				.add(new EntityInfo("monkey", "In the foreground", "southwest"));
 		reference.add(new EntityInfo("broccoli",
 				"On the right side of the ground", null));
-		reference.add(new EntityInfo("bucket", "Behind the monkey, to the right",
-				null));
+		reference.add(new EntityInfo("bucket",
+				"Behind the monkey, to the right", null));
 
 		DeclarationPositionFinder proto = DeclarationPositionFinder
 				.getInstance();
@@ -440,7 +450,6 @@ public class DeclarationPositionFinderTest {
 					+ sibling, actual.contains(ei));
 		}
 	}
-
 
 	/**
 	 * This is a test for Stanford Pipeline compliance.
@@ -507,6 +516,10 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
+	/**
+	 * Tests the use of "in front of"
+	 * 
+	 */
 	@Test
 	public void inFrontOfTest() {
 		String text = "In front of the Bunny there is a Broccoli.";
@@ -538,6 +551,10 @@ public class DeclarationPositionFinderTest {
 
 	}
 
+	/**
+	 * Tests whether the tree annotations match up
+	 * 
+	 */
 	@Test
 	public void ReferentTestStanford() {
 		{
