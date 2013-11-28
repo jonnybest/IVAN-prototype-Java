@@ -44,32 +44,6 @@ public abstract class BaseRule {
 		return pos.startsWith(tag.toUpperCase());
 	}
 
-	/** Decides whether this word has a direct object.
-	 * @param word the word to analyse
-	 * @param graph the sentence to which this word belongs
-	 * @return TRUE, if a direct object is present for this verb
-	 */
-	public static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
-		if (graph.hasChildWithReln(word, reln)) {
-			String pos = graph.getChildWithReln(word, reln).get(PartOfSpeechAnnotation.class);
-			if (pos.equalsIgnoreCase("NN")) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}
-	
-    public static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}    
-
 	public static IndexedWord getDeterminer(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
@@ -80,17 +54,6 @@ public abstract class BaseRule {
 		return graph.getChildWithReln(word, reln);
 	}
 
-	/**
-	 * Finds any prepositions relating to {@code word}. Requires a non-collapsed graph.
-	 * @param word The word which is being modified
-	 * @param graph A basic graph (non-collapsed) 
-	 * @return
-	 */
-	public static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
-		return graph.getChildWithReln(word, reln);
-	}
-	
 	public static IndexedWord getAdvMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
 		IndexedWord advmod = graph.getChildWithReln(word, reln);

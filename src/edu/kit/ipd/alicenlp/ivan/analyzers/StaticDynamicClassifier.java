@@ -26,6 +26,7 @@ import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
+import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -37,7 +38,9 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
@@ -244,7 +247,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	protected String expandVerb(IndexedWord word, SemanticGraph graph)
 			throws JWNLException {
 		String lemma = word.lemma();
-		if (BaseRule.hasParticle(word, graph)) {
+		if (StaticDynamicClassifier.hasParticle(word, graph)) {
 			String particle = null;
 			particle = StaticDynamicClassifier.getParticle(word, graph).word();
 			//System.err.println(particle);
@@ -253,16 +256,16 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 				lemma = combinedword;							
 			}
 		}
-		else if(BaseRule.hasPrepMod(word, graph)) {
+		else if(StaticDynamicClassifier.hasPrepMod(word, graph)) {
 			String prepmod = null;
-			prepmod = BaseRule.getPrepMod(word, graph).word();
+			prepmod = StaticDynamicClassifier.getPrepMod(word, graph).word();
 			//System.err.println(prepmod);
 			String combinedword = lemma + " " + prepmod;
 			if (hasWordNetEntry(combinedword)) {
 				lemma = combinedword;							
 			}
 		}
-		else if(BaseRule.hasDirectObjectNP(word, graph)) {
+		else if(StaticDynamicClassifier.hasDirectObjectNP(word, graph)) {
 			String dirobstr = null;
 			IndexedWord direObj = null;
 			direObj = BaseRule.getDirectObject(word, graph);
@@ -384,6 +387,43 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
 		//myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
+	}
+
+	/**
+	 * Finds any prepositions relating to {@code word}. Requires a non-collapsed graph.
+	 * @param word The word which is being modified
+	 * @param graph A basic graph (non-collapsed) 
+	 * @return
+	 */
+	public static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		return graph.getChildWithReln(word, reln);
+	}
+
+	public static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		return graph.hasChildWithReln(word, reln);
+	}
+
+	public static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
+		return graph.hasChildWithReln(word, reln);
+	}
+
+	/** Decides whether this word has a direct object.
+	 * @param word the word to analyse
+	 * @param graph the sentence to which this word belongs
+	 * @return TRUE, if a direct object is present for this verb
+	 */
+	public static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
+		if (graph.hasChildWithReln(word, reln)) {
+			String pos = graph.getChildWithReln(word, reln).get(PartOfSpeechAnnotation.class);
+			if (pos.equalsIgnoreCase("NN")) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/** Returns any particle this <code>verb</code> may have
