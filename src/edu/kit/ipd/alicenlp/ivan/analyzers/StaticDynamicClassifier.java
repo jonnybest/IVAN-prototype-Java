@@ -38,7 +38,10 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AuxPassiveGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
@@ -121,7 +124,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 //		System.out.println(graph.toString());
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
-		boolean passive = BaseRule.isPassive(root, graph);
+		boolean passive = StaticDynamicClassifier.isPassive(root, graph);
 		if(passive)
 		{
 			System.out.println("This sentence is passive.");
@@ -387,6 +390,26 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
 		//myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
+	}
+
+	/** This method decides whether a given <code>verb</code> has a passive subject or a passive auxiliary.  
+	 * @param verb
+	 * @param graph
+	 * @return
+	 */
+	public static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
+		// Examples: 
+		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
+		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
+		// “That she lied was suspected by everyone” csubjpass(suspected, lied)
+		GrammaticalRelation csubjpass = GrammaticalRelation.getRelation(ClausalPassiveSubjectGRAnnotation.class);
+		// “Kennedy was killed” auxpass(killed, was)
+		GrammaticalRelation auxrel = GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
+		Boolean passive = false;
+		passive = passive || graph.hasChildWithReln(verb, nsubjpass);
+		passive = passive || graph.hasChildWithReln(verb, csubjpass);
+		passive = passive || graph.hasChildWithReln(verb, auxrel);
+		return passive;
 	}
 
 	/**

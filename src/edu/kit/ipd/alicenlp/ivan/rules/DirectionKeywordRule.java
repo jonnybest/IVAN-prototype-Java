@@ -4,6 +4,8 @@ import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.*;
 
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
@@ -87,7 +89,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 				// 3. check for and extract direct object
 				IndexedWord dobj = getDirectObject(root, graph);
 				if (dobj != null) {
-					setDirection(printSubGraph(dobj, Sentence));
+					setDirection(DirectionKeywordRule.printSubGraph(dobj, Sentence));
 					return true;
 				}
 				// stop after the first match
@@ -200,6 +202,44 @@ public class DirectionKeywordRule implements ISentenceRule {
 	private void setSubject(IndexedWord subject) {
 		this.subject = subject;
 	}
+
+	/**
+		 * Prints the part of the sentence which contains the {@code startingWord}
+		 * all the verteces below it. TODO: implement real DFS to find the bounds.
+		 * 
+		 * @param startingWord
+		 * @param sentence 
+		 * @param graph
+		 * @return
+		 */
+		public static String printSubGraph(IndexedWord startingWord, CoreMap sentence) {
+			// get me a graph
+			SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			// get the edges which point outwards from the starting word
+			Iterable<SemanticGraphEdge> outiter = graph.outgoingEdgeIterable(startingWord);
+	
+			// get the starting offset for this sentence
+			int offset = sentence.get(CharacterOffsetBeginAnnotation.class);
+					
+			// set the default bounds to the startingWord 
+			int start = startingWord.beginPosition() - offset;
+			int end = startingWord.endPosition() - offset;
+			
+			// search the next level for larger bounds
+			// assume that everything in between the bounds belongs to the sub-graph of the startingWord
+			for (SemanticGraphEdge edge : outiter) {
+	//			System.out.println("out:" + edge.toString());
+				start = Math.min(start, edge.getGovernor().beginPosition() - offset);
+				start = Math.min(start, edge.getDependent().beginPosition() - offset);
+				end = Math.max(end, edge.getGovernor().endPosition() - offset);
+				end = Math.max(end, edge.getDependent().endPosition() - offset);
+			}
+	
+			// FIXME: bounds are wrong if the input has more than one sentence.
+			//System.out.println(graph);
+			System.out.println(sentence.get(TextAnnotation.class).substring(start, end));
+			return sentence.get(TextAnnotation.class).substring(start, end);
+		}
 
 	/** Finds an adverbial modifier
 	 * 

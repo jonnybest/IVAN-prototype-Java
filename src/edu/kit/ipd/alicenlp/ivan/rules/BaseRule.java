@@ -8,18 +8,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
-import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
@@ -65,26 +60,13 @@ public abstract class BaseRule {
 		return graph.getChildWithReln(word, reln);
 	}
 
-	/** This method decides whether a given <code>verb</code> has a passive subject or a passive auxiliary.  
-	 * @param verb
-	 * @param graph
+	/** Gets the prepositions for this word in this sentence
+	 * 
+	 * @param startingWord 
+	 * @param graph Sentence
+	 * @param preposition A seeding expression. Ex: "in" or "in_front_of"
 	 * @return
 	 */
-	public static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
-		// Examples: 
-		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
-		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
-		// “That she lied was suspected by everyone” csubjpass(suspected, lied)
-		GrammaticalRelation csubjpass = GrammaticalRelation.getRelation(ClausalPassiveSubjectGRAnnotation.class);
-		// “Kennedy was killed” auxpass(killed, was)
-		GrammaticalRelation auxrel = GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
-		Boolean passive = false;
-		passive = passive || graph.hasChildWithReln(verb, nsubjpass);
-		passive = passive || graph.hasChildWithReln(verb, csubjpass);
-		passive = passive || graph.hasChildWithReln(verb, auxrel);
-		return passive;
-	}
-
 	public static List<IndexedWord> getPrepRelations(IndexedWord startingWord, SemanticGraph graph, String preposition) {
 		//GrammaticalRelation prepreln = GrammaticalRelation.getRelation(PrepositionalModifierGRAnnotation.class);
 		GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep(preposition);		
@@ -119,45 +101,6 @@ public abstract class BaseRule {
 		return graph.getFirstRoot(); // in a subject-less sentence, the root is as good as the subject
 	}
 
-	/**
-	 * Prints the part of the sentence which contains the {@code startingWord}
-	 * all the verteces below it. TODO: implement real DFS to find the bounds.
-	 * 
-	 * @param startingWord
-	 * @param sentence 
-	 * @param graph
-	 * @return
-	 */
-	public static String printSubGraph(IndexedWord startingWord, CoreMap sentence) {
-		// get me a graph
-		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		// get the edges which point outwards from the starting word
-		Iterable<SemanticGraphEdge> outiter = graph.outgoingEdgeIterable(startingWord);
-
-		// get the starting offset for this sentence
-		int offset = sentence.get(CharacterOffsetBeginAnnotation.class);
-				
-		// set the default bounds to the startingWord 
-		int start = startingWord.beginPosition() - offset;
-		int end = startingWord.endPosition() - offset;
-		
-		// search the next level for larger bounds
-		// assume that everything in between the bounds belongs to the sub-graph of the startingWord
-		for (SemanticGraphEdge edge : outiter) {
-//			System.out.println("out:" + edge.toString());
-			start = Math.min(start, edge.getGovernor().beginPosition() - offset);
-			start = Math.min(start, edge.getDependent().beginPosition() - offset);
-			end = Math.max(end, edge.getGovernor().endPosition() - offset);
-			end = Math.max(end, edge.getDependent().endPosition() - offset);
-		}
-
-		// FIXME: bounds are wrong if the input has more than one sentence.
-		//System.out.println(graph);
-		System.out.println(sentence.get(TextAnnotation.class).substring(start, end));
-		return sentence.get(TextAnnotation.class).substring(start, end);
-	}
-	
-
 	/** This method creates a string which represents the part of the sentence this <code>tree</code> stands for.
 	 * @param tree A (partial) syntax tree 
 	 * @return The original sentence part
@@ -171,16 +114,6 @@ public abstract class BaseRule {
 		return sb.toString().trim();
 	}
 
-	/** This method searches for an IndexedWord inside a Tree. It returns the largest subtree which represents the word's phrase, 
-	 * or NULL, if none was found. Runs in 2*O(n), since Tree does not provide index-based lookup.  
-	 * @param wordToFind
-	 * @param treeToSearch
-	 * @return A subtree representing the indexed word.
-	 */
-	static public Tree match(IndexedWord wordToFind, Tree treeToSearch) {
-		return match(wordToFind, treeToSearch, null, true);
-	}
-
 	/** This method searches for an IndexedWord inside a Tree. It returns a subtree which represents the word's phrase, 
 	 * or NULL, if none was found. Runs in 2*O(n), since Tree does not provide index-based lookup.  
 	 * @param wordToFind an IndexedWord or at least a CoreLabel with BeginIndexAnnotation and EndIndexAnnotation
@@ -192,6 +125,15 @@ public abstract class BaseRule {
 	static public Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
 		return match(wordToFind, treeToSearch, expectedPOS, canGoUp, 0);
 	}
+	/** This method searches for an index word in a sentence tree
+	 * 
+	 * @param wordToFind 
+	 * @param treeToSearch 
+	 * @param expectedPOS The expected POS tag for the result. If this is NULL, the method tries to find a phrase.  
+	 * @param canGoUp If TRUE the method will walk up the tree to find a phrase.
+	 * @param skip Set to "1" if you want to find the phrase for "in front of". Set to "0" otherwise.
+	 * @return The largest matching tree.
+	 */
 	static public Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp, int skip) {
 		int end = wordToFind.get(EndIndexAnnotation.class);
 		int begin = wordToFind.get(BeginIndexAnnotation.class);
