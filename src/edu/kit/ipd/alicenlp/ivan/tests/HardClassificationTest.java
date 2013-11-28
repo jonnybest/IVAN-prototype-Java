@@ -48,7 +48,7 @@ import edu.stanford.nlp.util.logging.Redwood;
  * @author Jonny
  * 
  */
-public class StaticDynamicClassifierTest {
+public class HardClassificationTest {
 
 	static List<CoreMap> setuplist = new ArrayList<CoreMap>();
 	static List<CoreMap> negativeslist = new ArrayList<CoreMap>();

@@ -26,7 +26,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  * 
  */
-public class ImportantSetupTests {
+public class ImportantClassificationTests {
 	
 	/**
 	 * A positive test for ACTION annotations. If this test passes, the analyzer

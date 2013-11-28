@@ -52,7 +52,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  * 
  */
-public class DeclarationPositionFinderTest {
+public class ImportantDeclarationsTest {
 
 	static String[] locations = {
 			"There is a bunny on the right side.",
