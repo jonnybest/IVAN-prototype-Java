@@ -59,7 +59,7 @@ public abstract class BaseRule {
 		return pos.startsWith(tag.toUpperCase());
 	}
 	
-	protected static boolean hasDeterminer(IndexedWord startingWord, SemanticGraph graph)
+	public static boolean hasDeterminer(IndexedWord startingWord, SemanticGraph graph)
 	{
 		IndexedWord det = getDeterminer(startingWord, graph);
 		return det != null;
@@ -89,7 +89,7 @@ public abstract class BaseRule {
 		return graph.getChildWithReln(verb, reln);
 	}
 	
-	protected static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
+	public static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}
@@ -141,7 +141,7 @@ public abstract class BaseRule {
 		return graph.getChildWithReln(word, reln);
 	}
 	
-	protected static IndexedWord getAdvMod(IndexedWord word, SemanticGraph graph) {
+	public static IndexedWord getAdvMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
 		IndexedWord advmod = graph.getChildWithReln(word, reln);
 		if (advmod == null) {
@@ -173,7 +173,7 @@ public abstract class BaseRule {
 		return passive;
 	}
 
-	protected static List<IndexedWord> getPrepRelations(IndexedWord startingWord, SemanticGraph graph, String preposition) {
+	public static List<IndexedWord> getPrepRelations(IndexedWord startingWord, SemanticGraph graph, String preposition) {
 		//GrammaticalRelation prepreln = GrammaticalRelation.getRelation(PrepositionalModifierGRAnnotation.class);
 		GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep(preposition);		
 		// checking rule: root->prep_in->det
@@ -212,10 +212,11 @@ public abstract class BaseRule {
 	 * all the verteces below it. TODO: implement real DFS to find the bounds.
 	 * 
 	 * @param startingWord
+	 * @param sentence 
 	 * @param graph
 	 * @return
 	 */
-	protected String printSubGraph(IndexedWord startingWord, CoreMap sentence) {
+	public static String printSubGraph(IndexedWord startingWord, CoreMap sentence) {
 		// get me a graph
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		// get the edges which point outwards from the starting word
@@ -264,7 +265,7 @@ public abstract class BaseRule {
 	 * @param treeToSearch
 	 * @return A subtree representing the indexed word.
 	 */
-	static protected Tree match(IndexedWord wordToFind, Tree treeToSearch) {
+	static public Tree match(IndexedWord wordToFind, Tree treeToSearch) {
 		return match(wordToFind, treeToSearch, null, true);
 	}
 
@@ -276,10 +277,10 @@ public abstract class BaseRule {
 	 * @param canGoUp if TRUE, this method returns the largest match it can find. if false, it returns the first match
 	 * @return A subtree representing the indexed word.
 	 */
-	static protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
+	static public Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp) {
 		return match(wordToFind, treeToSearch, expectedPOS, canGoUp, 0);
 	}
-	static protected Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp, int skip) {
+	static public Tree match(IndexedWord wordToFind, Tree treeToSearch, String expectedPOS, boolean canGoUp, int skip) {
 		int end = wordToFind.get(EndIndexAnnotation.class);
 		int begin = wordToFind.get(BeginIndexAnnotation.class);
 		
