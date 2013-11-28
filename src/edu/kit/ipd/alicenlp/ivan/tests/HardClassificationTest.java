@@ -68,9 +68,7 @@ public class HardClassificationTest {
 		inputdirs = loadTestFile("actions.txt");
 	}
 
-	/**
-	 * Test method for
-	 * {@link edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier#classifySentence(edu.stanford.nlp.ling.IndexedWord, edu.stanford.nlp.util.CoreMap)}
+	/** Tests classification with the setup list.
 	 * .
 	 */
 	@Test
