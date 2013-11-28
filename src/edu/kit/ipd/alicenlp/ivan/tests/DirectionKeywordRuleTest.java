@@ -17,6 +17,12 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
+/** These tests test a single rule (the direction keyword rule)
+ * 
+ * @author Jonny
+ *
+ */
+@SuppressWarnings("javadoc")
 public class DirectionKeywordRuleTest {
 
 	@Test
