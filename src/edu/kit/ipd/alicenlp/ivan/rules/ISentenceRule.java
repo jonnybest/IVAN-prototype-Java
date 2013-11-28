@@ -3,6 +3,7 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import net.sf.extjwnl.JWNLException;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -18,7 +19,8 @@ public interface ISentenceRule {
 	 * generally stateful and modifies the internal state of the rule object.
 	 * 
 	 * @param Sentence
-	 * @return
+	 * @return TRUE, if this sentence satisfies the rule. Otherwise FALSE.
+	 * @throws JWNLException Something went wrong with wordnet!
 	 */
-	boolean apply(CoreMap Sentence);
+	boolean apply(CoreMap Sentence) throws JWNLException;
 }
