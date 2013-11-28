@@ -129,26 +129,22 @@ public class PrepositionalRule implements ISentenceRule
 		}
 		
 		// check if we had results
-		if (getFirstModifier() == null)
-			return false;
-		else
-			return true;
-	}
-
-	public IndexedWord getWord() {
-		return word;
+		return locationtrees.size() > 0;
 	}
 	
+	/** The word for this location
+	 * @return
+	 */
 	public Tree getReferent()
 	{
 		return wordTrees.get(0);
 	}
 
-	public String printFirstModifier() {
-		return printTree(getFirstModifier());
-	}
-	
-	public String printAllModifiers()
+	/** Creates a string from the modifiers which were found in this rule's sentence.
+	 * 
+	 * @return 
+	 */
+	public String printModifiers()
 	{
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < locationtrees.size() - 1; i++) {
@@ -159,12 +155,12 @@ public class PrepositionalRule implements ISentenceRule
 		return sb.toString();
 	}
 	
-	public List<Tree> getAllPrepositionalModifiers() {
+	/** the locations in this sentence
+	 * 
+	 * @return
+	 */
+	public List<Tree> getPrepositionalModifiers() {
 		return locationtrees;
-	}
-
-	public Tree getFirstModifier() {
-		return locationtrees.size() > 0 ? locationtrees.get(0) : null;
 	}
 
 	/**
@@ -174,7 +170,7 @@ public class PrepositionalRule implements ISentenceRule
 		return multipleReferents;
 	}
 	
-	public void sort()
+	private void sort()
 	{
 		java.util.Collections.sort(locationtrees, new Comparator<Tree>() {
 

@@ -305,7 +305,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		PrepositionalRule inRule = new PrepositionalRule();
 		if (inRule.apply(sentence)) {
 //			entity = inRule.getWord().originalText(); // the entity is most likely not the word, but the subject(s) of the sentence
-			location = inRule.printAllModifiers();
+			location = inRule.printModifiers();
 		}
 		
 		return new EntityInfo(entity, location);
@@ -486,7 +486,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 
 		PrepositionalRule prepRule = new PrepositionalRule();
 		if (prepRule.apply(sentence)) {
-			for (Tree t : prepRule.getAllPrepositionalModifiers()) {
+			for (Tree t : prepRule.getPrepositionalModifiers()) {
 				LocationAnnotation someloc = new LocationAnnotation();
 				someloc.setReferent(prepRule.getReferent());
 				someloc.setLocation(t);
