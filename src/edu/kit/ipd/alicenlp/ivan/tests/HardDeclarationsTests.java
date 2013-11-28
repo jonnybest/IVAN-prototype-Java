@@ -16,7 +16,7 @@ import edu.kit.ipd.alicenlp.ivan.IvanException;
  * @author Jonny
  *
  */
-public class hardDeclarationsTests {
+public class HardDeclarationsTests {
 
 
 	/** Find tortoise
