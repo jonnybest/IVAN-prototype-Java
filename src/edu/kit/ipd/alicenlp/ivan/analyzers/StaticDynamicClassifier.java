@@ -35,6 +35,8 @@ import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
+import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
 
@@ -159,7 +161,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			// ex: "The roof of the shed is painted blue, like the sky." 
 			if(passive)
 			{
-				if (!BaseRule.hasAgent(root, graph)) {
+				if (!StaticDynamicClassifier.hasAgent(root, graph)) {
 					// ex: The roof is painted by the father.
 					return Classification.ActionDescription;
 				}
@@ -380,6 +382,19 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
 		//myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
+	}
+
+	/** This method decides whether a given <code>word</code> has an agent.
+	 * 	Ex: "The man has been killed by the police"
+	 *  
+	 * @param word
+	 * @param graph
+	 * @return
+	 */
+	public static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
+		// implement a check for agent(root, nounphrase)
+		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class); 
+		return graph.hasChildWithReln(word, agentrel);
 	}
 
 }

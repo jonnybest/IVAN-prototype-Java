@@ -18,7 +18,6 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
@@ -34,19 +33,6 @@ import edu.stanford.nlp.util.CoreMap;
 public abstract class BaseRule {
 	
 
-	/** This method decides whether a given <code>word</code> has an agent.
-	 * 	Ex: "The man has been killed by the police"
-	 *  
-	 * @param word
-	 * @param graph
-	 * @return
-	 */
-	public static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
-		// implement a check for agent(root, nounphrase)
-		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class); 
-		return graph.hasChildWithReln(word, agentrel);
-	}
-	
 	/** The <code>word</code> has a tag with prefix <code>tag</code>.
 	 * Ex. "drives/VBZ" is a member of pos-family "VB" 
 	 * 
