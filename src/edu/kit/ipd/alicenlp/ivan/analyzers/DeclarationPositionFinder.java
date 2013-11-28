@@ -36,6 +36,12 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
 
+/** This analyzer finds Declarations, Locations and Direction in sentences.
+ * It also creates a state object, which saves that information for future processing. 
+ * 
+ * @author Jonny
+ *
+ */
 public class DeclarationPositionFinder extends IvanAnalyzer
 {
 	
@@ -45,6 +51,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
 
+	/** The default constructor for creating a new instance.
+	 * 
+	 */
 	public DeclarationPositionFinder() 
 	{
 		// this creates a wordnet dictionary
@@ -60,20 +69,14 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// this class is also in charge of keeping a state, but I really only want one state per analyzer.
 	}
 
-	public DeclarationPositionFinder(StanfordCoreNLP pipeline, Dictionary wordnet)
-	{
-		// this creates the corenlp pipeline
-		mypipeline = pipeline;
-		// this creates a wordnet dictionary
-		mydictionary = wordnet;
-		// static reference for no real reason
-		if (myinstance == null) {
-			myinstance = this;
-		}
-	}
-
+	/** This is the constructor for usage with the Stanford CoreNLP pipeline. 
+	 * Annotations can be assumed. WordNet must be provided. 
+	 * 
+	 * @param string
+	 * @param properties
+	 */
 	public DeclarationPositionFinder(String string, Properties properties) {
-		// TODO Auto-generated constructor stub
+		// empty
 	}
 
 	protected Annotation annotate(String text) {
