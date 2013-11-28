@@ -18,7 +18,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -601,12 +600,12 @@ public class StaticDynamicClassifierTest {
 		}
 	}
 
-	private Span makeSpan(CoreLabel label) {
+	private static Span makeSpan(CoreLabel label) {
 		return Span.fromValues(label.get(CharacterOffsetBeginAnnotation.class),
 				label.get(CharacterOffsetEndAnnotation.class));
 	}
 
-	private CoreLabel findWord(String name, List<CoreLabel> list) {
+	private static CoreLabel findWord(String name, List<CoreLabel> list) {
 		for (CoreLabel c : list) {
 			if (c.originalText().equalsIgnoreCase(name)) {
 				return c;
