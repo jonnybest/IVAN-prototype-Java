@@ -1,25 +1,27 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertEquals;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
-import edu.kit.ipd.alicenlp.ivan.analyzers.CoreferenceResolver;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.data.RecognitionState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 
+/** This class tests the emitter. It also tests the internal conditions.
+ * 
+ * @author Jonny
+ *
+ */
 public class RecognitionStateTest extends RecognitionState {
 
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-	}
-
+	/** creates a RecognitionState 
+	 * 
+	 * @throws IvanException
+	 */
 	@Test
 	public final void testToString() throws IvanException {
 //		String testfile = "The ground is covered with grass."

@@ -11,7 +11,9 @@ import java.util.List;
 
 import edu.stanford.nlp.util.Pair;
 
-/**
+/** This is a glorified printer which translates the internal state 
+ * of the recognition programs into human readable descriptions.
+ * 
  * @author Jonny
  *
  */
@@ -78,7 +80,7 @@ public class RecognitionState {
 		return sb.toString();
 	}
 
-	private void appendSentence(EntityInfo first, EntityInfo second,
+	private static void appendSentence(EntityInfo first, EntityInfo second,
 			StringBuilder sb) {
 		// first
 		sb.append("A " + first.getEntity() + " is " + first.getLocation() + ", " + first.getDirection());
