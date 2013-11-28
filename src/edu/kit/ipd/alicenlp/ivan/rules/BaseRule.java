@@ -236,7 +236,7 @@ public abstract class BaseRule {
 	 * @param graph The sentence to look in.
 	 * @return A distinct word
 	 */
-	public static String resolveNN(IndexedWord head, SemanticGraph graph) {
+	private static String resolveNN(IndexedWord head, SemanticGraph graph) {
 		List<IndexedWord> nns = graph.getChildrenWithReln(head, EnglishGrammaticalRelations.NOUN_COMPOUND_MODIFIER);
 		String name = "";
 		// check for nulls. if there is nothing here, we have nothing to do.
