@@ -1,5 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
+import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.*;
+import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateDeclarations;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,12 +36,20 @@ import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
+/**
+ * @author Jonny
+ *
+ */
+/** Tests whether the declarations and locations and directions are properly found
+ * 
+ * @author Jonny
+ *
+ */
 public class DeclarationPositionFinderTest {
 
 	static String[] locations = {
@@ -67,8 +77,10 @@ public class DeclarationPositionFinderTest {
 	static List<CoreMap> negativeslist = new ArrayList<CoreMap>();
 
 	static boolean setupDone = false;
-	private static StanfordCoreNLP pipeline = null;
 
+	/** Loads the batch test files and prepares the test lists
+	 * 
+	 */
 	// @BeforeClass
 	public static void setup() {
 		if (setupDone)
@@ -177,20 +189,20 @@ public class DeclarationPositionFinderTest {
 	 * @param location
 	 * @param sentencelist
 	 */
-	protected static void annotateSentence(String location,
+	private static void annotateSentence(String location,
 			List<CoreMap> sentencelist) {
 		sentencelist = annotateDeclarations(location).get(SentencesAnnotation.class);
 	}
 
-	private CoreMap annotateSingleSentence(String text) {
-		return annotateDeclarations(text).get(SentencesAnnotation.class).get(0);
-	}
 
+	/** A simple test about creating the proper entity info
+	 * 
+	 */
 	@Test
-	public void testFindAll() {
+	public void testFindBunny() {
 		String text = "Behind the Broccoli, there is a Bunny facing south.", name = "Bunny", direction = "south", location = "Behind the Broccoli";
 		EntityInfo sample = new EntityInfo(name, location, direction);
-		CoreMap sentence = annotateSingleSentence(text);
+		CoreMap sentence = annotateSingleDeclaration(text);
 		List<EntityInfo> entities = DeclarationPositionFinder.findAll(sentence);
 		for (EntityInfo en : entities) {
 			if (!sample.equals(en)) {
@@ -203,6 +215,9 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
+	/** Tests the location files for locations with hasLocation
+	 * 
+	 */
 	@Test
 	public void testHasLocation() {
 		setup();
@@ -216,34 +231,40 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
+	/** Tests the location files with getLocation
+	 * 
+	 */
 	@Test
 	public void testGetLocation() {
 		EntityInfo simplein = DeclarationPositionFinder
-				.getLocation(annotateSingleSentence("There is a ghost in this house."));
+				.getLocation(annotateSingleDeclaration("There is a ghost in this house."));
 		assertNotNull("simple failed", simplein);
 		if (!"in this house".equals(simplein.getLocation())) {
 			fail("LocationListAnnotation is wrong");
 		}
 		EntityInfo inandon = DeclarationPositionFinder
-				.getLocation(annotateSingleSentence("The house is in the background on the left hand side."));
+				.getLocation(annotateSingleDeclaration("The house is in the background on the left hand side."));
 		assertNotNull("in/on failed", inandon);
 		if (!"in the background on the left hand side".equals(inandon
 				.getLocation())) {
 			fail("LocationListAnnotation is wrong");
 		}
 		EntityInfo behind = DeclarationPositionFinder
-				.getLocation(annotateSingleSentence("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
+				.getLocation(annotateSingleDeclaration("Behind it to the right is a yellow duckling wearing red socks, a crown and a scepter."));
 		assertNotNull("behind failed", behind);
 		if (!"Behind it to the right".equals(behind.getLocation())) {
 			fail("LocationListAnnotation is wrong: " + behind);
 		}
 	}
 
+	/** Tests a single sentence with getDirection
+	 * 
+	 */
 	@Test
 	public void testGetDirection() {
 		String text = "Behind the Broccoli, there is a Bunny facing south.", name = "Bunny", direction = "south";
 
-		CoreMap sentence = annotateSingleSentence(text);
+		CoreMap sentence = annotateSingleDeclaration(text);
 		EntityInfo entity = DeclarationPositionFinder.getDirection(sentence);
 
 		// direction
@@ -254,6 +275,10 @@ public class DeclarationPositionFinderTest {
 				name, entity.getEntity());
 	}
 
+	/** Tests a few sentences with whole declarations
+	 * 
+	 * @throws IvanException
+	 */
 	@Test
 	public void testGetDeclarations() throws IvanException {
 		// String text = "There is a boy and a girl." + " "
@@ -306,7 +331,7 @@ public class DeclarationPositionFinderTest {
 		// }
 		boolean fail = false;
 		for (Entry<String, String[]> sol : solutions.entrySet()) {
-			CoreMap anno = annotateSingleSentence(sol.getKey());
+			CoreMap anno = annotateSingleDeclaration(sol.getKey());
 			List<EntityInfo> einfos = proto.getDeclarations(anno);
 			for (EntityInfo info : einfos) {
 				boolean matched = false;
@@ -334,12 +359,6 @@ public class DeclarationPositionFinderTest {
 			fail("Failed test. See warnings for details.");
 	}
 
-	private String warn(String string) {
-		String out = "Warning: " + string;
-		System.err.println(out);
-		return out;
-	}
-
 	/**
 	 * Some select cases for the recognition, which are hard, but should work.
 	 * Non-working cases go into testRecogniseNamesHard.
@@ -352,47 +371,8 @@ public class DeclarationPositionFinderTest {
 				"There is a boy and a girl.", new String[] { "boy", "girl" });
 		checkEntrySet(sol);
 	}
-
-	@Test
-	public void testRecogniseTortoise() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"The characters are a ninja tortoise, a rabbit and a T-Rex.",
-				new String[] { "ninja tortoise", "rabbit", "T-Rex" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseAlice() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"In the foreground, to the left of the stage stands the girl Alice.",
-				new String[] { "girl" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseSitsFrog() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"In the foreground on the left, there sits a green frog with a yellow belly facing eastsoutheast.",
-				new String[] { "frog" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseFrogBroccoli() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"In the foreground there is a frog on the left facing east-southeast and a broccoli on the right.",
-				new String[] { "frog", "broccoli" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseFrogHare() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"In the foreground there sits a frog on the left and a hare on the right of the screen.",
-				new String[] { "frog", "hare" });
-		checkEntrySet(sol);
-	}
-
+	
+		@SuppressWarnings("javadoc")
 	@Test
 	public void testRecogniseDuckling() throws IvanException {
 		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
@@ -400,110 +380,15 @@ public class DeclarationPositionFinderTest {
 				new String[] { "duckling" });
 		checkEntrySet(sol);
 	}
-
+	
+	
+	@SuppressWarnings("javadoc")
 	@Test
 	public void testRecogniseBoy() throws IvanException {
 		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
 				"In the scene there are a boy and a girl.", new String[] {
 						"boy", "girl" });
 		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseSwitch() throws IvanException {
-		Entry<String, String[]> // these are pretty hard
-		sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"Next to the bulb on the ground is a switch, with a brown monkey next to it, facing the button but slightly turned towards the viewer. ",
-				new String[] { "switch", "monkey" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseThereSitsAFrog() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"On the right side of the palm tree there sits a frog.",
-				new String[] { "frog" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseMonsteronwheels() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"At the start the astronaut is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.",
-				new String[] { "astronaut", "monster" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecognisePieceofbrok() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"A piece of Brokkoli is in front of him.",
-				new String[] { "A piece of Brokkoli" });
-		checkEntrySet(sol);
-	}
-
-	@Test
-	public void testRecogniseIsee() throws IvanException {
-		Entry<String, String[]> sol = new AbstractMap.SimpleEntry<String, String[]>(
-				"I see a palm tree on the left of the screen and a mailbox in front of it. ",
-				new String[] { "palm tree", "mailbox" });
-		checkEntrySet(sol);
-	}
-
-	/**
-	 * @throws IvanException
-	 */
-	@Test
-	public void testRecogniseBunny() throws IvanException {
-		checkEntrySet(new AbstractMap.SimpleEntry<String, String[]>(
-				"In the background on the right, there sits a white bunny facing southsouthwest. ",
-				new String[] { "bunny" }));
-	}
-
-	/**
-	 * @throws IvanException
-	 */
-	@Test
-	public void testRecogniseSpaceship() throws IvanException {
-		checkEntrySet(new AbstractMap.SimpleEntry<String, String[]>(
-				"In the background, slightly on the moon stands a space ship with a sign reading \"UNITED STATES\".",
-				new String[] { "space ship" }));
-	}
-
-	/** This checker method verifies a sample sentence against its solution, 
-	 * unless the sample sentence was recognized as bad input.
-	 * @param solution
-	 * @throws IvanException
-	 */
-	private void checkEntrySet(Entry<String, String[]> solution)
-			throws IvanException {
-		CoreMap annoSentence = annotateSingleSentence(solution.getKey());
-		annoSentence.get(TreeAnnotation.class).pennPrint();
-		List<String> einfos = DeclarationPositionFinder
-				.recogniseNames(annoSentence);
-		if(annoSentence.get(Classification.class) != null
-				&& annoSentence.get(Classification.class).equals(Classification.ErrorDescription))
-		{
-			System.out.println("Error: \"" + solution.getKey() + "\"\nis not valid IVAN input.");
-			return;
-		}
-		if (einfos.size() != solution.getValue().length) {
-			fail("Some entities were not recognised in in sentence \""
-					+ solution.getKey() + "\"");
-		}
-		for (String foundname : einfos) {
-			boolean matched = false;
-			for (String solutionname : solution.getValue()) {
-				if (solutionname.equalsIgnoreCase(foundname)) {
-					matched = true;
-					continue;
-				}
-			}
-			if (!matched) {
-				fail(foundname + " not recognised in sentence \""
-						+ solution.getKey() + "\"");
-			}
-		}
 	}
 
 	/** This test checks wether the class properly learns entities that are in the same document.
@@ -556,50 +441,6 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	// private void printRecognitionAnalysis() throws IvanException {
-	// // merge the two positive lists while eliminating duplicates
-	// TreeSet<String> mysentences = new TreeSet<String>();
-	// mysentences.addAll(Arrays.asList(directions));
-	// mysentences.addAll(Arrays.asList(locations));
-	//
-	// // lets load some input files for good measure
-	// List<String> splitfiles = new ArrayList<String>();
-	// String newlineregex = "\r\n"; // this is a regex and just means
-	// "new line"
-	// splitfiles.addAll(Arrays.asList(loadTestFile("bothdirectionsandlocations.txt").split(newlineregex)));
-	// splitfiles.addAll(Arrays.asList(loadTestFile("directions.txt").split(newlineregex)));
-	// splitfiles.addAll(Arrays.asList(loadTestFile("locations.txt").split(newlineregex)));
-	// mysentences.addAll(splitfiles);
-	//
-	// //
-	// DeclarationPositionFinder proto =
-	// DeclarationPositionFinder.getInstance();
-	// for (String text : mysentences) {
-	// CoreMap cm = annotateSingleSentence(text);
-	// if (cm == null) {
-	// continue;
-	// }
-	// List<String> names = proto.recogniseNames(cm);
-	// // the names go into a left "column"
-	// StringBuilder namesstring = new StringBuilder();
-	// for (String n : names) {
-	// namesstring.append(n);
-	// namesstring.append(", ");
-	// }
-	// namesstring.delete(namesstring.length() - 2, namesstring.length());
-	// // fill the left column until it is 40 chars wide
-	// for (int i = namesstring.length(); i < 22; i++)
-	// {
-	// namesstring.append(' ');
-	// }
-	// // print names into first column
-	// System.out.print(namesstring);
-	// System.out.print("\t");
-	// // print sentence into second column
-	// System.out.println(text);
-	// }
-	// nop();
-	// }
 
 	/**
 	 * This is a test for Stanford Pipeline compliance.
@@ -708,12 +549,12 @@ public class DeclarationPositionFinderTest {
 					.get(LocationListAnnotation.class);
 			LocationAnnotation loc = list.get(0);
 			Tree actual = loc.getLocation();
-			Tree expected = annotateSingleSentence(
+			Tree expected = annotateSingleDeclaration(
 					"In the background on the left hand side").get(
 					TreeAnnotation.class).skipRoot();
 			assertEquals("Location not correct", expected, actual);
 
-			Tree expectedRef = annotateSingleSentence("a PalmTree")
+			Tree expectedRef = annotateSingleDeclaration("a PalmTree")
 					.get(TreeAnnotation.class).skipRoot().firstChild(); // skip
 																		// root
 																		// element
@@ -732,12 +573,12 @@ public class DeclarationPositionFinderTest {
 					.get(LocationListAnnotation.class);
 			LocationAnnotation loc = list.get(0);
 			Tree actual = loc.getLocation();
-			Tree expected = annotateSingleSentence(
+			Tree expected = annotateSingleDeclaration(
 					"In the foreground on the right hand side").get(
 					TreeAnnotation.class).skipRoot();
 			assertEquals("Location not correct", expected, actual);
 
-			Tree expectedRef = annotateSingleSentence("a Bunny").get(
+			Tree expectedRef = annotateSingleDeclaration("a Bunny").get(
 					TreeAnnotation.class).skipRoot(); // .getChild(2).getChild(1);
 														// // picking the
 														// location "by hand"
@@ -755,58 +596,26 @@ public class DeclarationPositionFinderTest {
 
 			LocationAnnotation loc = list.get(0);
 			Tree actual = loc.getLocation();
-			Tree expected = annotateSingleSentence("In the foreground").get(
+			Tree expected = annotateSingleDeclaration("In the foreground").get(
 					TreeAnnotation.class).skipRoot();
 			assertEquals("Location 1 not correct", expected, actual);
 
 			LocationAnnotation loc2 = list.get(1);
 			Tree actual2 = loc2.getLocation();
-			Tree expected2 = annotateSingleSentence(text)
+			Tree expected2 = annotateSingleDeclaration(text)
 					.get(TreeAnnotation.class).skipRoot().getChild(2)
 					.getChild(1).getChild(1);
-			System.err.println(annotateSingleSentence(text).get(
+			System.err.println(annotateSingleDeclaration(text).get(
 					TreeAnnotation.class).skipRoot());
 			assertEquals("Location 2 not correct", expected2, actual2);
 
 			assertEquals("Referents are not identical", loc.getReferent(),
 					loc2.getReferent());
-			Tree expectedRef = annotateSingleSentence("Mik Jagger").get(
+			Tree expectedRef = annotateSingleDeclaration("Mik Jagger").get(
 					TreeAnnotation.class).skipRoot(); // skip root element
 			assertEquals("Referent is not correct", expectedRef,
 					loc.getReferent());
 		}
 	}
 
-	private static Annotation annotateDeclarations(String text) {
-		Annotation doc = new Annotation(text);
-
-		if (pipeline == null) {
-			// creates a StanfordCoreNLP object, with POS tagging,
-			// lemmatization, NER, parsing, and coreference resolution
-			Properties props = new Properties();
-			// alternativ: wsj-bidirectional
-			try {
-				props.put(
-						"pos.model",
-						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			props.put("customAnnotatorClass.decl",
-					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
-			// konfiguriere pipeline
-			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
-			pipeline = new StanfordCoreNLP(props);
-		}
-
-		pipeline.annotate(doc);
-		return doc;
-	}
-
-	// @Test
-	public void test() {
-		Annotation anno = annotateDeclarations("Behind the Mailbox to the right, is a PalmTree.");
-		System.out.println(anno.get(SentencesAnnotation.class).get(0)
-				.get(CollapsedCCProcessedDependenciesAnnotation.class));
-	}
 }
