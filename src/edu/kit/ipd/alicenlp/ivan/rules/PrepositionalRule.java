@@ -3,22 +3,26 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.getPrepRelations;
+import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.getSubject;
+import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.match;
+import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.printTree;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
-import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
-import edu.stanford.nlp.util.ArrayCoreMap;
 import edu.stanford.nlp.util.CoreMap;
+
 
 /**
  * This class implements the word->prep_in->det rule which is commonly used to find for location modifiers.
@@ -27,7 +31,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class PrepositionalRule extends BaseRule implements ISentenceRule, ILocationRule
+public class PrepositionalRule implements ISentenceRule, ILocationRule
 {
 	private IndexedWord word = null;
 	private List<Tree> locationtrees = new ArrayList<Tree>();

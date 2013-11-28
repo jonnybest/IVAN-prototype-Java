@@ -3,11 +3,13 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
-import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.getNounPhrase;
+import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.getDeterminer;
 import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.getPrepRelations;
 
 import java.util.List;
 
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
@@ -49,5 +51,27 @@ public class TowardsPresentRule implements ISentenceRule {
 	 */
 	public String getPrepositionalModifier() {
 		return prepositionalModifier;
+	}
+	
+	
+	/**
+	 * Returns the whole noun phrase for words with a determiner. If there is no determiner present, only the word itself is returned.
+	 * @param word
+	 * @param sentence
+	 * @return
+	 */
+	protected static String getNounPhrase(IndexedWord word, CoreMap sentence){
+		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		IndexedWord det = getDeterminer(word, graph);
+		int offset = sentence.get(CharacterOffsetBeginAnnotation.class);
+		if(det != null)
+		{
+			int start = det.beginPosition() - offset;
+			int end = word.endPosition() - offset;
+			return sentence.get(TextAnnotation.class).substring(start, end);
+		}
+		else {
+			return word.originalText();			
+		}
 	}
 }

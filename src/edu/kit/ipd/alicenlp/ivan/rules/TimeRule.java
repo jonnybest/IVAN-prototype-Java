@@ -3,7 +3,6 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
-import edu.stanford.nlp.ling.CoreAnnotations.NERIDAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -14,7 +13,7 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
- * @author admin
+ * @author Jonny
  *
  */
 public class TimeRule implements ISentenceRule {

@@ -59,15 +59,6 @@ public abstract class BaseRule {
 		return pos.startsWith(tag.toUpperCase());
 	}
 	
-	/**
-	 * @param graph
-	 * @param startingWord
-	 * @return 
-	 */
-	protected static List<IndexedWord> getPrepinRelations(IndexedWord startingWord, SemanticGraph graph) {
-		return getPrepRelations(startingWord, graph, "in");
-	}
-	
 	protected static boolean hasDeterminer(IndexedWord startingWord, SemanticGraph graph)
 	{
 		IndexedWord det = getDeterminer(startingWord, graph);
@@ -187,27 +178,6 @@ public abstract class BaseRule {
 		GrammaticalRelation prepreln = EnglishGrammaticalRelations.getPrep(preposition);		
 		// checking rule: root->prep_in->det
 		return graph.getChildrenWithReln(startingWord, prepreln);
-	}
-	
-	/**
-	 * Returns the whole noun phrase for words with a determiner. If there is no determiner present, only the word itself is returned.
-	 * @param word
-	 * @param sentence
-	 * @return
-	 */
-	protected static String getNounPhrase(IndexedWord word, CoreMap sentence){
-		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		IndexedWord det = getDeterminer(word, graph);
-		int offset = sentence.get(CharacterOffsetBeginAnnotation.class);
-		if(det != null)
-		{
-			int start = det.beginPosition() - offset;
-			int end = word.endPosition() - offset;
-			return sentence.get(TextAnnotation.class).substring(start, end);
-		}
-		else {
-			return word.originalText();			
-		}
 	}
 
 	/**
