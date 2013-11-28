@@ -1,5 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.*;
 import java.util.List;
 
 import edu.stanford.nlp.ling.IndexedWord;
@@ -12,6 +13,7 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
+
 /**
  * Applies a list of keywords and attempts to extract a direction from the
  * sentence. Directions are valid if they are specified as prepositional modfier
@@ -20,7 +22,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  * 
  */
-public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
+public class DirectionKeywordRule implements ISentenceRule {
 
 	/**
 	 * This list of keywords signals that the subject's direction is being
@@ -28,6 +30,10 @@ public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
 	 */
 	public final String[] VerbKeywords = { "face", "turn", "orient", "look" };
 
+	/**
+	 * These are prepositions that signal a direction. If the verb keywords are
+	 * found, we extract the actual direction with these prepositions.
+	 */
 	public final String[] PrepKeywords = { "towards", "at", "into", "to" };
 
 	private IndexedWord verb;
@@ -49,7 +55,7 @@ public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
 				// roots
 				setVerb(root);
 
-				setSubject(getSubject(graph));
+				setSubject(BaseRule.getSubject(graph));
 				// 1. check for and extract prepositional modifier
 				for (String prepbase : PrepKeywords) {
 
@@ -58,8 +64,8 @@ public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
 					List<IndexedWord> preplistroot = getPrepRelations(root,
 							graph, prepbase);
 					if (preplistsubj.size() > 0) {
-//						setDirection(printSubGraph(preplistsubj.get(0),
-//								Sentence));
+						// setDirection(printSubGraph(preplistsubj.get(0),
+						// Sentence));
 						setDirection(preplistsubj.get(0), tree, "PP");
 						return true;
 					} else if (preplistroot.size() > 0) {
@@ -99,9 +105,12 @@ public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
 					if (edge.getDependent().lemma().equalsIgnoreCase(kw)) {
 						subject = edge.getGovernor();
 						verb = edge.getDependent();
-						// the modifier is probably the last dependent of this verb
-						IndexedWord mod = graph.getChildList(verb).get(graph.getChildList(verb).size()-1);
-//						setDirection(printTree(match(edge.getDependent(), tree)));
+						// the modifier is probably the last dependent of this
+						// verb
+						IndexedWord mod = graph.getChildList(verb).get(
+								graph.getChildList(verb).size() - 1);
+						// setDirection(printTree(match(edge.getDependent(),
+						// tree)));
 						setDirection(printTree(match(mod, tree, null, true)));
 						return true;
 					}
@@ -120,9 +129,12 @@ public class DirectionKeywordRule extends BaseRule implements ISentenceRule {
 					if (edge.getDependent().lemma().equalsIgnoreCase(kw)) {
 						subject = edge.getGovernor();
 						verb = edge.getDependent();
-						// the modifier is probably the last dependent of this verb
-						IndexedWord mod = graph.getChildList(verb).get(graph.getChildList(verb).size()-1);
-//						direction = printSubGraph(edge.getDependent(), Sentence);
+						// the modifier is probably the last dependent of this
+						// verb
+						IndexedWord mod = graph.getChildList(verb).get(
+								graph.getChildList(verb).size() - 1);
+						// direction = printSubGraph(edge.getDependent(),
+						// Sentence);
 						setDirection(printTree(match(mod, tree, null, true)));
 						return true;
 					}
