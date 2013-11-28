@@ -1,6 +1,5 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateDeclarations;
 import static org.junit.Assert.fail;
 
 import java.util.List;
@@ -25,6 +24,9 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public abstract class TestUtilities {
 
+	private static StanfordCoreNLP declarationsPipeline;
+	private static StanfordCoreNLP classificationsPipeline;
+
 	/**
 	 * Annotates a document with our customized pipeline.
 	 * 
@@ -35,38 +37,37 @@ public abstract class TestUtilities {
 	public static Annotation annotateClassifications(String text) {
 		Annotation doc = new Annotation(text);
 
-		StanfordCoreNLP pipeline;
-
-		// creates a StanfordCoreNLP object, with POS tagging, lemmatization,
-		// NER, parsing, and coreference resolution
-		Properties props = new Properties();
-		// alternative: wsj-bidirectional
-		try {
+		if (classificationsPipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging,
+			// lemmatization,
+			// NER, parsing, and coreference resolution
+			Properties props = new Properties();
+			// alternative: wsj-bidirectional
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			// adding our own annotator property
+			props.put("customAnnotatorClass.sdclassifier",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+			// adding our declaration finder
+			props.put("customAnnotatorClass.declarations",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			// configure pipeline
 			props.put(
-					"pos.model",
-					"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
-		} catch (Exception e) {
-			e.printStackTrace();
+					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+			classificationsPipeline = new StanfordCoreNLP(props);
 		}
-		// adding our own annotator property
-		props.put("customAnnotatorClass.sdclassifier",
-				"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
-		// adding our declaration finder
-		props.put("customAnnotatorClass.declarations",
-				"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 
-		// configure pipeline
-		props.put(
-				"annotators", "tokenize, ssplit, pos, lemma, ner, parse, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
-		pipeline = new StanfordCoreNLP(props);
-
-		pipeline.annotate(doc);
+		classificationsPipeline.annotate(doc);
 		return doc;
 	}
 
 	static Annotation annotateDeclarations(String text) {
 		Annotation doc = new Annotation(text);
-		StanfordCoreNLP declarationsPipeline = null;
 
 		if (declarationsPipeline == null) {
 			// creates a StanfordCoreNLP object, with POS tagging,
