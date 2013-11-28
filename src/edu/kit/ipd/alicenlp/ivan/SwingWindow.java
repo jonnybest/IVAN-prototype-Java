@@ -794,7 +794,7 @@ public class SwingWindow {
 			 * non-setup descriptions
 			 */
 			StaticDynamicClassifier.Classification sentencetype = myclassifier
-					.classifySentence(root, sentence);
+					.classifySentence(sentence);
 			if (DeclarationPositionFinder.hasLocation(sentence)) {
 				EntityInfo loc = DeclarationPositionFinder
 						.getLocation(sentence);

@@ -53,8 +53,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	static private StaticDynamicClassifier myinstance = null;
 	private Dictionary dictionary;
 	
-	public Classification classifySentence(IndexedWord root, CoreMap sentence) throws JWNLException
+	public Classification classifySentence(CoreMap sentence) throws JWNLException
 	{
+		IndexedWord root = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getFirstRoot();
+
 		// this is the default result, if nothing else matches
 		Classification defaultclass = Classification.ActionDescription;
 		
@@ -342,7 +344,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			// process 
 			try {
-				Classification sentenceclass = classifySentence(BaseRule.getRoot(sentence), sentence);
+				Classification sentenceclass = classifySentence(sentence);
 				sentence.set(Classification.class, sentenceclass);
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(

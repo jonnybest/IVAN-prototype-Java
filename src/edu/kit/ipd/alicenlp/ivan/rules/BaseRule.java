@@ -284,14 +284,4 @@ public abstract class BaseRule {
 		// hope those are all
 		return names;
 	}
-
-	/** Returns the (first) root of the SemanticGraph
-	 * 
-	 * @param sentence
-	 * @return
-	 */
-	public static IndexedWord getRoot(CoreMap sentence) {
-		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		return graph.getFirstRoot();		
-	}
 }

@@ -80,16 +80,10 @@ public class HardClassificationTest {
 		annotateSentence(inputlocs, setuplist);
 
 		for (CoreMap sentence : setuplist) {
-			IndexedWord root = null;
-			try {
-				root = BaseRule.getRoot(sentence);
-			} catch (RuntimeException e) {
-				fail("Rooting \"" + sentence + "\" caused an exception. "
-						+ e.getMessage());
-			}
+			
 			Classification result = null;
 			try {
-				result = proto.classifySentence(root, sentence);
+				result = proto.classifySentence(sentence);
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
@@ -104,10 +98,9 @@ public class HardClassificationTest {
 		annotateSentence(inputdirs, negativeslist);
 
 		for (CoreMap sentence : negativeslist) {
-			IndexedWord root = BaseRule.getRoot(sentence);
 			Classification result = null;
 			try {
-				result = proto.classifySentence(root, sentence);
+				result = proto.classifySentence(sentence);
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
