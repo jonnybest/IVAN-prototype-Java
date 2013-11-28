@@ -488,7 +488,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		if (prepRule.apply(sentence)) {
 			for (Tree t : prepRule.getAllPrepositionalModifiers()) {
 				LocationAnnotation someloc = new LocationAnnotation();
-				someloc.setReferent(prepRule.getWordAsTree());
+				someloc.setReferent(prepRule.getReferent());
 				someloc.setLocation(t);
 				ourlocs.add(someloc);
 			}

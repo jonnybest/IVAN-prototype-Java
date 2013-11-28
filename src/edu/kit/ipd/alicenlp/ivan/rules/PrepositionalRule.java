@@ -141,7 +141,7 @@ public class PrepositionalRule implements ISentenceRule, ILocationRule
 	}
 	
 	@Override
-	public Tree getWordAsTree()
+	public Tree getReferent()
 	{
 		return wordTrees.get(0);
 	}

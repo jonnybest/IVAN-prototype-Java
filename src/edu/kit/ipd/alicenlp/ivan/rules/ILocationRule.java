@@ -39,7 +39,7 @@ public interface ILocationRule extends ISentenceRule {
 	 * @return the tree which describes the entity to which the location in this
 	 *         sentence refers to
 	 */
-	public Tree getWordAsTree();
+	public Tree getReferent();
 
 	/**
 	 * Gives a single word which describes the entity in this sentence (the one
