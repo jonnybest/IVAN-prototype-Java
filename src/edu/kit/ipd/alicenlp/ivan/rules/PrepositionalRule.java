@@ -31,7 +31,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class PrepositionalRule implements ISentenceRule, ILocationRule
+public class PrepositionalRule implements ISentenceRule
 {
 	private IndexedWord word = null;
 	private List<Tree> locationtrees = new ArrayList<Tree>();
@@ -135,18 +135,15 @@ public class PrepositionalRule implements ISentenceRule, ILocationRule
 			return true;
 	}
 
-	@Override
 	public IndexedWord getWord() {
 		return word;
 	}
 	
-	@Override
 	public Tree getReferent()
 	{
 		return wordTrees.get(0);
 	}
 
-	@Override
 	public String printFirstModifier() {
 		return printTree(getFirstModifier());
 	}
@@ -166,7 +163,6 @@ public class PrepositionalRule implements ISentenceRule, ILocationRule
 		return locationtrees;
 	}
 
-	@Override
 	public Tree getFirstModifier() {
 		return locationtrees.size() > 0 ? locationtrees.get(0) : null;
 	}
@@ -174,7 +170,6 @@ public class PrepositionalRule implements ISentenceRule, ILocationRule
 	/**
 	 * @return the multipleReferents
 	 */
-	@Override
 	public boolean hasMultipleReferents() {
 		return multipleReferents;
 	}
