@@ -47,8 +47,9 @@ public class SentenceFrameRuleTest
 	 * 
 	 * @throws JWNLException
 	 */
+	@SuppressWarnings("static-method")
 	@Test
-	public final static void testSomethingAndSomethingDO() throws JWNLException {
+	public final void testSomethingAndSomethingDO() throws JWNLException {
 		/* 
 		 * Set up grammar analysis
 		 */
