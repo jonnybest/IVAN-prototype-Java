@@ -26,9 +26,15 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
+/** This test verifies that the sentence frame rule is working
+ * 
+ * @author Jonny
+ *
+ */
 public class SentenceFrameRuleTest 
 {
 	
+	@SuppressWarnings("javadoc")
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		setupWordNet();
@@ -36,13 +42,19 @@ public class SentenceFrameRuleTest
 
 	private static Dictionary dictionary;
 
+	
+	/** Tests "A giant flame column appears and it consumes the astronaut."
+	 * 
+	 * @throws JWNLException
+	 */
 	@Test
-	public final void testSomethingAndSomethingDO() throws JWNLException {
+	public final static void testSomethingAndSomethingDO() throws JWNLException {
 		/* 
 		 * Set up grammar analysis
 		 */
 		String text = "A giant flame column appears and it consumes the astronaut.";
-		Annotation doc = annotateText(text);
+		// bad variant: "A giant flame column appears and consumes the astronaut.";
+		Annotation doc = annotateCore(text);
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 //		SemanticGraph deps = sentence.get(BasicDependenciesAnnotation.class);
 		List<CoreLabel> tokens = sentence.get(TokensAnnotation.class);
@@ -107,7 +119,7 @@ public class SentenceFrameRuleTest
 	 * @param text
 	 * @return
 	 */
-	private Annotation annotateText(String text) {
+	private static Annotation annotateCore(String text) {
 		Annotation doc = new Annotation(text);
 
 		StanfordCoreNLP pipeline;
@@ -128,16 +140,17 @@ public class SentenceFrameRuleTest
 
 		// konfiguriere pipeline
 		props.put(
-				"annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref"); //$NON-NLS-1$ //$NON-NLS-2$
+				"annotators", "tokenize, ssplit, pos, lemma, parse"); //$NON-NLS-1$ //$NON-NLS-2$
 		pipeline = new StanfordCoreNLP(props);
 
 		pipeline.annotate(doc);
 		return doc;
 	}
 	
-	/**
+	/** Creates wordnet
 	 * 
 	 */
+	@SuppressWarnings("resource")
 	protected static void setupWordNet() {
 		// set up properties file
 	    String propsFile = "file_properties.xml";
