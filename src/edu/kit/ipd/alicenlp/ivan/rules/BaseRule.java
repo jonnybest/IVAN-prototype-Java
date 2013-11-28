@@ -20,7 +20,6 @@ import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
@@ -44,26 +43,7 @@ public abstract class BaseRule {
 		String pos = word.get(PartOfSpeechAnnotation.class).toUpperCase();
 		return pos.startsWith(tag.toUpperCase());
 	}
-	
-	public static boolean hasDeterminer(IndexedWord startingWord, SemanticGraph graph)
-	{
-		IndexedWord det = getDeterminer(startingWord, graph);
-		return det != null;
-	}
 
-	/** Decides whether this sentence contains the subject "I"
-	 * @param graph
-	 * @return
-	 */
-	public static Boolean is1stPerson(final SemanticGraph graph)
-	{
-		IndexedWord root = graph.getFirstRoot();
-		// first person = nominal subject is "I"
-		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
-		IndexedWord subject = graph.getChildWithReln(root, subjclass);
-		return subject == null || subject.word().equalsIgnoreCase("I");
-	}
-	
 	/** Returns any particle this <code>verb</code> may have
 	 * @param verb
 	 * @param graph

@@ -19,6 +19,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -64,7 +65,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 	 */
 	public boolean applyNo1stPerson(CoreMap sentence) {
 		// no 1st person descriptions (because of missing verb)
-		if(BaseRule.is1stPerson(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)))
+		if(ErrorRule.is1stPerson(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)))
 		{
 			error("Sentences with \"I\" are difficult to understand. "
 					+ "Please try not to use \"I\" in a sentence.", sentence);
@@ -157,6 +158,19 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 
 	public ErrorMessageAnnotation getErrorMessage() {
 		return msg;
+	}
+
+	/** Decides whether this sentence contains the subject "I"
+	 * @param graph
+	 * @return
+	 */
+	public static Boolean is1stPerson(final SemanticGraph graph)
+	{
+		IndexedWord root = graph.getFirstRoot();
+		// first person = nominal subject is "I"
+		GrammaticalRelation subjclass = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
+		IndexedWord subject = graph.getChildWithReln(root, subjclass);
+		return subject == null || subject.word().equalsIgnoreCase("I");
 	}
 
 }
