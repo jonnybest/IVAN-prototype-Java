@@ -179,11 +179,11 @@ public class DeclarationPositionFinderTest {
 	 */
 	protected static void annotateSentence(String location,
 			List<CoreMap> sentencelist) {
-		sentencelist = annotate(location).get(SentencesAnnotation.class);
+		sentencelist = annotateDeclarations(location).get(SentencesAnnotation.class);
 	}
 
 	private CoreMap annotateSingleSentence(String text) {
-		return annotate(text).get(SentencesAnnotation.class).get(0);
+		return annotateDeclarations(text).get(SentencesAnnotation.class).get(0);
 	}
 
 	@Test
@@ -529,7 +529,7 @@ public class DeclarationPositionFinderTest {
 
 		DeclarationPositionFinder proto = DeclarationPositionFinder
 				.getInstance();
-		Annotation doc = annotate(input);
+		Annotation doc = annotateDeclarations(input);
 
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			proto.learnDeclarations(sentence);
@@ -638,7 +638,7 @@ public class DeclarationPositionFinderTest {
 				// + "To the right of the mailbox there is a Frog facing east. "
 				// // this one is probably tough?
 				+ "In the foreground on the right hand side there is a Bunny facing southwest. ";
-		Annotation doc = annotate(text);
+		Annotation doc = annotateDeclarations(text);
 
 		// lets see if there are any annotations at all
 		assertEquals("Sentences are missing", 3 /* 5 */,
@@ -669,7 +669,7 @@ public class DeclarationPositionFinderTest {
 	@Test
 	public void inFrontOfTest() {
 		String text = "In front of the Bunny there is a Broccoli.";
-		Annotation doc = annotate(text);
+		Annotation doc = annotateDeclarations(text);
 
 		// lets see if there are any annotations at all
 		assertEquals("Sentences are missing", 1 /* 5 */,
@@ -701,7 +701,7 @@ public class DeclarationPositionFinderTest {
 	public void ReferentTestStanford() {
 		{
 			String text = "In the background on the left hand side there is a PalmTree.";
-			Annotation doc = annotate(text);
+			Annotation doc = annotateDeclarations(text);
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 
 			LocationListAnnotation list = sentence
@@ -725,7 +725,7 @@ public class DeclarationPositionFinderTest {
 		}
 		{
 			String text = "In the foreground on the right hand side there is a Bunny facing southwest.";
-			Annotation doc = annotate(text);
+			Annotation doc = annotateDeclarations(text);
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 
 			LocationListAnnotation list = sentence
@@ -746,7 +746,7 @@ public class DeclarationPositionFinderTest {
 		}
 		{
 			String text = "In the foreground there is Mik Jagger on the right hand side facing southwest.";
-			Annotation doc = annotate(text);
+			Annotation doc = annotateDeclarations(text);
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 
 			LocationListAnnotation list = sentence
@@ -777,7 +777,7 @@ public class DeclarationPositionFinderTest {
 		}
 	}
 
-	private static Annotation annotate(String text) {
+	private static Annotation annotateDeclarations(String text) {
 		Annotation doc = new Annotation(text);
 
 		if (pipeline == null) {
@@ -805,7 +805,7 @@ public class DeclarationPositionFinderTest {
 
 	// @Test
 	public void test() {
-		Annotation anno = annotate("Behind the Mailbox to the right, is a PalmTree.");
+		Annotation anno = annotateDeclarations("Behind the Mailbox to the right, is a PalmTree.");
 		System.out.println(anno.get(SentencesAnnotation.class).get(0)
 				.get(CollapsedCCProcessedDependenciesAnnotation.class));
 	}

@@ -21,7 +21,7 @@ public abstract class TestUtilities {
 	 *            A text to process
 	 * @return The annotated text
 	 */
-	public static Annotation annotateText(String text) {
+	public static Annotation annotateClassifications(String text) {
 		Annotation doc = new Annotation(text);
 
 		StanfordCoreNLP pipeline;

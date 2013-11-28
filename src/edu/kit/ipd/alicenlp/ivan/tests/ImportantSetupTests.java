@@ -1,6 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateText;
+import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateClassifications;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
@@ -34,19 +34,19 @@ public class ImportantSetupTests {
 	 */
 	@Test
 	public void positiveActionTest() {
-		Annotation doc = annotateText("The penguin jumps once.");
+		Annotation doc = annotateClassifications("The penguin jumps once.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertThat("jumps sentence classified wrong",
 				sentence.get(Classification.class),
 				is(Classification.ActionDescription));
 
-		Annotation doc2 = annotateText("The boy and the girl lift their left arms simulteanously as well.");
+		Annotation doc2 = annotateClassifications("The boy and the girl lift their left arms simulteanously as well.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("lift sentence classified wrong",
 				sentence2.get(Classification.class),
 				is(Classification.ActionDescription));
 
-		Annotation doc3 = annotateText("After a short pause, the penguin turns around towards the back of the bucket behind it, jumps onto its stomach and slides towards the bucket, flapping its wings again.");
+		Annotation doc3 = annotateClassifications("After a short pause, the penguin turns around towards the back of the bucket behind it, jumps onto its stomach and slides towards the bucket, flapping its wings again.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("turns around sentence classified wrong",
 				sentence3.get(Classification.class),
@@ -62,21 +62,21 @@ public class ImportantSetupTests {
 	 */
 	@Test
 	public void negativeTimeTest() {
-		Annotation doc = annotateText("A giant flame column appears and consumes the astronaut.");
+		Annotation doc = annotateClassifications("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
 		assertThat("flame sentence classified wrong",
 				sentence.get(Classification.class),
 				is(not(Classification.TimeDescription)));
 
-		Annotation doc2 = annotateText("The scene takes place in the desert.");
+		Annotation doc2 = annotateClassifications("The scene takes place in the desert.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
 		assertThat("desert sentence classified wrong",
 				sentence2.get(Classification.class),
 				is(not(Classification.TimeDescription)));
 
-		Annotation doc3 = annotateText("Ground is covered with green grass.");
+		Annotation doc3 = annotateClassifications("Ground is covered with green grass.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
 		assertThat("Ground sentence classified wrong",
@@ -91,19 +91,19 @@ public class ImportantSetupTests {
 	 */
 	@Test
 	public void positiveEventTest() {
-		Annotation doc = annotateText("The grinning cat appears in the branches of the tree.");
+		Annotation doc = annotateClassifications("The grinning cat appears in the branches of the tree.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertThat("appears sentence classified wrong",
 				sentence.get(Classification.class),
 				is(Classification.EventDescription));
 
-		Annotation doc2 = annotateText("The bunny jumps into the hole and disappears.");
+		Annotation doc2 = annotateClassifications("The bunny jumps into the hole and disappears.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("jumps, disappears sentence classified wrong",
 				sentence2.get(Classification.class),
 				is(Classification.EventDescription));
 
-		Annotation doc4 = annotateText("A giant flame column appears and consumes the astronaut.");
+		Annotation doc4 = annotateClassifications("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
 		assertThat("flame sentence classified wrong",
 				sentence4.get(Classification.class),
@@ -118,7 +118,7 @@ public class ImportantSetupTests {
 	 */
 	@Test
 	public void negativeErrorTest() {
-		Annotation doc = annotateText("The rabbit screams \"Ahhhhhhhh!\" and turns around towards the hole.");
+		Annotation doc = annotateClassifications("The rabbit screams \"Ahhhhhhhh!\" and turns around towards the hole.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
 		assertThat("flame sentence classified wrong",
@@ -164,7 +164,7 @@ public class ImportantSetupTests {
 				+ "Right to the mailbox there is a Frog facing east. "
 				+ "In the foreground on the right hand side there is a Bunny facing southwest. "
 				+ "In front of the Bunny there is a Broccoli.";
-		Annotation doc = annotateText(text);
+		Annotation doc = annotateClassifications(text);
 
 		// lets see if there are any annotations at all
 		assertEquals("Sentences are missing", 5,
@@ -188,7 +188,7 @@ public class ImportantSetupTests {
 	@Test
 	public void negativeSetupTest() {
 		{
-			Annotation doc = annotateText("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
+			Annotation doc = annotateClassifications("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertNotNull("class is missing",
 					sentence.get(Classification.class));
@@ -210,7 +210,7 @@ public class ImportantSetupTests {
 			 * rule: no first person reason: verb does not pertain to things
 			 * happening in the scene
 			 */
-			Annotation doc = annotateText("I see a palm tree on the left of the screen, a mailbox in front of it.");
+			Annotation doc = annotateClassifications("I see a palm tree on the left of the screen, a mailbox in front of it.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			System.out.println(sentence
 					.get(CollapsedCCProcessedDependenciesAnnotation.class));
@@ -235,14 +235,14 @@ public class ImportantSetupTests {
 		 * flames continue to burn.
 		 */
 		// explicitly references passing time
-		Annotation doc2 = annotateText("A very short time passes.");
+		Annotation doc2 = annotateClassifications("A very short time passes.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("passes sentence classified wrong",
 				sentence2.get(Classification.class),
 				is(Classification.TimeDescription));
 
 		// contains duration
-		Annotation doc3 = annotateText("The fire lasts for around 10 seconds.");
+		Annotation doc3 = annotateClassifications("The fire lasts for around 10 seconds.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("fire around sentence classified wrong",
 				sentence3.get(Classification.class),
@@ -264,14 +264,14 @@ public class ImportantSetupTests {
 	 */
 	@Test
 	public void negativeEventTest() {
-		Annotation doc = annotateText("A very short time passes.");
+		Annotation doc = annotateClassifications("A very short time passes.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
 		assertThat("time passes sentence classified wrong",
 				sentence.get(Classification.class),
 				is(not(Classification.EventDescription)));
 
-		Annotation doc2 = annotateText("A frog sits left of the Brokkoli facing it.");
+		Annotation doc2 = annotateClassifications("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
 		assertThat("frog sentence classified wrong",
@@ -280,7 +280,7 @@ public class ImportantSetupTests {
 
 		// The start depicts a boy facing to the right of the screen, and a
 		// woman facing to the front.
-		Annotation doc3 = annotateText("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
+		Annotation doc3 = annotateClassifications("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
 		assertThat("depicts sentence classified wrong",
@@ -296,14 +296,14 @@ public class ImportantSetupTests {
 	 */
 	@Test
 	public void negativeActionTest() {
-		Annotation doc = annotateText("A very short time passes.");
+		Annotation doc = annotateClassifications("A very short time passes.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence.get(Classification.class));
 		assertThat("time passes sentence classified wrong",
 				sentence.get(Classification.class),
 				is(not(Classification.ActionDescription)));
 
-		Annotation doc2 = annotateText("A frog sits left of the Brokkoli facing it.");
+		Annotation doc2 = annotateClassifications("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence2.get(Classification.class));
 		assertThat("sits sentence classified wrong",
@@ -312,7 +312,7 @@ public class ImportantSetupTests {
 
 		// The start depicts a boy facing to the right of the screen, and a
 		// woman facing to the front.
-		Annotation doc3 = annotateText("A giant flame column appears and consumes the astronaut.");
+		Annotation doc3 = annotateClassifications("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertNotNull("class is missing", sentence3.get(Classification.class));
 		assertThat("appears sentence classified wrong",

@@ -3,7 +3,7 @@
  */
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateText;
+import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateClassifications;
 import static edu.stanford.nlp.util.logging.Redwood.log;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
@@ -209,7 +209,7 @@ public class StaticDynamicClassifierTest {
 	 */
 	@Test
 	public void positiveHardEventTest() {
-		Annotation doc3 = annotateText("She stops in front of the rabbit.");
+		Annotation doc3 = annotateClassifications("She stops in front of the rabbit.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("flame sentence classified wrong",
 				sentence3.get(Classification.class),
@@ -228,7 +228,7 @@ public class StaticDynamicClassifierTest {
 			 * we resolve synonyms to the same Alice entity. They need a name at
 			 * least.
 			 */
-			Annotation doc = annotateText("On the left side in the background, there is a rabbit. "
+			Annotation doc = annotateClassifications("On the left side in the background, there is a rabbit. "
 					+ "On the right side, in the foreground, there is a hare.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(1);
 
@@ -269,7 +269,7 @@ public class StaticDynamicClassifierTest {
 				/** Make sure that names are alright.
 				 * 
 				 */
-				Annotation doc = annotateText("On the left side in the background, there is a rabbit."
+				Annotation doc = annotateClassifications("On the left side in the background, there is a rabbit."
 						+ " The rabbit is called Harry."
 						+ " On the right side, in the foreground, there is a hare."
 						+ " The hare is called Lucas.");
@@ -289,7 +289,7 @@ public class StaticDynamicClassifierTest {
 				/** Make sure that non-synonymous usages are alright.
 				 * 
 				 */
-				Annotation doc = annotateText("On the left side in the background, there is a bunny."
+				Annotation doc = annotateClassifications("On the left side in the background, there is a bunny."
 						+ " On the right side, in the foreground, there is a hare."
 						);
 	
@@ -326,14 +326,14 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveSetupTest() {
 		{
-			Annotation doc = annotateText("The scene takes place on the grass.");
+			Annotation doc = annotateClassifications("The scene takes place on the grass.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("takes place sentence classified wrong",
 					sentence.get(Classification.class),
 					is(Classification.SetupDescription));
 		}
 		{
-			Annotation doc3 = annotateText("The ground is covered with grass.");
+			Annotation doc3 = annotateClassifications("The ground is covered with grass.");
 			CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 			assertThat("simple sentence classified wrong",
 					sentence3.get(Classification.class),
@@ -341,7 +341,7 @@ public class StaticDynamicClassifierTest {
 		}
 		{
 			// The ground is covered with grass, the sky is blue.
-			Annotation doc2 = annotateText("The ground is covered with grass, the sky is blue.");
+			Annotation doc2 = annotateClassifications("The ground is covered with grass, the sky is blue.");
 			CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 			assertThat("comma sentence classified wrong",
 					sentence2.get(Classification.class),
@@ -367,7 +367,7 @@ public class StaticDynamicClassifierTest {
 				+ "The duckling is facing just slightly past the monkey. "
 				+ "She is facing towards the viewer but turned 45° to the left of the stage. "
 				+ "At the start the astronaught is facing to the front of the screen and the monster on wheels is positioned towards the back of the screen.";
-		Annotation doc = annotateText(text);
+		Annotation doc = annotateClassifications(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertNotNull("class is missing",
 					sentence.get(Classification.class));
@@ -383,7 +383,7 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveHardSetupVisibilityTest() {
 		{
-			Annotation doc = annotateText("The grinning cat is not visible.");
+			Annotation doc = annotateClassifications("The grinning cat is not visible.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("visible sentence classified wrong",
 					sentence.get(Classification.class),
@@ -397,7 +397,7 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveHardSetupDepictTest() {
 		{
-			Annotation doc = annotateText("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
+			Annotation doc = annotateClassifications("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("depicts sentence classified wrong",
 					sentence.get(Classification.class),
@@ -411,14 +411,14 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveHardSetupNounTest() {
 		{
-			Annotation doc = annotateText("Rightmost of the stage, in the back, is a sunflower, facing towards the characters.");
+			Annotation doc = annotateClassifications("Rightmost of the stage, in the back, is a sunflower, facing towards the characters.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("sunflower sentence classified wrong",
 					sentence.get(Classification.class),
 					is(Classification.SetupDescription));
 		}
 		{
-			Annotation doc = annotateText("At the start of the scene, on the left is a light bulb which is off.");
+			Annotation doc = annotateClassifications("At the start of the scene, on the left is a light bulb which is off.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("bulb sentence classified wrong",
 					sentence.get(Classification.class),
@@ -427,7 +427,7 @@ public class StaticDynamicClassifierTest {
 		// Next to the bulb on the ground is a switch, with a brown monkey next
 		// to it, facing the button but slightly turned towards the viewer.
 		{
-			Annotation doc = annotateText("Next to the bulb on the ground is a switch, "
+			Annotation doc = annotateClassifications("Next to the bulb on the ground is a switch, "
 					+ "with a brown monkey next to it, facing the button but slightly turned "
 					+ "towards the viewer.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
@@ -447,7 +447,7 @@ public class StaticDynamicClassifierTest {
 		String text = "The crown is cut off at the top at the stage. "
 				+ "The ground is covered with grass, the sky is blue. "
 				+ "The ground is covered with grass, the sky is blue.";
-		Annotation doc = annotateText(text);
+		Annotation doc = annotateClassifications(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertNotNull("class is missing",
 					sentence.get(Classification.class));
@@ -468,7 +468,7 @@ public class StaticDynamicClassifierTest {
 				+ "The scene takes place on a meadow."
 				+ "The scene takes place on the moon surface.";
 
-		Annotation doc = annotateText(text);
+		Annotation doc = annotateClassifications(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertNotNull("class is missing",
 					sentence.get(Classification.class));
@@ -484,14 +484,14 @@ public class StaticDynamicClassifierTest {
 	@Test
 	public void positiveHardSetupAdjectiveTest() {
 		{
-			Annotation doc = annotateText("The grass is green and the sky is blue.");
+			Annotation doc = annotateClassifications("The grass is green and the sky is blue.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("green sentence classified wrong",
 					sentence.get(Classification.class),
 					is(Classification.SetupDescription));
 		}
 		{
-			Annotation doc = annotateText("The sky is blue and the stage is a field of grass.");
+			Annotation doc = annotateClassifications("The sky is blue and the stage is a field of grass.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("blue sentence classified wrong",
 					sentence.get(Classification.class),
