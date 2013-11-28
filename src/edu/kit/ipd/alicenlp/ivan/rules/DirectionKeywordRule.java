@@ -1,6 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
 import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.*;
+
 import java.util.List;
 
 import edu.stanford.nlp.ling.IndexedWord;
@@ -8,6 +9,8 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdvClauseModifierGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdverbialModifierGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -75,7 +78,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 				}
 
 				// 2. check for and extract adverbial modifier
-				IndexedWord advmod = getAdvMod(root, graph);
+				IndexedWord advmod = DirectionKeywordRule.getAdvMod(root, graph);
 				if (advmod != null) {
 					setDirection(advmod, tree, "ADVP");
 					return true;
@@ -196,5 +199,23 @@ public class DirectionKeywordRule implements ISentenceRule {
 	 */
 	private void setSubject(IndexedWord subject) {
 		this.subject = subject;
+	}
+
+	/** Finds an adverbial modifier
+	 * 
+	 * @param word
+	 * @param graph
+	 * @return
+	 */
+	public static IndexedWord getAdvMod(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
+		IndexedWord advmod = graph.getChildWithReln(word, reln);
+		if (advmod == null) {
+			GrammaticalRelation reln2 = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdvClauseModifierGRAnnotation.class);
+			return graph.getChildWithReln(word, reln2);
+		}
+		else {
+			return advmod;			
+		}
 	}
 }

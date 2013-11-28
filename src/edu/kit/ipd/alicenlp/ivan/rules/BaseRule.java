@@ -44,28 +44,27 @@ public abstract class BaseRule {
 		return pos.startsWith(tag.toUpperCase());
 	}
 
+	/** Finds a determiner. ex: "the"
+	 * @param word
+	 * @param graph
+	 * @return
+	 */
 	public static IndexedWord getDeterminer(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DeterminerGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
 	
+	/** Finds a direct object. ex: the chair in "move the chair"
+	 * 
+	 * @param word
+	 * @param graph
+	 * @return
+	 */
 	public static IndexedWord getDirectObject(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
 
-	public static IndexedWord getAdvMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
-		IndexedWord advmod = graph.getChildWithReln(word, reln);
-		if (advmod == null) {
-			GrammaticalRelation reln2 = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AdvClauseModifierGRAnnotation.class);
-			return graph.getChildWithReln(word, reln2);
-		}
-		else {
-			return advmod;			
-		}
-	}
-	
 	/** This method decides whether a given <code>verb</code> has a passive subject or a passive auxiliary.  
 	 * @param verb
 	 * @param graph
