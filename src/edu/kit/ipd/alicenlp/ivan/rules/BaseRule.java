@@ -44,22 +44,6 @@ public abstract class BaseRule {
 		return pos.startsWith(tag.toUpperCase());
 	}
 
-	/** Returns any particle this <code>verb</code> may have
-	 * @param verb
-	 * @param graph
-	 * @return
-	 */
-	public static IndexedWord getParticle(final IndexedWord verb, final SemanticGraph graph)
-	{
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
-		return graph.getChildWithReln(verb, reln);
-	}
-	
-	public static boolean hasAdverbMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.AdverbialModifierGRAnnotation.class);
-		return graph.hasChildWithReln(word, reln);
-	}
-
 	/** Decides whether this word has a direct object.
 	 * @param word the word to analyse
 	 * @param graph the sentence to which this word belongs

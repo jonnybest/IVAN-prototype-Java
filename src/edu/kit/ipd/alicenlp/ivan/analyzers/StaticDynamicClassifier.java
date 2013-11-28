@@ -35,7 +35,9 @@ import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
@@ -244,7 +246,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		String lemma = word.lemma();
 		if (BaseRule.hasParticle(word, graph)) {
 			String particle = null;
-			particle = BaseRule.getParticle(word, graph).word();
+			particle = StaticDynamicClassifier.getParticle(word, graph).word();
 			//System.err.println(particle);
 			String combinedword = lemma + " " + particle;
 			if (hasWordNetEntry(combinedword)) {
@@ -382,6 +384,17 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
 		//myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
+	}
+
+	/** Returns any particle this <code>verb</code> may have
+	 * @param verb
+	 * @param graph
+	 * @return
+	 */
+	public static IndexedWord getParticle(final IndexedWord verb, final SemanticGraph graph)
+	{
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
+		return graph.getChildWithReln(verb, reln);
 	}
 
 	/** This method decides whether a given <code>word</code> has an agent.
