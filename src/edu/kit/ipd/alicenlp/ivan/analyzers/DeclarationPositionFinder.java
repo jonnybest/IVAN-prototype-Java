@@ -480,7 +480,6 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 * @return
 	 */
 	private LocationListAnnotation findLocationAsTrees(CoreMap sentence) {
-		// FIXME
 		
 		LocationListAnnotation ourlocs = new LocationListAnnotation();
 
