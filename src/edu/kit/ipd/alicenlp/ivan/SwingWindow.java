@@ -40,6 +40,7 @@ import javax.swing.text.Style;
 import javax.swing.text.StyleContext;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.ui.internal.menus.EditorAction;
 import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
@@ -49,12 +50,13 @@ import org.languagetool.JLanguageTool;
 import org.languagetool.JLanguageTool.ParagraphHandling;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
-import org.omg.CORBA.CharSeqHelper;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -65,23 +67,40 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
+/** This is the main class if IVAN. It creates the user interface and manages all the other components. 
+ * 
+ * @author Jonny
+ *
+ */
 public class SwingWindow {
 
 	private static final String DOCUMENT_TXT = "document.txt";
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
-	// editor panel
+	/**
+	 *  editor panel
+	 */
 	private TextEditorPane txtEditor;
-	// errors panel
+	/**
+	 *  errors panel
+	 */
 	private IvanErrorsTaskPaneContainer containerTaskPanel;
 
 	StyleContext sc = new StyleContext();
-	// final DefaultStyledDocument doc = new DefaultStyledDocument(sc);
-	private Style SetupStyle;
 	protected AttributeSet DefaultStyle;
+	/**
+	 * This is the text pane for writing user output.
+	 */
 	private JTextPane emitterTextPane;
+	
+	/** This set contains problematic entity information regarding location.
+	 * 
+	 */
 	private Set<EntityInfo> problemSetMissingLocation;
+	/** This set contains entity information which is missing a direction
+	 * 
+	 */
 	private Set<EntityInfo> problemSetMissingDirection;
 	private JXBusyLabel busyLabel;
 	private JButton btnSaveCheck;
@@ -92,6 +111,7 @@ public class SwingWindow {
 
 	/**
 	 * Launch the application.
+	 * @param args not currently used
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -462,7 +482,8 @@ public class SwingWindow {
 			return false;
 		} finally {
 			try {
-				out.close();
+				if(out != null)
+					out.close();
 			} catch (IOException e) {
 				// okay, even close() throws? That's messed up.
 			}
@@ -474,6 +495,7 @@ public class SwingWindow {
 	/**
 	 * This method performs a commit to the local git repository
 	 */
+	@SuppressWarnings("resource")
 	private void commit(String file) {
 		String branch = file2ref(file);
 		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.TRACKINGPATH;
@@ -574,19 +596,19 @@ public class SwingWindow {
 		}
 	}
 
-	private void checkout(String file2ref) {
+	private static void checkout(String file2ref) {
 		GitManager.checkout(file2ref, null);
 	}
 
-	private void tag(String tagname) {
+	private static void tag(String tagname) {
 		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.tag(tagname);
 	}
 
 	/**
 	 * Reloads the page, even if it is already being displayed
 	 * 
-	 * @param editor
-	 * @param path
+	 * @param editor destination container
+	 * @param file file to load
 	 */
 	public void reload(TextEditorPane editor, File file) 
 	{
@@ -608,6 +630,9 @@ public class SwingWindow {
 		this.containerTaskPanel.setEditor(this.txtEditor);
 	}
 
+	/**
+	 *  This method invokes the pipeline from other components.
+	 */
 	public static void processText() {
 		try {
 			instance.processText(instance.txtEditor.getText());
@@ -623,7 +648,7 @@ public class SwingWindow {
 	 * @throws GitAPIException 
 	 * 
 	 */
-	private void setupTracking() throws IOException, GitAPIException
+	private static void setupTracking() throws IOException, GitAPIException
 	{
 		File dir = new File(GitManager.TRACKINGPATH);
 		dir.mkdir();
@@ -653,7 +678,7 @@ public class SwingWindow {
 				.getInstance();
 		mydeclarationfinder.reset(); // this component is stateful, so we have
 										// to reset it
-
+		
 		// Get an instance of the classifier for setup sentences
 		StaticDynamicClassifier myclassifier = StaticDynamicClassifier
 				.getInstance();
@@ -666,7 +691,7 @@ public class SwingWindow {
 		 * string + "."); } }
 		 */
 		/* tag with pos tags */
-
+		
 		StanfordCoreNLP pipeline = null;
 		try {
 			pipeline = setupCoreNLP();
