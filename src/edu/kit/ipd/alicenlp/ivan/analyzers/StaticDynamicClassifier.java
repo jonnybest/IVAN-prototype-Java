@@ -1,6 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
-import static edu.stanford.nlp.util.logging.Redwood.*;
+import static edu.stanford.nlp.util.logging.Redwood.log;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -17,6 +17,7 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
@@ -38,22 +39,32 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AuxPassiveGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation;
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
 
+/** This class decides whether a sentence pertains to the initial state of the scene before runtime (SETUP)
+ * or to changes to the scene during runtime (ACTION, EVENT, TIME). It also finds sentence-based issues and
+ * document-based issues (ERROR).
+ * 
+ * @author Jonny
+ *
+ */
 public class StaticDynamicClassifier extends IvanAnalyzer  
 {
 	static private StaticDynamicClassifier myinstance = null;
 	private Dictionary dictionary;
 	
-	public Classification classifySentence(CoreMap sentence) throws JWNLException
+	/** This is the main method for classificatin. It classifies a single sentence.
+	 * It may perform better, if the Annotations from DeclarationPositionFinder are present.
+	 * 
+	 * @param sentence
+	 * @return
+	 * @throws JWNLException
+	 */
+	public Classification classifySentenceAnnotation(CoreMap sentence) throws JWNLException
 	{
 		IndexedWord root = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getFirstRoot();
 
@@ -186,12 +197,15 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param word
 	 * @param pointers
 	 */
-	private void printHypernymfeedback(String word, List<Pointer> pointers) {		
+	private static void printHypernymfeedback(String word, List<Pointer> pointers) {		
 		System.out.println("To " + word + " is one way to " + 
 				pointers.get(0).getTargetSynset().getWords().get(0).getLemma() + ".");
 	}
 
-	public StaticDynamicClassifier() 
+	/** This is a simple default constructor which sets up wordnet.
+	 * 
+	 */
+	private StaticDynamicClassifier() 
 	{
 		// this creates a wordnet dictionary
 		setupWordNet();
@@ -201,19 +215,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		}
 	}
 
-	public StaticDynamicClassifier(StanfordCoreNLP pipeline, Dictionary wordnet)
-	{
-		dictionary = wordnet;
-		if (myinstance == null) {
-			myinstance = this;
-		}
-	}
-
-
 	/** This is the constructor for the Stanford Pipeline Interface
 	 * 
-	 * @param string
-	 * @param properties
+	 * @param name  
+	 * @param properties 
 	 */
 	public StaticDynamicClassifier(String name, Properties properties) {
 		// this creates a wordnet dictionary
@@ -222,10 +227,6 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		// do not assign any instace, because I fear multiple annotators may be interfering with each other if the references escape pipeline context		
 	}
 
-	public Dictionary getDictionary() {
-		return dictionary;
-	}
-	
 	protected Boolean hasWordNetEntry(String verb) throws JWNLException {
 		IndexWord word = dictionary.getIndexWord(POS.VERB, verb);
 		if (word == null) {
@@ -325,12 +326,11 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	    }
 	}
 	
-	/** Set the instance for this class
-	 * @param myinstance the myinstance to set
+
+	/** The classifier is a singleton.
+	 * 
+	 * @return
 	 */
-	public static void setInstance(StaticDynamicClassifier myinstance) {
-		StaticDynamicClassifier.myinstance = myinstance;
-	}
 	public static StaticDynamicClassifier getInstance() {
 		if (myinstance == null) {
 			StaticDynamicClassifier.myinstance = new StaticDynamicClassifier();
@@ -344,7 +344,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			// process 
 			try {
-				Classification sentenceclass = classifySentence(sentence);
+				Classification sentenceclass = classifySentenceAnnotation(sentence);
 				sentence.set(Classification.class, sentenceclass);
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
@@ -399,7 +399,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param graph
 	 * @return
 	 */
-	public static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
+	private static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
 		// Examples: 
 		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
 		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
@@ -420,17 +420,17 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param graph A basic graph (non-collapsed) 
 	 * @return
 	 */
-	public static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
+	private static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
 
-	public static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
+	private static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}
 
-	public static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
+	private static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}
@@ -440,7 +440,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param graph the sentence to which this word belongs
 	 * @return TRUE, if a direct object is present for this verb
 	 */
-	public static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
+	private static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
 		if (graph.hasChildWithReln(word, reln)) {
 			String pos = graph.getChildWithReln(word, reln).get(PartOfSpeechAnnotation.class);
@@ -456,7 +456,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param graph
 	 * @return
 	 */
-	public static IndexedWord getParticle(final IndexedWord verb, final SemanticGraph graph)
+	private static IndexedWord getParticle(final IndexedWord verb, final SemanticGraph graph)
 	{
 		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
 		return graph.getChildWithReln(verb, reln);
@@ -469,10 +469,15 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param graph
 	 * @return
 	 */
-	public static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
+	private static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
 		// implement a check for agent(root, nounphrase)
 		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class); 
 		return graph.hasChildWithReln(word, agentrel);
+	}
+
+	public Classification classifySentence(CoreMap sentence) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
