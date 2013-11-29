@@ -36,11 +36,9 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.Document;
-import javax.swing.text.Style;
 import javax.swing.text.StyleContext;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.ui.internal.menus.EditorAction;
 import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
@@ -55,8 +53,6 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
-import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.OriginalTextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -109,6 +105,11 @@ public class SwingWindow {
 	private String currentFileName = null;
 	private JMenuBar menuBar;
 	private StanfordCoreNLP mypipeline;
+	
+	/**
+	 * This is the central pipeline which classifies text. This should never be directly accessed. Use getPipeline() instead.
+	 */
+	private static StanfordCoreNLP stanfordCentralPipeline;
 
 	/**
 	 * Launch the application.
@@ -683,32 +684,15 @@ public class SwingWindow {
 		// Get an instance of the classifier for setup sentences
 		StaticDynamicClassifier myclassifier = StaticDynamicClassifier
 				.getInstance();
-		String lines = text;
-		/*
-		 * String[] modalVerbs = {"can", "could", "may", "might", "must",
-		 * "shall", "should", "will", "would", "have to", "has to", "had to",
-		 * "need"}; for (String string : modalVerbs) { if
-		 * (lines.contains(string)) { System.out.println("Found bad word: " +
-		 * string + "."); } }
-		 */
-		/* tag with pos tags */
-		
-		StanfordCoreNLP pipeline = null;
-		try {
-			pipeline = setupCoreNLP();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Annotation mydoc = new Annotation(lines);
-		pipeline.annotate(mydoc);
 
-		java.util.List<CoreMap> sentences = mydoc
+		Annotation oldmydoc = annotateClassifications(text);
+
+		java.util.List<CoreMap> oldsentences = oldmydoc
 				.get(SentencesAnnotation.class);
 
-		for (CoreMap sentence : sentences) {
+		for (CoreMap oldsentence : oldsentences) {
 			// traversing the words in the current sentences
-			SemanticGraph depgraph = sentence
+			SemanticGraph depgraph = oldsentence
 					.get(CollapsedCCProcessedDependenciesAnnotation.class);
 			if (depgraph.getRoots().isEmpty()) {
 				continue;
@@ -731,7 +715,7 @@ public class SwingWindow {
 			// TODO: implement problem1
 			// 1. check for names
 			List<String> names = DeclarationPositionFinder
-					.recogniseNames(sentence); // recognises named und unnamed
+					.recogniseNames(oldsentence); // recognises named und unnamed
 												// entities in this sentence
 			// 2. are they declared already?
 			boolean everythingdeclared = mydeclarationfinder.isDeclared(names);
@@ -758,7 +742,7 @@ public class SwingWindow {
 					// yes, declare now and try to get declared names again. if
 					// not, skip these.
 					List<EntityInfo> decls = mydeclarationfinder
-							.getDeclarations(sentence);
+							.getDeclarations(oldsentence);
 					if (decls.size() > 0) {
 						mydeclarationfinder.getCurrentState().addAll(decls);
 						declarednames = decls;
@@ -772,7 +756,7 @@ public class SwingWindow {
 						// try to get a loc from the current sentence. if not,
 						// add to problems. if yes, remove from problems
 						EntityInfo moreinfo = DeclarationPositionFinder
-								.getLocation(sentence);
+								.getLocation(oldsentence);
 						if (moreinfo == null || !moreinfo.hasLocation()) {
 							// Bad! This sentence contains no location info and
 							// we are still missing location info
@@ -795,7 +779,7 @@ public class SwingWindow {
 						// try to get a dir from the current sentence. if not,
 						// add to problems. if yes, remove from problems
 						EntityInfo moreinfo = DeclarationPositionFinder
-								.getDirection(sentence);
+								.getDirection(oldsentence);
 						if (moreinfo == null || !moreinfo.hasDirection()) {
 							// Bad! This sentence contains no location info and
 							// we are still missing location info
@@ -820,15 +804,15 @@ public class SwingWindow {
 			 * non-setup descriptions
 			 */
 			StaticDynamicClassifier.Classification sentencetype = myclassifier
-					.classifySentence(sentence.get(OriginalTextAnnotation.class));
-			if (DeclarationPositionFinder.hasLocation(sentence)) {
+					.classifySentence(oldsentence.get(OriginalTextAnnotation.class));
+			if (DeclarationPositionFinder.hasLocation(oldsentence)) {
 				EntityInfo loc = DeclarationPositionFinder
-						.getLocation(sentence);
+						.getLocation(oldsentence);
 				tell("There's a location in \""
-						+ sentence.get(TextAnnotation.class));
+						+ oldsentence.get(TextAnnotation.class));
 				System.out.println("The location \"" + loc
 						+ "\" was found in \""
-						+ sentence.get(TextAnnotation.class));
+						+ oldsentence.get(TextAnnotation.class));
 			}
 
 			// color the sentence according to classification
@@ -953,5 +937,47 @@ public class SwingWindow {
 
 		public void actionPerformed(ActionEvent e) {
 		}
+	}
+	
+	/**
+	 * Annotates a document with our customized pipeline.
+	 * 
+	 * @param text
+	 *            A text to process
+	 * @return The annotated text
+	 */
+	public static Annotation annotateClassifications(String text) {
+		Annotation doc = new Annotation(text);
+		getPipeline().annotate(doc);
+		return doc;
+	}
+
+	private static StanfordCoreNLP getPipeline() {
+		if (stanfordCentralPipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging,
+			// lemmatization,
+			// NER, parsing, and coreference resolution
+			Properties props = new Properties();
+			// alternative: wsj-bidirectional
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			// adding our own annotator property
+			props.put("customAnnotatorClass.sdclassifier",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+			// adding our declaration finder
+			props.put("customAnnotatorClass.declarations",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			// configure pipeline
+			props.put(
+					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+			stanfordCentralPipeline = new StanfordCoreNLP(props);
+		}
+		
+		return stanfordCentralPipeline;
 	}
 }
