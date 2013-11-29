@@ -475,9 +475,13 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		return graph.hasChildWithReln(word, agentrel);
 	}
 
-	public Classification classifySentence(CoreMap sentence) {
-		// TODO Auto-generated method stub
-		return null;
+	/** Classify an unprocessed text // TODO change parameter to string and invoke internal pipeline
+	 * @param sentence
+	 * @return
+	 * @throws JWNLException
+	 */
+	public Classification classifySentence(CoreMap sentence) throws JWNLException {
+		return classifySentenceAnnotation(sentence);
 	}
 
 }
