@@ -17,7 +17,6 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
-import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
@@ -56,6 +55,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 {
 	static private StaticDynamicClassifier myinstance = null;
 	private Dictionary dictionary;
+	/**
+	 * this classifier's own private pipeline. in the user didn't bother to go through the proper interface.
+	 */
+	private static StanfordCoreNLP pipeline;
 	
 	/** This is the main method for classificatin. It classifies a single sentence.
 	 * It may perform better, if the Annotations from DeclarationPositionFinder are present.
@@ -64,8 +67,12 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @return
 	 * @throws JWNLException
 	 */
-	public Classification classifySentenceAnnotation(CoreMap sentence) throws JWNLException
+	private Classification classifySentenceAnnotation(CoreMap sentence) throws JWNLException
 	{
+		// stop on already classified sentences
+		if(sentence.get(Classification.class) != null)
+			return sentence.get(Classification.class);
+		
 		IndexedWord root = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getFirstRoot();
 
 		// this is the default result, if nothing else matches
@@ -475,13 +482,44 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		return graph.hasChildWithReln(word, agentrel);
 	}
 
-	/** Classify an unprocessed text // TODO change parameter to string and invoke internal pipeline
-	 * @param sentence
+	/** Classify an unprocessed text.
+	 * 
+	 * @param text
 	 * @return
 	 * @throws JWNLException
 	 */
-	public Classification classifySentence(CoreMap sentence) throws JWNLException {
-		return classifySentenceAnnotation(sentence);
+	public Classification classifySentence(String text) throws JWNLException 
+	{
+		return classifySentenceAnnotation(annotateDeclarations(text));
 	}
 
+	/** This is just a private convenience method for annotating plain text.  
+	 * 
+	 * @param text
+	 * @return
+	 */
+	private static Annotation annotateDeclarations(String text) {
+		Annotation doc = new Annotation(text);
+			
+		if (pipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
+			Properties props = new Properties();
+			// alternativ: wsj-bidirectional 
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			props.put("customAnnotatorClass.decl",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			// konfiguriere pipeline
+			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+			pipeline = new StanfordCoreNLP(props);
+		}
+	    
+		pipeline.annotate(doc);
+	    return doc;
+	}
 }

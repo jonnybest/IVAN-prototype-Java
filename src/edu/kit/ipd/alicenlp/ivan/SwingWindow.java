@@ -58,6 +58,7 @@ import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
+import edu.stanford.nlp.ling.CoreAnnotations.OriginalTextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -819,7 +820,7 @@ public class SwingWindow {
 			 * non-setup descriptions
 			 */
 			StaticDynamicClassifier.Classification sentencetype = myclassifier
-					.classifySentence(sentence);
+					.classifySentence(sentence.get(OriginalTextAnnotation.class));
 			if (DeclarationPositionFinder.hasLocation(sentence)) {
 				EntityInfo loc = DeclarationPositionFinder
 						.getLocation(sentence);
