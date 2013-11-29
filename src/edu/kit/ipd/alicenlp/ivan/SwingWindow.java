@@ -50,11 +50,11 @@ import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
-import edu.stanford.nlp.ling.CoreAnnotations.OriginalTextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -681,18 +681,14 @@ public class SwingWindow {
 		mydeclarationfinder.reset(); // this component is stateful, so we have
 										// to reset it
 		
-		// Get an instance of the classifier for setup sentences
-		StaticDynamicClassifier myclassifier = StaticDynamicClassifier
-				.getInstance();
+		Annotation doc = annotateClassifications(text);
 
-		Annotation oldmydoc = annotateClassifications(text);
-
-		java.util.List<CoreMap> oldsentences = oldmydoc
+		java.util.List<CoreMap> listsentences = doc
 				.get(SentencesAnnotation.class);
 
-		for (CoreMap oldsentence : oldsentences) {
+		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
-			SemanticGraph depgraph = oldsentence
+			SemanticGraph depgraph = sentence
 					.get(CollapsedCCProcessedDependenciesAnnotation.class);
 			if (depgraph.getRoots().isEmpty()) {
 				continue;
@@ -715,7 +711,7 @@ public class SwingWindow {
 			// TODO: implement problem1
 			// 1. check for names
 			List<String> names = DeclarationPositionFinder
-					.recogniseNames(oldsentence); // recognises named und unnamed
+					.recogniseNames(sentence); // recognises named und unnamed
 												// entities in this sentence
 			// 2. are they declared already?
 			boolean everythingdeclared = mydeclarationfinder.isDeclared(names);
@@ -742,7 +738,7 @@ public class SwingWindow {
 					// yes, declare now and try to get declared names again. if
 					// not, skip these.
 					List<EntityInfo> decls = mydeclarationfinder
-							.getDeclarations(oldsentence);
+							.getDeclarations(sentence);
 					if (decls.size() > 0) {
 						mydeclarationfinder.getCurrentState().addAll(decls);
 						declarednames = decls;
@@ -756,7 +752,7 @@ public class SwingWindow {
 						// try to get a loc from the current sentence. if not,
 						// add to problems. if yes, remove from problems
 						EntityInfo moreinfo = DeclarationPositionFinder
-								.getLocation(oldsentence);
+								.getLocation(sentence);
 						if (moreinfo == null || !moreinfo.hasLocation()) {
 							// Bad! This sentence contains no location info and
 							// we are still missing location info
@@ -779,7 +775,7 @@ public class SwingWindow {
 						// try to get a dir from the current sentence. if not,
 						// add to problems. if yes, remove from problems
 						EntityInfo moreinfo = DeclarationPositionFinder
-								.getDirection(oldsentence);
+								.getDirection(sentence);
 						if (moreinfo == null || !moreinfo.hasDirection()) {
 							// Bad! This sentence contains no location info and
 							// we are still missing location info
@@ -803,16 +799,22 @@ public class SwingWindow {
 			 * Requirement 2: Classify sentence into Setup descriptions and
 			 * non-setup descriptions
 			 */
-			StaticDynamicClassifier.Classification sentencetype = myclassifier
-					.classifySentence(oldsentence.get(OriginalTextAnnotation.class));
-			if (DeclarationPositionFinder.hasLocation(oldsentence)) {
+			StaticDynamicClassifier.Classification sentencetype;
+//			sentencetype = myclassifier
+//					.classifySentence(oldsentence.get(OriginalTextAnnotation.class));
+			
+			// new style
+			sentencetype = sentence.get(Classification.class);
+			
+			// finding locations?
+			if (DeclarationPositionFinder.hasLocation(sentence)) {
 				EntityInfo loc = DeclarationPositionFinder
-						.getLocation(oldsentence);
+						.getLocation(sentence);
 				tell("There's a location in \""
-						+ oldsentence.get(TextAnnotation.class));
+						+ sentence.get(TextAnnotation.class));
 				System.out.println("The location \"" + loc
 						+ "\" was found in \""
-						+ oldsentence.get(TextAnnotation.class));
+						+ sentence.get(TextAnnotation.class));
 			}
 
 			// color the sentence according to classification

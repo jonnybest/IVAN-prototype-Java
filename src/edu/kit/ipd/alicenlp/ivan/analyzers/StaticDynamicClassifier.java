@@ -490,7 +490,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 */
 	public Classification classifySentence(String text) throws JWNLException 
 	{
-		return classifySentenceAnnotation(annotateDeclarations(text));
+		return classifySentenceAnnotation(annotateDeclarations(text).get(SentencesAnnotation.class).get(0));
 	}
 
 	/** This is just a private convenience method for annotating plain text.  

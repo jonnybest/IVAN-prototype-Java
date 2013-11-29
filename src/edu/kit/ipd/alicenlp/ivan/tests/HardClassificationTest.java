@@ -31,15 +31,16 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanError;
-import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.OriginalTextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SpanAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
@@ -83,7 +84,7 @@ public class HardClassificationTest {
 			
 			Classification result = null;
 			try {
-				result = proto.classifySentence(sentence);
+				result = proto.classifySentence(sentence.get(CoreAnnotations.TextAnnotation.class));
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
@@ -100,7 +101,7 @@ public class HardClassificationTest {
 		for (CoreMap sentence : negativeslist) {
 			Classification result = null;
 			try {
-				result = proto.classifySentence(sentence);
+				result = proto.classifySentence(sentence.get(OriginalTextAnnotation.class));
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
