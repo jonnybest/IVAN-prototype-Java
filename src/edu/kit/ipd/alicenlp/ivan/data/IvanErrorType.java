@@ -9,7 +9,20 @@ package edu.kit.ipd.alicenlp.ivan.data;
  *
  */
 public enum IvanErrorType {
-	UNKNOWN, // generic error type
-	SYNONYMS // represents an error found by EntitiesSynonymsErrorRule
+	
+	/**
+	 * This is a generic error indication.
+	 */
+	UNKNOWN // generic error type
+	
+	/**
+	 * This error means that two distinct entities share a synonym.
+	 */
+	, SYNONYMS // represents an error found by EntitiesSynonymsErrorRule
+	
+	/**
+	 * This error means that a pronoun (or maybe a name) could not be resolved to an entity. 
+	 */
+	, COREFERENCE // represents a coreference error found by DeclarationPositionFinder
 	
 }
