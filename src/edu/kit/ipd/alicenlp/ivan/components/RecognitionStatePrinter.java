@@ -19,7 +19,7 @@ import edu.stanford.nlp.util.Pair;
  * @author Jonny
  *
  */
-public class RecognitionState {
+public class RecognitionStatePrinter {
 
 	char separator = ' ';
 	//char separator = '\n';
