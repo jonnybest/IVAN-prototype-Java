@@ -58,7 +58,7 @@ public abstract class TestUtilities {
 					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 			// configure pipeline
 			props.put(
-					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
 			classificationsPipeline = new StanfordCoreNLP(props);
 		}
 
@@ -84,7 +84,7 @@ public abstract class TestUtilities {
 			props.put("customAnnotatorClass.decl",
 					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 			// konfiguriere declarationsPipeline
-			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+			props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, decl"); //$NON-NLS-1$ //$NON-NLS-2$
 			declarationsPipeline = new StanfordCoreNLP(props);
 		}
 
