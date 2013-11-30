@@ -17,6 +17,7 @@ public class EntityInfo
 		Direction = null;
 	private Span entitydefinition;
 	private boolean isProperName;
+	private boolean isPronoun;
 
 	public String getEntity() {
 		return Entity;
@@ -156,5 +157,13 @@ public class EntityInfo
 	}
 	public void setIsProperName(boolean value) {
 		isProperName = value;
+	}
+
+	public void setIsPronoun(boolean value) {
+		isPronoun = value;
+	}
+
+	public boolean isPronoun() {
+		return isPronoun;
 	}
 }
