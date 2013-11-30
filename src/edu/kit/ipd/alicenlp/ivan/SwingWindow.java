@@ -54,6 +54,8 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -676,15 +678,12 @@ public class SwingWindow {
 		// FIXME: This part is a setup for memory leaks.
 		problemSetMissingDirection.clear();
 		problemSetMissingLocation.clear();
-		DeclarationPositionFinder mydeclarationfinder = DeclarationPositionFinder
-				.getInstance();
-		mydeclarationfinder.reset(); // this component is stateful, so we have
-										// to reset it
-		
 		Annotation doc = annotateClassifications(text);
 
 		java.util.List<CoreMap> listsentences = doc
 				.get(SentencesAnnotation.class);
+		
+		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class); 
 
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
@@ -719,23 +718,8 @@ public class SwingWindow {
 				 * method for each problem type which displays a compact list of
 				 * missing things. I chose 2.
 				 */
-				List<EntityInfo> declarednames = mydeclarationfinder
-						.getCurrentState().get(n);
+				List<EntityInfo> declarednames = entitiesState.get(n);
 
-				if (declarednames == null) {
-					// there are no declarations with this name (at all)
-					// TODO: does this sentence qualify as a declaration? if
-					// yes, declare now and try to get declared names again. if
-					// not, skip these.
-					List<EntityInfo> decls = mydeclarationfinder
-							.getDeclarations(sentence);
-					if (decls.size() > 0) {
-						mydeclarationfinder.getCurrentState().addAll(decls);
-						declarednames = decls;
-					} else {
-						continue;
-					}
-				}
 				for (EntityInfo infoOnName : declarednames) {
 
 					if (!infoOnName.hasLocation()) {
