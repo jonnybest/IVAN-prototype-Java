@@ -693,15 +693,7 @@ public class SwingWindow {
 			if (depgraph.getRoots().isEmpty()) {
 				continue;
 			}
-			IndexedWord root = depgraph.getFirstRoot();
-			// probably not a good idea. Counter-example of a valid sentence
-			// with 2 words: Henry appears.
-			// if (depgraph.size() < 3) {
-			// continue;
-			// }
-			if (depgraph.isEmpty()) {
-				continue;
-			}
+
 
 			/***
 			 * Requirement 1: Check subject for entity or name and extract name,
@@ -714,9 +706,7 @@ public class SwingWindow {
 					.recogniseNames(sentence); // recognises named und unnamed
 												// entities in this sentence
 			// 2. are they declared already?
-			boolean everythingdeclared = mydeclarationfinder.isDeclared(names);
-			if (everythingdeclared)
-				return;
+
 			// -- for each name:
 			for (String n : names) {
 				// 4. while we're at it (iterating), check if there is any info
@@ -799,12 +789,7 @@ public class SwingWindow {
 			 * Requirement 2: Classify sentence into Setup descriptions and
 			 * non-setup descriptions
 			 */
-			StaticDynamicClassifier.Classification sentencetype;
-//			sentencetype = myclassifier
-//					.classifySentence(oldsentence.get(OriginalTextAnnotation.class));
-			
-			// new style
-			sentencetype = sentence.get(Classification.class);
+			StaticDynamicClassifier.Classification sentencetype = sentence.get(Classification.class);
 			
 			// finding locations?
 			if (DeclarationPositionFinder.hasLocation(sentence)) {
@@ -817,6 +802,11 @@ public class SwingWindow {
 						+ sentence.get(TextAnnotation.class));
 			}
 
+			// get root for coloring
+			IndexedWord root = depgraph.getFirstRoot();
+			if (depgraph.isEmpty()) {
+				continue;
+			}
 			// color the sentence according to classification
 			switch (sentencetype) {
 			case SetupDescription:
