@@ -55,7 +55,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
-import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -767,6 +767,8 @@ public class SwingWindow {
 				}
 				// 5. create a display for the missing info?
 				// see above
+				// call a method which iterates over each problem type and displays errors
+				refreshErrorsDisplay();
 			}
 
 			/***
@@ -831,6 +833,11 @@ public class SwingWindow {
 		}
 
 		diplayWarnings();
+	}
+
+	private void refreshErrorsDisplay() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	/**

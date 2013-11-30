@@ -28,11 +28,10 @@ import org.junit.Test;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
-import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
-import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
-import edu.kit.ipd.alicenlp.ivan.data.IvanError;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
-import edu.stanford.nlp.ling.CoreAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
@@ -233,7 +232,7 @@ public class HardClassificationTest {
 			Span bunnyspan = makeSpan(bunny);
 			log(bunnyspan);
 
-			List<ErrorMessageAnnotation> myerrors = doc.get(DocumentErrorAnnotation.class);
+			List<IvanErrorMessage> myerrors = doc.get(DocumentErrorAnnotation.class);
 			assertNotNull("Error tag is missing.",
 					myerrors);
 
@@ -266,12 +265,12 @@ public class HardClassificationTest {
 						+ " On the right side, in the foreground, there is a hare."
 						+ " The hare is called Lucas.");
 	
-				List<ErrorMessageAnnotation> errors = doc
+				List<IvanErrorMessage> errors = doc
 						.get(DocumentErrorAnnotation.class);
-				for (ErrorMessageAnnotation err : errors) {
+				for (IvanErrorMessage err : errors) {
 					
 					assertThat("Error tag should not be present if proper names are used!",
-							err.getType(), is(not(IvanError.SYNONYMS)));
+							err.getType(), is(not(IvanErrorType.SYNONYMS)));
 				}
 			}
 			/*
@@ -285,12 +284,12 @@ public class HardClassificationTest {
 						+ " On the right side, in the foreground, there is a hare."
 						);
 	
-				List<ErrorMessageAnnotation> errors = doc
+				List<IvanErrorMessage> errors = doc
 						.get(DocumentErrorAnnotation.class);
-				for (ErrorMessageAnnotation err : errors) {
+				for (IvanErrorMessage err : errors) {
 					
 					assertThat("Error tag should not be present for non-synonyms!",
-							err.getType(), is(not(IvanError.SYNONYMS)));
+							err.getType(), is(not(IvanErrorType.SYNONYMS)));
 				}
 			}
 		}

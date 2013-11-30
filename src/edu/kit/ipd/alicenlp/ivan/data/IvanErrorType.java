@@ -8,7 +8,7 @@ package edu.kit.ipd.alicenlp.ivan.data;
  * @author Jonny
  *
  */
-public enum IvanError {
+public enum IvanErrorType {
 	UNKNOWN, // generic error type
 	SYNONYMS // represents an error found by EntitiesSynonymsErrorRule
 	

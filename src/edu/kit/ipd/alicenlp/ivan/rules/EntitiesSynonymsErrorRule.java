@@ -1,6 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
-import static edu.stanford.nlp.util.logging.Redwood.*;
+import static edu.stanford.nlp.util.logging.Redwood.log;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,9 +15,11 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
-import edu.kit.ipd.alicenlp.ivan.data.IvanError;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
@@ -37,7 +39,7 @@ import edu.stanford.nlp.util.logging.Redwood;
  */
 public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 {
-	ErrorMessageAnnotation msg;
+	IvanErrorMessage msg;
 
 	private InitialState state;
 	private Dictionary mydictionary;
@@ -93,7 +95,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 				if(sentence.get(CharacterOffsetBeginAnnotation.class) <= msg.getSpan().start())
 				{
 					// we are here. now put the error in the sentence annotation
-					sentence.set(ErrorMessageAnnotation.class, msg);
+					sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, msg);
 					// also, reclassify the sentence as ERROR
 					Classification previousclass = sentence.set(Classification.class, Classification.ErrorDescription);
 					log(Redwood.DBG, "Sentence tagged as ERROR. Previous tag: " + previousclass);
@@ -119,8 +121,8 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 			other = firstOffendingEntityInfo;
 		}
 		Span errorspan = badone.getEntitySpan();
-		msg = new ErrorMessageAnnotation(
-				IvanError.SYNONYMS,
+		msg = new IvanErrorMessage(
+				IvanErrorType.SYNONYMS,
 				doc.get(DocIDAnnotation.class), 
 				errorspan,
 				"\""+ badone +"\" is a synonym of a previously used name \"" + other + "\"");
@@ -190,7 +192,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 	}
 
 	@Override
-	public ErrorMessageAnnotation getErrorMessage() {
+	public IvanErrorMessage getErrorMessage() {
 		return msg;
 	}
 

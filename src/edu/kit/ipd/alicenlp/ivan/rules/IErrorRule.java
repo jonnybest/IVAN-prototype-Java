@@ -1,6 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
-import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 
 /** This is the interface for rules that indicate errors 
  * 
@@ -13,6 +13,6 @@ public interface IErrorRule {
 	 * 
 	 * @return A error message
 	 */
-	ErrorMessageAnnotation getErrorMessage();
+	IvanErrorMessage getErrorMessage();
 	
 }

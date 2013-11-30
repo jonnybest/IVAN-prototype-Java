@@ -17,10 +17,9 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
-import edu.kit.ipd.alicenlp.ivan.data.DocumentErrorAnnotation;
-import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
-import edu.kit.ipd.alicenlp.ivan.data.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
@@ -367,9 +366,9 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 
 	private static void classifyDocument(Annotation annotation) throws JWNLException {
 		// TODO: implement document-wide error checking
-		List<ErrorMessageAnnotation> errors = annotation.get(DocumentErrorAnnotation.class);
+		List<IvanErrorMessage> errors = annotation.get(DocumentErrorAnnotation.class);
 		if(errors == null)
-			errors = new ArrayList<ErrorMessageAnnotation>();
+			errors = new ArrayList<IvanErrorMessage>();
 
 		// lets check the entities for consistency. 
 		InitialState entities = annotation.get(IvanEntitiesAnnotation.class);

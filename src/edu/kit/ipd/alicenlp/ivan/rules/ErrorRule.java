@@ -9,7 +9,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import edu.kit.ipd.alicenlp.ivan.data.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.ErrorMessageAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.DocIDAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -30,7 +31,7 @@ import edu.stanford.nlp.util.CoreMap;
 public class ErrorRule implements ISentenceRule, IErrorRule
 {
 
-	ErrorMessageAnnotation msg;
+	IvanErrorMessage msg;
 	
 	/* (non-Javadoc)
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.ISentenceRule#apply(edu.stanford.nlp.util.CoreMap)
@@ -149,14 +150,14 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 	}
 
 	private void error(String message, CoreMap sentence) {
-		msg = new ErrorMessageAnnotation(
+		msg = new IvanErrorMessage(
 				sentence.get(DocIDAnnotation.class), 
 				sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), 
 				sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class),
 				message);
 	}
 
-	public ErrorMessageAnnotation getErrorMessage() {
+	public IvanErrorMessage getErrorMessage() {
 		return msg;
 	}
 

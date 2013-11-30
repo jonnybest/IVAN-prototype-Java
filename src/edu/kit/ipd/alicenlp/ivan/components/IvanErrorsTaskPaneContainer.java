@@ -685,7 +685,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// in case something goes wrong
 		if(err == null)
 		{
-			System.err.println("IvanError instance was not set.");
+			System.err.println("IvanErrorType instance was not set.");
 			return super.toString();
 		}
 		

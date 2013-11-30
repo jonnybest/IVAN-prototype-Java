@@ -1,21 +1,14 @@
-/**
- * 
- */
 package edu.kit.ipd.alicenlp.ivan.data;
 
 import edu.stanford.nlp.ie.machinereading.structure.Span;
-import edu.stanford.nlp.util.TypesafeMap;
 
-/**
- * @author Jonny
- *
- */
-public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnotation>
+public class IvanErrorMessage 
 {
 	private final String docId;
 	private final String Message;
 	private final Span Range;
-	private IvanError type = IvanError.UNKNOWN;
+	
+	private IvanErrorType type = IvanErrorType.UNKNOWN;
 
 	public String getMessage() {
 		return Message;
@@ -33,20 +26,20 @@ public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnot
 		return docId;
 	}
 	
-	public ErrorMessageAnnotation(String document, Integer start, Integer end, String message)
+	public IvanErrorMessage(String document, Integer start, Integer end, String message)
 	{
 		docId = document;
 		Range = Span.fromValues(start, end);
 		Message = message;
 	}
 
-	public ErrorMessageAnnotation(String Id, Span errorspan, String message) {
+	public IvanErrorMessage(String Id, Span errorspan, String message) {
 		docId = Id;
 		Range = errorspan;
 		Message = message;
 	}
 	
-	public ErrorMessageAnnotation(IvanError errorId, String Id, Span errorspan, String message) {
+	public IvanErrorMessage(IvanErrorType errorId, String Id, Span errorspan, String message) {
 		type = errorId;
 		docId = Id;
 		Range = errorspan;
@@ -58,7 +51,7 @@ public class ErrorMessageAnnotation implements TypesafeMap.Key<ErrorMessageAnnot
 		return Range.toString() +" "+ getMessage();
 	}
 
-	public IvanError getType() {
+	public IvanErrorType getType() {
 		return type;
 	}
 }
