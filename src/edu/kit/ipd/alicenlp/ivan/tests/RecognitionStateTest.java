@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
-import edu.kit.ipd.alicenlp.ivan.data.RecognitionState;
+import edu.kit.ipd.alicenlp.ivan.components.RecognitionState;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
