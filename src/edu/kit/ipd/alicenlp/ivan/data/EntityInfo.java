@@ -12,13 +12,13 @@ import edu.stanford.nlp.ie.machinereading.structure.Span;
 public class EntityInfo implements Cloneable
 {
 	private String Entity = null,
-			Location = null,
-			Direction = null;
+		Location = null,
+		Direction = null;
 	private Span entitydefinition;
 	private boolean isProperName;
 	private boolean isPronoun;
 	private CoreferenceSpan corefspan;
-	
+
 	public EntityInfo clone()
 	{
 		EntityInfo clone = new EntityInfo(Entity, Location, Direction);
@@ -171,6 +171,23 @@ public class EntityInfo implements Cloneable
 	public void setIsPronoun(boolean value) {
 		isPronoun = value;
 	}
+<<<<<<< .mine
+
+	public boolean isPronoun() {
+		return isPronoun;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+=======
 
 	public boolean isPronoun() {
 		return isPronoun;
@@ -186,3 +203,4 @@ public class EntityInfo implements Cloneable
 		corefspan = value;
 	}
 }
+>>>>>>> .theirs
