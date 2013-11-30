@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.kit.ipd.alicenlp.ivan.data;
+package edu.kit.ipd.alicenlp.ivan.components;
 
 
 
@@ -9,6 +9,8 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
 
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.stanford.nlp.util.Pair;
 
 /** This is a glorified printer which translates the internal state 
