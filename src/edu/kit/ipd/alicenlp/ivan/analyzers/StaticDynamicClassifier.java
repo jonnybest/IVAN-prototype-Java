@@ -19,6 +19,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
@@ -99,7 +100,6 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			System.out.println("Event found");
 			// since we only support one classification, return the classification instantly
 			return Classification.EventDescription;
-			//sentence.set(Classification.class, Classification.EventDescription);
 		}
 		
 		// does this sentence explicitly reference time or duration?
@@ -351,7 +351,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			// process 
 			try {
 				Classification sentenceclass = classifySentenceAnnotation(sentence);
+				// FIXME: this call is deprecated
 				sentence.set(Classification.class, sentenceclass);
+				// this is the proper way to annotate 
+				sentence.set(IvanAnnotations.SentenceClassificationAnnotation.class, sentenceclass);
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
 				log(Redwood.ERR, "Error while classifying sentences.", e);
