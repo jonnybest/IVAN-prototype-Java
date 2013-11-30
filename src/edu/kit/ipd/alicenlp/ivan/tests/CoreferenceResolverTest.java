@@ -25,6 +25,7 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  * 
  */
+@SuppressWarnings("static-method")
 public class CoreferenceResolverTest extends CoreferenceResolver {
 
 	/**

@@ -113,7 +113,7 @@ public class DirectionKeywordRuleTest {
 		}
 	}
 
-	private Annotation annotate(String text) {
+	private static Annotation annotate(String text) {
 		Annotation doc = new Annotation(text);
 		StanfordCoreNLP pipeline;
 			
