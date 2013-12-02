@@ -128,7 +128,7 @@ public class DirectionKeywordRuleTest {
 	    props.put("customAnnotatorClass.decl", "edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 	    
 	    // konfiguriere pipeline
-	    props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+	    props.put("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, decl"); //$NON-NLS-1$ //$NON-NLS-2$
 	    pipeline = new StanfordCoreNLP(props);	
 	    
 	    pipeline.annotate(doc);
