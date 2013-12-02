@@ -34,6 +34,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
@@ -323,9 +324,14 @@ public class ImportantDeclarationsTest {
 						new String[] { "duckling" });
 		// grammar error?
 		// solutions.put("In the foreground there sits a frog on the left and a hare on the right of the screen.",
+		// TODO: this is a hard sentence. if you want to real with that, you need to create two EntityInfos 
+		// (one for each subject) and add the PP "in the foreground" to both. Then you need to assign "on the left [of the screen]"
+		// to the frog and "on the right of the screen" to the hare. The second verb (for the hare) is also missing.
+		// It may be easiest, if you could recognise the ellipsises and expand the sentence to its full form:
+		// "In the foreground, a frog sits on the left of the screen and a hare sits on the right of the screen."
 		solutions
 				.put("In the foreground sits a frog on the left and a hare on the right of the screen.",
-						new String[] { "frog", "hare" });
+						new String[] { "frog", "hare" }); 
 
 		// List<CoreMap> sentencelist = new ArrayList<CoreMap>();
 		// annotateSentence(text, sentencelist);
@@ -552,6 +558,24 @@ public class ImportantDeclarationsTest {
 			assertTrue("referent is too short", l.getReferent().size() > 2);
 		}
 
+	}
+	
+	/** A test for coreference 
+	 * 
+	 */
+	@Test
+	public void SimpleCoreferenceTest()
+	{
+		String text = "In the far left there is Mary. She is facing the viewer. Mary is a girl.";
+		Annotation doc = annotateDeclarations(text);
+		InitialState entities = doc.get(IvanAnnotations.IvanEntitiesAnnotation.class);
+		
+		EntityInfo ei = entities.getSingle("Mary");
+		
+		assertNotNull("Entity not recognised.", ei);
+		assertTrue("Entity is missing the direction.", ei.hasDirection());
+		assertThat("Entity direction wrong.", ei.getDirection(), is("facing the viewer"));
+		 
 	}
 
 	/**

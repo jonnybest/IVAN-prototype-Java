@@ -93,6 +93,7 @@ public abstract class BaseRule {
 		IndexedWord firstRoot = graph.getFirstRoot();
 		List<IndexedWord> children = graph.getChildrenWithRelns(firstRoot, Arrays.asList(subjects));
 		if (children != null && children.size() > 0) {
+			// this next assertion fails for "In the foreground sits a frog on the left and a hare on the right of the screen."
 			assert children.size() == 1; // not really dangerous. But we need to change our implementation to return a list, if there are more than one subject.
 			
 			return children.get(0);
