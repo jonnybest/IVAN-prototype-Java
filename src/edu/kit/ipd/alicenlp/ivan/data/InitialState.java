@@ -176,6 +176,9 @@ public class InitialState extends HashSet<EntityInfo>
 	public EntityInfo getSingle(String name)
 	{
 		List<EntityInfo> infos = namesset.get(name);
+		if(infos == null)
+			return null;
+		
 		assert infos.size() == 1;
 		return infos.get(0);
 	}

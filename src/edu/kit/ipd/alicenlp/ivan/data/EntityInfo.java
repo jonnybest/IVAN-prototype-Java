@@ -9,15 +9,24 @@ import edu.stanford.nlp.ie.machinereading.structure.Span;
  * @author Jonny
  *
  */
-public class EntityInfo 
+public class EntityInfo implements Cloneable
 {
-
 	private String Entity = null,
-		Location = null,
-		Direction = null;
+			Location = null,
+			Direction = null;
 	private Span entitydefinition;
 	private boolean isProperName;
 	private boolean isPronoun;
+	private CoreferenceSpan corefspan;
+	
+	public EntityInfo clone()
+	{
+		EntityInfo clone = new EntityInfo(Entity, Location, Direction);
+		clone.setIsPronoun(isPronoun);
+		clone.setIsProperName(isProperName);
+		return clone;
+	}
+
 
 	public String getEntity() {
 		return Entity;
@@ -165,5 +174,15 @@ public class EntityInfo
 
 	public boolean isPronoun() {
 		return isPronoun;
+	}
+
+
+	public CoreferenceSpan getCoreferenceSpan() {
+		return corefspan;
+	}
+	
+	public void setCoreferenceSpan(CoreferenceSpan value)
+	{
+		corefspan = value;
 	}
 }

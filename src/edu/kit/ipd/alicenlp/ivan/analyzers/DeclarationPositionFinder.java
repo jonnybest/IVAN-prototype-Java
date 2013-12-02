@@ -18,6 +18,7 @@ import javax.lang.model.type.ErrorType;
 
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
+import edu.kit.ipd.alicenlp.ivan.data.CoreferenceSpan;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
@@ -30,6 +31,9 @@ import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
+import edu.stanford.nlp.dcoref.Dictionaries.Animacy;
+import edu.stanford.nlp.dcoref.Dictionaries.Gender;
+import edu.stanford.nlp.dcoref.Dictionaries.MentionType;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
@@ -261,6 +265,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 				// set name range
 				Span range = locateRange(n, sentence);
 				info.setEntitySpan(range);
+				// set name range relative to the sentence (for coreference)
+				IntPair tuple;
+				info.setCoreferenceSpan(new CoreferenceSpan(sentence.get(CoreAnnotations.SentenceIndexAnnotation.class), tuple));
 				// set named flag (NNP)
 				CoreLabel lbl = locateLastToken(n, sentence);
 				info.setIsProperName(BaseRule.isPOSFamily(lbl, "NNP"));
@@ -306,9 +313,45 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 				"the search string is not present in the given sentence");
 		return null;
 	}
+	
+	/**
+	 * This method finds the first occurence of a string in a document.
+	 * It returns the token-based index for the whole document.
+	 * If you need a character-based index, use <code>locateRange()</code> instead.
+	 * 
+	 * @param n
+	 *            The search string
+	 * @param sentence
+	 * @return The "absolute" position of the search string in this sentence.
+	 */
+	private static Span locateIndex(String n, CoreMap sentence) {
+		
+		String[] tokens = n.split(" "); // this is wrong. I should have used the Stanford tokenizer to do that
+		
+		List<String> tokenslist = Arrays.asList(tokens);
+		Collections.reverse(tokenslist);
+		for (String s : tokenslist) {
+			for (CoreLabel originalToken : sentence.get(TokensAnnotation.class)) {
+				if (s.equals(originalToken.originalText())) {
+					// we have found the proper token
+					// now calculate how big our original span must be
+					int countTokensBackwards = tokens.length - 1;
+					int index = originalToken.get(CoreAnnotations.TokenBeginAnnotation.class);
+					int starttokenindex = index - countTokensBackwards;
+					int endtokenindex = index;
+					// create a span for our numbers
+					return Span.fromValues(starttokenindex, /*non-inclusive!*/ endtokenindex + 1);
+				}
+			}
+		}
+		// the search string is not present in the given sentence
+		log(Redwood.WARN,
+				"the search string is not present in the given sentence");
+		return null;
+	}
 
 	private static CoreLabel locateLastToken(String n, CoreMap sentence) {
-		String[] tokens = n.split(" ");
+		String[] tokens = n.split(" "); // this is wrong. I should have used the Stanford tokenizer to do that
 		List<String> tokenslist = Arrays.asList(tokens);
 		Collections.reverse(tokenslist);
 		for (String s : tokenslist) {
@@ -509,7 +552,8 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * 
 	 * @throws IvanException
 	 */
-	public void learnDeclarations(CoreMap sentence) throws IvanException {
+	public void learnDeclarations(CoreMap sentence) //throws IvanException 
+	{
 		// TODO implement learnDecl
 		// learn names
 		List<EntityInfo> things = findAll(sentence);
@@ -534,12 +578,10 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			LocationListAnnotation list = findLocationAsTrees(sentence);
 			if (!list.isEmpty())
 				sentence.set(LocationListAnnotation.class, list);
-			try {
-				learnDeclarations(sentence);
-				learnAndCheckDeclarations(sentence, annotation);
-			} catch (IvanException e) {
-				log(Redwood.ERR, e);
-			}
+			
+			//learnDeclarations(sentence);
+			learnAndCheckDeclarations(sentence, annotation);
+			
 		}
 		annotation.set(IvanEntitiesAnnotation.class, getCurrentState());
 	}
@@ -576,45 +618,73 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 
 			} else if (info.isPronoun()) {
 				// resolve reference
-				CorefChain reference = null;
-
-				for (Entry<Integer, CorefChain> entry : coref.entrySet()) {
-					CorefChain chain = entry.getValue();
-					// check each mention if it contains our declaration (our
-					// pronoun)
-					for (CorefMention mention : chain
-							.getMentionsInTextualOrder()) {
-						// retrieve the mention's start and end.
-						// also convert it to the span format
-						Span candidatepos = Span.fromValues(
-								mention.position.get(0),
-								mention.position.get(1));
-						// retrieve our own start and end
-						Span mypos = info.getEntitySpan();
-						// if one contains the other, the mentions overlap and
-						// we have a winner
-						if (mypos.contains(candidatepos)
-								|| candidatepos.contains(mypos)) {
-							// we have found it! this coref chain contains our
-							// mention
-							reference = chain;
-							break;
-						}
-					}
-				}
+				CorefChain reference = findMentionsForInfo(info, coref);
 
 				// let's see if we found anything
 				if (reference != null) {
-					/*
+					/**
 					 * yupp. we can work with this. if this pronoun is gendered,
 					 * we have a good chance that the coref annotation may be
-					 * correct. so check the gender first.
+					 * correct. so check the gender first. If there is no
+					 * gender, the recognition may as well be wrong.
+					 * 
+					 * In this part, we need to find out which mention is the
+					 * best one (it's the one with the name) and retrieve its
+					 * associated EntiyInfo. If this info does not exist
+					 * (because it has not yet been processed), we can create
+					 * and add it, because the subsequent analysis will stumble
+					 * upon our info and merge it then.
 					 */
 
-					// TODO: work
+					// get the best mention
+					CorefMention bestmention = findBestMention(reference);
+
+					Gender g = bestmention.gender;
+					if (g == Gender.FEMALE || g == Gender.MALE) {
+						// everything is shiny						
+					} 
+					else {
+						// this one is of neutral or unknown gender. the
+						// previous analysis may be wrong.
+						// TODO: fix the coreference analysis and replace it
+						// with your own.
+
+					}
+					// work
+					// 1. find the info for the best mention
+					String alias = bestmention.mentionSpan;
+					EntityInfo retrieved = mystate.getSingle(alias);
+					if (retrieved == null) {
+						// not present; create it
+						retrieved = new EntityInfo(alias);
+						// retrieved.setEntitySpan(Span.fromValues(0,1)); //
+						// FIXME: this is lazy and wrong
+					}
+
+					// 2. merge our information with the information for the
+					// best mention
+					// that means, add our position or set the direction or
+					// skip, if the direction is already set
+					if (!retrieved.hasDirection())
+						retrieved.setDirection(info.getDirection());
+
+					if (!retrieved.hasLocation()) {
+						retrieved.setLocation(info.getLocation());
+					}
+					// else: retrieved.addLocation(info.getLocation());
+					// that function is not implemented (or neccessary)
+
+					// 3. add again. if this call fails, we have already
+					// modified the correct info
+					mystate.add(retrieved);
+					// done
+
 				} else {
 					// nope. this pronoun is utterly inexplicable
 					// ERROR something something
+					// TODO: try to wiggle your way out by finding a fitting
+					// reference on your own. maybe try the subject of the
+					// sentence?
 					sentence.set(
 							IvanAnnotations.SentenceClassificationAnnotation.class,
 							Classification.ErrorDescription);
@@ -625,9 +695,80 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 									+ "Please use a name instead.");
 				}
 			} else {
+				// this is the default case where we just add whatever name we
+				// found to our list of known entities
 				this.mystate.add(info);
 			}
 		}
+	}
+
+	/**
+	 * find the best mention (according to our own standards)
+	 * 
+	 * @param reference
+	 * @return getRepresentativeMention() or better
+	 */
+	private static CorefMention findBestMention(CorefChain reference) {
+		//
+		CorefMention bestmention = reference.getRepresentativeMention();
+
+		for (CorefMention newmention : reference.getMentionsInTextualOrder()) {
+			// compare (rank) two mentions
+			if (bestmention.mentionType == MentionType.PROPER)
+				break; // this is the best mention (we also found it last
+						// round...)
+
+			if (newmention.mentionType == MentionType.PRONOMINAL)
+				continue; // this is the worst candidate; skip
+
+			bestmention = newmention; // try again next round with a new mention
+		}
+		return bestmention;
+	}
+
+	/**
+	 * this is the EntityInfo -> CorefChain search algorithm (in case you want
+	 * to reuse it)
+	 * 
+	 * @param info
+	 * @param coref
+	 * @return NULL if none was found
+	 */
+	private static CorefChain findMentionsForInfo(EntityInfo info,
+			Map<Integer, CorefChain> coref) {
+		// our value
+		CorefChain reference = null;
+		// retrieve our own start and end
+		CoreferenceSpan mypos = null;
+		mypos = info.getCoreferenceSpan();
+
+		for (Entry<Integer, CorefChain> entry : coref.entrySet()) {
+			
+			CorefChain chain = entry.getValue();
+			// check each mention if it contains our declaration (our
+			// pronoun)
+			for (CorefMention mention : chain.getMentionsInTextualOrder()) {
+				// retrieve the mention's start and end.
+				// also convert it to the span format
+				if(mention.sentNum == mypos.Sentence)
+				{
+					mention.position.equals(mypos.getTuple());
+				}
+				
+//				Span candidatepos = Span.fromValues(mention.position.get(0),
+//						mention.position.get(1));
+//				// if one contains the other, the mentions overlap and
+//				// we have a winner
+//				if (mypos.contains(candidatepos)
+//						|| candidatepos.contains(mypos)) {
+//					// we have found it! this coref chain contains our
+//					// mention
+//					reference = chain;
+//					break;
+//				}
+			}
+		}
+		return reference;
 	}
 
 	/**

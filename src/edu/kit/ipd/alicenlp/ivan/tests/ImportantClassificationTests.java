@@ -205,19 +205,17 @@ public class ImportantClassificationTests {
 	 */
 	@Test
 	public void positive1stPersonErrorTest() {
-		{
-			/*
-			 * rule: no first person reason: verb does not pertain to things
-			 * happening in the scene
-			 */
-			Annotation doc = annotateClassifications("I see a palm tree on the left of the screen, a mailbox in front of it.");
-			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-			System.out.println(sentence
-					.get(CollapsedCCProcessedDependenciesAnnotation.class));
-			assertThat("I see sentence classified wrong",
-					sentence.get(Classification.class),
-					is(Classification.ErrorDescription));
-		}
+		/*
+		 * rule: no first person reason: verb does not pertain to things
+		 * happening in the scene
+		 */
+		Annotation doc = annotateClassifications("I see a palm tree on the left of the screen, a mailbox in front of it.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		System.out.println(sentence
+				.get(CollapsedCCProcessedDependenciesAnnotation.class));
+		assertThat("I see sentence classified wrong",
+				sentence.get(Classification.class),
+				is(Classification.ErrorDescription));
 	}
 
 
