@@ -204,7 +204,10 @@ public class ImportantDeclarationsTest {
 	 */
 	@Test
 	public void testFindBunny() {
-		String text = "Behind the Broccoli, there is a Bunny facing south.", name = "Bunny", direction = "south", location = "Behind the Broccoli";
+		String text = "Behind the Broccoli, there is a Bunny facing south.", 
+				name = "Bunny", 
+				direction = "south", 
+				location = "Behind the Broccoli";
 		EntityInfo sample = new EntityInfo(name, location, direction);
 		CoreMap sentence = annotateSingleDeclaration(text);
 		List<EntityInfo> entities = DeclarationPositionFinder.findAll(sentence);
