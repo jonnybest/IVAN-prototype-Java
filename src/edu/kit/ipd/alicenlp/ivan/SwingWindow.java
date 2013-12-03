@@ -55,7 +55,9 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -65,6 +67,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.Redwood;
 
 /** This is the main class if IVAN. It creates the user interface and manages all the other components. 
  * 
@@ -188,26 +191,16 @@ public class SwingWindow {
 			}
 			
 			private boolean canCheckSpelling(KeyEvent event) {
-				if(limit  == 0)
-				{
-					limit  = 8;
-					return true;
-				}
-				else {
-					limit --;
-					return false;
-				}
-			}
-			
-			private void markSpellingError(int beginPosition, int endPosition) {
-				SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
-				try {
-					txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-				} catch (BadLocationException e) {
-					e.printStackTrace();
-					System.out
-							.println("SwingWindow.initialize().new KeyAdapter() {...}.markSpellingError()");
-				}				
+				return false;
+//				if(limit  == 0)
+//				{
+//					limit  = 8;
+//					return true;
+//				}
+//				else {
+//					limit --;
+//					return false;
+//				}
 			}
 			@Override
 			public void keyTyped(KeyEvent arg0) {		
@@ -680,11 +673,18 @@ public class SwingWindow {
 		problemSetMissingLocation.clear();
 		Annotation doc = annotateClassifications(text);
 
+		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
+		if(errors != null){
+			for (IvanErrorMessage docer : errors) {
+				markIvanError(docer.getSpan().start(), docer.getSpan().end());
+			}
+		}
+		
 		java.util.List<CoreMap> listsentences = doc
 				.get(SentencesAnnotation.class);
 		
 		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class); 
-
+		
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
 			SemanticGraph depgraph = sentence
@@ -797,14 +797,17 @@ public class SwingWindow {
 			switch (sentencetype) {
 			case SetupDescription:
 				// tell(depgraph.toString());
-				markText(root.beginPosition(), root.endPosition());
+				markText(root.beginPosition(), root.endPosition(), new Color(0xB3C4FF));
 				// DeclarationPositionFinder.DeclarationQuadruple decl =
 				// mydeclarationfinder.findAll(root, sentence);
 				break;
 			case ErrorDescription:
+				IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
+				markIvanError(err.getSpan().start(), err.getSpan().end());
 				// emit error
 				break;
 			case ActionDescription:
+				markText(root.beginPosition(), root.endPosition(), new Color(0xFFC4B3));
 				// fallthrough to default
 			default:
 				break;
@@ -835,9 +838,31 @@ public class SwingWindow {
 		diplayWarnings();
 	}
 
+	private void markIvanError(int beginPosition, int endPosition) {
+		// TODO Auto-generated method stub
+		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
+		try {
+			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+			Redwood.log(Redwood.ERR, e);
+		}
+	}
+
 	private void refreshErrorsDisplay() {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	private void markSpellingError(int beginPosition, int endPosition) {
+		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
+		try {
+			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+			System.out
+					.println("SwingWindow.initialize().new KeyAdapter() {...}.markSpellingError()");
+		}				
 	}
 
 	/**
@@ -890,9 +915,9 @@ public class SwingWindow {
 		System.out.println("SwingWindow.clearStyles()");
 	}
 
-	private void markText(int beginPosition, int endPosition) {
+	private void markText(int beginPosition, int endPosition, Color color) {
 		
-		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(new Color(0xB3C4FF));
+		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(color);
 		try {
 			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 		} catch (BadLocationException e) {			
