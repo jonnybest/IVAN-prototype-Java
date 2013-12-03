@@ -163,7 +163,8 @@ public class SwingWindow {
 		txtEditor.setText("The ground is covered with grass, the sky is blue. \n"
 				+ "In the background on the left hand side there is a PalmTree. \n"
 				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
-				+ "Right to the mailbox there is a Frog facing east. In the foreground on the right hand side there is a Bunny facing southwest. \n"
+				+ "Right to the mailbox there is a Frog facing east. \n"
+				+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
 				+ "In front of the Bunny there is a Broccoli. \n"
 				+ "The Bunny turns to face the Broccoli. \n"
 				+ "The Bunny hops three times to the Broccoli. \n"
@@ -818,9 +819,15 @@ public class SwingWindow {
 				markIvanError(err.getSpan().start(), err.getSpan().end());
 				// emit error
 				break;
+			case EventDescription:
+				markText(root.beginPosition(), root.endPosition(), new Color(0xBF4889));
+				break;
+			case TimeDescription:
+				markText(root.beginPosition(), root.endPosition(), new Color(0x7E17ED));
+				break;
 			case ActionDescription:
 				markText(root.beginPosition(), root.endPosition(), new Color(0xFFC4B3));
-				// fallthrough to default
+				break;
 			default:
 				break;
 			}
