@@ -179,7 +179,7 @@ public class SwingWindow {
 				+ "The Bunny opens the Mailbox. \n"
 				+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
 				+ "The Frog hops two times to the Bunny. \n"
-				+ "The Frog ribbits.");
+				+ "The Frog disappears. A short time passes.");
 
 		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
 
