@@ -24,6 +24,15 @@ public class RecognitionState {
 	
 	private InitialState declarations;
 
+	public RecognitionState()
+	{
+		// default is alright
+	}
+	
+	public RecognitionState(InitialState entitiesState) {
+		declarations = entitiesState;
+	}
+
 	@Override
 	public String toString() {
 		if(declarations == null)

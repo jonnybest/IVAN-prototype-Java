@@ -58,6 +58,7 @@ import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.RecognitionState;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
@@ -164,8 +165,8 @@ public class SwingWindow {
 				+ "In the background on the left hand side there is a PalmTree. \n"
 				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
 				+ "Right to the mailbox there is a Frog facing east. \n"
-				+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
 				+ "In front of the Bunny there is a Broccoli. \n"
+				+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
 				+ "The Bunny turns to face the Broccoli. \n"
 				+ "The Bunny hops three times to the Broccoli. \n"
 				+ "The Bunny eats the Broccoli. \n"
@@ -789,17 +790,6 @@ public class SwingWindow {
 			 * non-setup descriptions
 			 */
 			StaticDynamicClassifier.Classification sentencetype = sentence.get(Classification.class);
-			
-			// finding locations?
-			if (DeclarationPositionFinder.hasLocation(sentence)) {
-				EntityInfo loc = DeclarationPositionFinder
-						.getLocation(sentence);
-				tell("There's a location in \""
-						+ sentence.get(TextAnnotation.class));
-				System.out.println("The location \"" + loc
-						+ "\" was found in \""
-						+ sentence.get(TextAnnotation.class));
-			}
 
 			// get root for coloring
 			IndexedWord root = depgraph.getFirstRoot();
@@ -852,6 +842,11 @@ public class SwingWindow {
 			//
 			// // System.out.println(word);
 			// }
+			
+			/** Print state to emitter panel
+			 */
+			RecognitionState emitterwriter = new RecognitionState(entitiesState);
+			tell(emitterwriter.toString());
 		}
 
 		diplayWarnings();
