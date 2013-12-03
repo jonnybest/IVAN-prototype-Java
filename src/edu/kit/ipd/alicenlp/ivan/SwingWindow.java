@@ -806,6 +806,7 @@ public class SwingWindow {
 				break;
 			case ErrorDescription:
 				IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
+				Redwood.log(err);
 				markIvanError(err.getSpan().start(), err.getSpan().end());
 				// emit error
 				break;
@@ -877,33 +878,6 @@ public class SwingWindow {
 			System.out
 					.println("SwingWindow.initialize().new KeyAdapter() {...}.markSpellingError()");
 		}				
-	}
-
-	/**
-	 * 
-	 */
-	protected StanfordCoreNLP setupCoreNLP() {
-		StanfordCoreNLP pipeline;
-		if (mypipeline == null) {
-			// creates a StanfordCoreNLP object, with POS tagging,
-			// lemmatization, NER, parsing, and coreference resolution
-			Properties props = new Properties();
-			// alternativ: wsj-bidirectional
-			try {
-				props.put(
-						"pos.model",
-						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			// konfiguriere pipeline
-			props.put("annotators", "tokenize, ssplit, pos, lemma, parse"); //$NON-NLS-1$ //$NON-NLS-2$
-			pipeline = new StanfordCoreNLP(props);
-			mypipeline = pipeline;
-		} else {
-			pipeline = mypipeline;
-		}
-		return pipeline;
 	}
 
 	private void diplayWarnings() {
