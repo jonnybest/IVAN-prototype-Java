@@ -160,12 +160,24 @@ public class SwingWindow {
 //		txtEditor.setDisplayLineNumbers(true);
 		// txtEditor.setDocument(doc);
 
-		txtEditor.setText("In publishing and graphic design, lorem ipsum is a \n"
-				+ "placeholder text (filler text) commonly used to demonstrate \n"
-				+ "the graphic elements of a document or visual presentation, \n"
-				+ "such as font, typography, and layout, by removing the \n"
-				+ "distraction of meaningful content. "
-				+ "There is a cat looking north.");
+		txtEditor.setText("The ground is covered with grass, the sky is blue. \n"
+				+ "In the background on the left hand side there is a PalmTree. \n"
+				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
+				+ "Right to the mailbox there is a Frog facing east. In the foreground on the right hand side there is a Bunny facing southwest. \n"
+				+ "In front of the Bunny there is a Broccoli. \n"
+				+ "The Bunny turns to face the Broccoli. \n"
+				+ "The Bunny hops three times to the Broccoli. \n"
+				+ "The Bunny eats the Broccoli. \n"
+				+ "The Bunny turns to face the Frog. \n"
+				+ "The Bunny taps his foot twice. \n"
+				+ "The Frog ribbits. The Frog turns to face northeast. \n"
+				+ "The frog hops three times to northeast. \n"
+				+ "The Bunny turns to face the Mailbox. \n"
+				+ "The Bunny hops three times to the Mailbox. \n"
+				+ "The Bunny opens the Mailbox. \n"
+				+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
+				+ "The Frog hops two times to the Bunny. \n"
+				+ "The Frog ribbits.");
 
 		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
 
