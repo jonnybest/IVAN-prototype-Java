@@ -46,7 +46,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 {
 	
 	/** This field contains the names and entities. The rules are: only one state per analyzer. */ 
-	final private InitialState mystate = new InitialState();
+	private InitialState mystate = new InitialState();
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
@@ -460,6 +460,8 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 
 	@Override
 	public void annotate(Annotation annotation) {
+		this.mystate = new InitialState();
+		
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			// TODO: do stuff
 			LocationListAnnotation list = findLocationAsTrees(sentence);
