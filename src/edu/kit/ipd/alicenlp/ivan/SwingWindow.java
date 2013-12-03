@@ -822,27 +822,6 @@ public class SwingWindow {
 			default:
 				break;
 			}
-
-			/***
-			 * Requirement 3: Check this sentence for co-reference
-			 */
-
-			// a CoreLabel is a CoreMap with additional token-specific labels
-			// for (CoreLabel item : sentence.get(TokensAnnotation.class)) {
-			// // this is the text of the token
-			// // String word = item.get(TextAnnotation.class);
-			// // this is the POS tag of the token
-			// String pos = item.get(PartOfSpeechAnnotation.class);
-			// if (pos.equals("VBG")) {
-			// tell("\""+ item.getString(TextAnnotation.class) +
-			// "\" is a gerund.");
-			// markText(item.beginPosition(), item.endPosition());
-			// }
-			// // this is the NER label of the token
-			// // String ne = item.get(NamedEntityTagAnnotation.class);
-			//
-			// // System.out.println(word);
-			// }
 			
 			/** Print state to emitter panel
 			 */
