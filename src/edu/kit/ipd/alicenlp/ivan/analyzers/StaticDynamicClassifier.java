@@ -19,12 +19,18 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
+import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.IDAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
@@ -355,6 +361,19 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
 				log(Redwood.ERR, "Error while classifying sentences.", e);
+			} 
+			catch (NullPointerException|java.lang.AssertionError e)
+			{
+				Span range = Span.fromValues(sentence.get(CharacterOffsetBeginAnnotation.class), 
+						sentence.get(CharacterOffsetEndAnnotation.class));
+				IvanErrorMessage error = new IvanErrorMessage(IvanErrorType.UNKNOWN,
+						annotation.get(IDAnnotation.class), 
+						range, 
+						"Processing this sentence caused an exception.");
+
+				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, 
+						error);
+				sentence.set(Classification.class, Classification.ErrorDescription);
 			}
 		}
 		try {
