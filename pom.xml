@@ -1,94 +1,116 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <artifactId>verify-alicenlp</artifactId>
-  <version>0.5</version>
-  <name>VAN prototype Java</name>
-  <description>A prototype for verifying user input for alicenlp.</description>
-  <developers>
-	<developer>
-		<id>best</id>
-		<name>Jonathan Best</name>
-		<email>jonathan.best@student.kit.edu</email>
-		<url>http://jonathanbest.de/</url>
-		<roles>
-			<role>developer</role>
-		</roles>
-	</developer>	
-</developers>
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.1</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  <dependencies>
-  	<dependency>
-		<groupId>net.sf.extjwnl</groupId>
-		<artifactId>extjwnl</artifactId>
-		<version>1.6.10</version>
-	</dependency>
-	<!-- Spellchecker -->
-  	<dependency>
-		<groupId>org.languagetool</groupId>
-		<artifactId>language-en</artifactId>
-		<version>2.3.1</version>
-	</dependency>  	
-	<!-- Editor -->
-	<dependency>
-    	<groupId>com.fifesoft</groupId>
-    	<artifactId>rsyntaxtextarea</artifactId>
-    	<version>2.5.0</version>
-	</dependency>
-  	<dependency>
-  		<groupId>edu.stanford.nlp</groupId>
-		<artifactId>stanford-corenlp</artifactId>
-		<version>3.2.0</version>
-	</dependency>
-	<dependency>
-  		<groupId>edu.stanford.nlp</groupId>
-		<artifactId>stanford-corenlp</artifactId>
-		<version>3.2.0</version>
-		<classifier>models</classifier>
-	</dependency>
-	<dependency>
-    	<groupId>org.swinglabs.swingx</groupId>
-	    <artifactId>swingx-all</artifactId>
-	    <version>1.6.5-1</version>
-	</dependency>
-	<!--  Test -->
-	<dependency>
-    <groupId>org.jdesktop</groupId>
-    <artifactId>appframework</artifactId>
-    <version>1.0.3</version>
-</dependency>
-  	<!-- jgit Core Library -->
-    <dependency>
-      <groupId>org.eclipse.jgit</groupId>
-      <artifactId>org.eclipse.jgit</artifactId>
-      <version>3.0.0.201306101825-r</version>
-    </dependency>
-    <dependency>
-    	<!-- This is neccessary for javax.swing.JXTextPane,
-    	javax.swing.LineNumbersTextPane and depending classes. 
-    	The rest runs on 1.6.5-1. -->
-    	<groupId>org.swinglabs</groupId>
-    	<artifactId>swingx</artifactId>
-    	<version>1.6.1</version>
-    </dependency>
-  </dependencies>
-  <url>http://svn.ipd.kit.edu/trac/AliceNLP/</url>
-  <parent>
-  	<relativePath>../parent_pom/trunk/pom.xml</relativePath>
-  	<groupId>edu.kit.ipd.aliceNlp</groupId>
-  	<artifactId>parent-pom</artifactId>
-  	<version>0.0.1-SNAPSHOT</version>
-  </parent>
-  <groupId>edu.kit.ipd.aliceNlp</groupId>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>verify-alicenlp</artifactId>
+	<version>0.5</version>
+	<name>VAN prototype Java</name>
+	<description>A prototype for verifying user input for alicenlp.</description>
+	<developers>
+		<developer>
+			<id>best</id>
+			<name>Jonathan Best</name>
+			<email>jonathan.best@student.kit.edu</email>
+			<url>http://jonathanbest.de/</url>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+	<build>
+		<sourceDirectory>src</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<!-- Cyc ontology tools -->
+		<dependency>
+			<groupId>com.cyc.library</groupId>
+			<artifactId>opencyc</artifactId>
+			<version>4.0.140336</version>
+		</dependency>
+		<!-- ssh library -->
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.50</version>
+		</dependency>
+		<!-- Java WordNET library -->
+		<dependency>
+			<groupId>net.sf.extjwnl</groupId>
+			<artifactId>extjwnl</artifactId>
+			<version>1.6.10</version>
+		</dependency>
+		<!-- Spellchecker -->
+		<dependency>
+			<groupId>org.languagetool</groupId>
+			<artifactId>language-en</artifactId>
+			<version>2.3.1</version>
+		</dependency>
+		<!-- Editor -->
+		<dependency>
+			<groupId>com.fifesoft</groupId>
+			<artifactId>rsyntaxtextarea</artifactId>
+			<version>2.5.0</version>
+		</dependency>
+		<!-- This is our NLP dependency. We get all those juice trees from here. -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>3.2.0</version>
+		</dependency>
+		<!-- These are models. They are required, but not managed by stanford-corenlp. -->
+		<dependency>
+			<groupId>edu.stanford.nlp</groupId>
+			<artifactId>stanford-corenlp</artifactId>
+			<version>3.2.0</version>
+			<classifier>models</classifier>
+		</dependency>
+		<!-- This is a UI dependency which contains the task pane (and probably more) -->
+		<dependency>
+			<groupId>org.swinglabs.swingx</groupId>
+			<artifactId>swingx-all</artifactId>
+			<version>1.6.5-1</version>
+		</dependency>
+		<!-- This dependency was referenced by the old text panel, I think? -->
+		<dependency>
+			<groupId>org.jdesktop</groupId>
+			<artifactId>appframework</artifactId>
+			<version>1.0.3</version>
+		</dependency>
+		<!-- jgit Core Library -->
+		<dependency>
+			<groupId>org.eclipse.jgit</groupId>
+			<artifactId>org.eclipse.jgit</artifactId>
+			<version>3.0.0.201306101825-r</version>
+		</dependency>
+		<dependency>
+			<!-- This is neccessary for javax.swing.JXTextPane, javax.swing.LineNumbersTextPane 
+				and depending classes. The rest runs on 1.6.5-1. -->
+			<groupId>org.swinglabs</groupId>
+			<artifactId>swingx</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+	</dependencies>
+	<url>http://svn.ipd.kit.edu/trac/AliceNLP/</url>
+	<parent>
+		<relativePath>../parent_pom/trunk/pom.xml</relativePath>
+		<groupId>edu.kit.ipd.aliceNlp</groupId>
+		<artifactId>parent-pom</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	<groupId>edu.kit.ipd.aliceNlp</groupId>
+	<scm>
+		<connection>scm:git:git://github.com/jonnybest/IVAN-prototype-Java.git</connection>
+		<developerConnection>scm:git:git@github.com:jonnybest/IVAN-prototype-Java.git</developerConnection>
+		<url>http://github.com/jonnybest/IVAN-prototype-Java</url>
+		<tag>HEAD</tag>
+	</scm>
 </project>
