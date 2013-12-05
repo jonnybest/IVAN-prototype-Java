@@ -26,12 +26,12 @@ public class RecognitionStatePrinter {
 	
 	private InitialState declarations;
 
-	public RecognitionState()
+	public RecognitionStatePrinter()
 	{
 		// default is alright
 	}
 	
-	public RecognitionState(InitialState entitiesState) {
+	public RecognitionStatePrinter(InitialState entitiesState) {
 		declarations = entitiesState;
 	}
 
