@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
-import edu.kit.ipd.alicenlp.ivan.data.RecognitionState;
+import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -16,9 +16,9 @@ import edu.stanford.nlp.util.CoreMap;
  * @author Jonny
  *
  */
-public class RecognitionStateTest extends RecognitionState {
+public class RecognitionStateTest extends RecognitionStatePrinter {
 
-	/** creates a RecognitionState 
+	/** creates a RecognitionStatePrinter 
 	 * 
 	 * @throws IvanException
 	 */
