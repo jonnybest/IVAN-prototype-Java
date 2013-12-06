@@ -52,7 +52,7 @@ public class CycTest {
 	@BeforeClass
 	public static void mapCycPorts() throws JSchException {
 		
-		SshConnector.initializeCycConnections();
+		SshConnector.initializeRecaaConnections();
 	}
 	
 	/** This class tears down the open ssh connections
