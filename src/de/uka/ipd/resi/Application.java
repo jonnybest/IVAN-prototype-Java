@@ -212,7 +212,7 @@ public class Application {
 		this.display = new Display();
 		this.shell = new Shell(this.display, SWT.CLOSE | SWT.TITLE | SWT.MIN);
 		this.shell.setText("RESI");
-		this.shell.setImage(new Image(this.display, "Wheeled-tractor-32.png"));
+		//this.shell.setImage(new Image(this.display, "Wheeled-tractor-32.png"));
 		
 		final GridLayout layout = new GridLayout(2, false);
 		this.shell.setLayout(layout);
