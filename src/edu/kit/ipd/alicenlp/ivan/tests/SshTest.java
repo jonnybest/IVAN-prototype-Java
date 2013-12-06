@@ -245,27 +245,15 @@ public class SshTest {
 		url = new URL(targetURL);
 		connection = (HttpURLConnection) url.openConnection();
 		connection.setRequestMethod("GET");
-		// connection.setRequestProperty("Content-Type",
-		// "application/x-www-form-urlencoded");
-		//
-		// connection.setRequestProperty("Content-Length", "" +
-		// Integer.toString(urlParameters.getBytes().length));
-		// connection.setRequestProperty("Content-Language", "en-US");
 
+		// configure socket settings
 		connection.setUseCaches(false);
 		connection.setDoInput(true);
-//		connection.setDoOutput(true);
 		connection.setReadTimeout(15000); // wait 15 seconds
 		
-		System.out.println("connection prepared. now sending");
-		// Send request
-//		 DataOutputStream wr = new DataOutputStream (
-//		 connection.getOutputStream ());
-////		 wr.writeBytes (urlParameters);
-//		 wr.flush ();
-//		 wr.close ();
+		//System.out.println("connection prepared. now sending");
 
-		// Get Response
+		// Send & Get Response
 		InputStream is = connection.getInputStream();
 		BufferedReader rd = new BufferedReader(new InputStreamReader(is));
 		String line;
