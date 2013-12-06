@@ -46,6 +46,7 @@ import de.uka.ipd.resi.ontologyimpl.StanfordPOSTagger;
 import de.uka.ipd.resi.ontologyimpl.WordNetOntology;
 import de.uka.ipd.resi.ontologyinterface.OntologyBaseFormTag;
 import de.uka.ipd.resi.ontologyinterface.OntologyPOSTag;
+import edu.kit.ipd.alicenlp.ivan.components.SshConnector;
 
 public class Application {
 	
@@ -68,13 +69,13 @@ public class Application {
 	 * Directory where the tagger models reside. For English, the bidirectional taggers is slightly more accurate, but
 	 * tags more slowly; choose the appropriate tagger based on your speed/performance needs. TODO make configurable
 	 */
-	private static final String STANFORDPOSTAGGER_MODEL_DIR = "lib/POS-models/";
+	private static final String STANFORDPOSTAGGER_MODEL_DIR = "edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/"; // "lib/POS-models/";
 	
 	/**
 	 * Trained on WSJ sections 0-18 using a bidirectional architecture and includes word shape features. Penn tagset.
 	 * Performance: 97.18% correct on WSJ 19-21 (89.30% correct on unknown words) TODO make configurable
 	 */
-	private static final String STANFORDPOSTAGGER_TAGGER_1 = "bidirectional-wsj-0-18.tagger";
+	private static final String STANFORDPOSTAGGER_TAGGER_1 = "wsj-0-18-bidirectional-distsim.tagger"; // "bidirectional-wsj-0-18.tagger";
 	
 	/**
 	 * Trained on WSJ sections 0-18 using the left3words architectures and includes word shape features. Penn tagset.
@@ -666,11 +667,16 @@ public class Application {
 		this.centerShell(this.shell, this.display.getPrimaryMonitor().getClientArea());
 		this.shell.open();
 		try {
+			// Jonny: establish SSH connection
+			SshConnector.initializeRecaaConnections();
+			// show interface
 			while (!this.shell.isDisposed()) {
 				if (!this.display.readAndDispatch()) {
 					this.display.sleep();
 				}
 			}
+			// Jonny: close connections
+			SshConnector.disconnect();
 			this.display.dispose();
 			System.exit(0);
 		}
