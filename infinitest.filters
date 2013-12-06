@@ -3,4 +3,5 @@ edu\.kit\.ipd\.alicenlp\.ivan\.tests\.CoreferenceResolverTest
 edu\.kit\.ipd\.alicenlp\.ivan\.tests\.SentenceFrameRuleTest
 edu\.kit\.ipd\.alicenlp\.ivan\.tests\.RecognitionStateTest
 edu\.kit\.ipd\.alicenlp\.ivan\.tests\.SentenceFrameRuleTest
-edu\.kit\.ipd\.alicenlp\.ivan\.tests\.Hard.*
+.*Hard.*
+#.*SshTest.*
