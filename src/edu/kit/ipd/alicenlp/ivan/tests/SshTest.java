@@ -39,6 +39,34 @@ public class SshTest {
 	@Test
 	public final void connectTest() throws Exception {
 
+		
+		int remote = 3602;
+		
+		Session session = mapPortToCycWithSsh(remote);
+		
+		System.out.println("fetching data");
+		
+		System.out.println("try 2");
+		String thing = executeGet("http://localhost:" + remote
+				+ "/cgi-bin/cyccgi/cg?cb-start");
+		System.out.println(thing);
+
+		if(thing.length() < 500)
+			fail("answer probably too short");
+		
+		session.disconnect();
+
+		System.out.println("done");
+		// this test fails if an exception occurs along the way
+	}
+
+	/** Maps a port to research cyc at IPD
+	 * 
+	 * @param remote
+	 * @return
+	 * @throws JSchException
+	 */
+	private Session mapPortToCycWithSsh(int remote) throws JSchException {
 		String myhost = "best@i41vm-automodel.ipd.kit.edu";
 		String mypw = "hunter2";
 
@@ -75,26 +103,6 @@ public class SshTest {
 			public boolean promptPassword(String message) {
 				return false;
 			}
-
-			// public void showMessage(String message) {
-			// JOptionPane.showMessageDialog(null, message);
-			// }
-			//
-			// public boolean promptYesNo(String message) {
-			// Object[] options = { "yes", "no" };
-			// int foo = JOptionPane.showOptionDialog(null, message,
-			// "Warning", JOptionPane.DEFAULT_OPTION,
-			// JOptionPane.WARNING_MESSAGE, null, options, options[0]);
-			// return foo == 0;
-			// }
-
-			// If password is not given before the invocation of
-			// Session#connect(),
-			// implement also following methods,
-			// * UserInfo#getPassword(),
-			// * UserInfo#promptPassword(String message) and
-			// * UIKeyboardInteractive#promptKeyboardInteractive()
-
 		};
 
 		session.setUserInfo(ui);
@@ -112,25 +120,11 @@ public class SshTest {
 		System.out.println("assigning port fw");
 		// https://i41vm-automodel.ipd.kit.edu:3602/cgi-bin/cyccgi/cg?cb-start
 		// is now at https://localhost:3602/cgi-bin/cyccgi/cg?cb-start
-		int assinged_port = session.setPortForwardingL(0,
-				"i41vm-automodel.ipd.kit.edu", 3602);
+		int assinged_port = session.setPortForwardingL(remote,
+				"i41vm-automodel.ipd.kit.edu", remote);
 
 		System.out.println("local port is now " + assinged_port);
-		
-		System.out.println("fetching data");
-		
-		System.out.println("try 2");
-		String thing = executeGet("http://localhost:" + assinged_port
-				+ "/cgi-bin/cyccgi/cg?cb-start");
-		System.out.println(thing);
-
-		if(thing.length() < 500)
-			fail("answer probably too short");
-		
-		session.disconnect();
-
-		System.out.println("done");
-		// this test fails if an exception occurs along the way
+		return session;
 	}
 
 	/**
