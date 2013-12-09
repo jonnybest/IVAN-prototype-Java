@@ -150,7 +150,7 @@ public class SwingWindow {
 	@SuppressWarnings("serial") // This class is surely not getting serialized
 	private void initialize() {
 		frmvanInput = new JFrame();
-		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/icon.png")));
+		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/ivan2.png")));
 		frmvanInput.setLocale(Locale.ENGLISH);
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 612, 511);
