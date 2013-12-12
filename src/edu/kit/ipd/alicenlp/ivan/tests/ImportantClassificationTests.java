@@ -235,7 +235,8 @@ public class ImportantClassificationTests {
 		 * flames continue to burn.
 		 */
 		// explicitly references passing time
-		Annotation doc2 = annotateClassifications("A very short time passes.");
+		//Annotation doc2 = annotateClassifications("A very short time passes.");
+		Annotation doc2 = annotateClassifications("A very short time is passing.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("passes sentence classified wrong",
 				sentence2.get(Classification.class),
@@ -256,6 +257,22 @@ public class ImportantClassificationTests {
 		// sentence.get(Classification.class),
 		// is(Classification.TimeDescription));
 
+		/** 
+		 * How to fix this:
+		 * The rule for classifying time is as follows:
+		 * A) if the noun "time" occurs, the sentence mentions time
+		 * B) if the verb "elapse" or its synonyms (pass, go by) occur, it mentions passing
+		 * C) if the NER tag for "duration" is present, the sentence has a duration
+		 * A sentence classifies as TimeDescription, if (A && B || C ) holds.
+		 */
+		
+		// this test should go through, but it currently isn't analyzed properly.
+		// stanford doesn't recognise the verb "passes".
+		Annotation doc4 = annotateClassifications("A very short time passes.");
+		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
+		assertThat("passes sentence classified wrong",
+				sentence4.get(Classification.class),
+				is(Classification.TimeDescription));
 	}
 
 	/**
