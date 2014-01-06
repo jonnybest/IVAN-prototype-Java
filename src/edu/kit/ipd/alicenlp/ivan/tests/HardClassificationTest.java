@@ -489,4 +489,36 @@ public class HardClassificationTest {
 					is(Classification.SetupDescription));
 		}
 	}
+	
+	/**
+	 * This is the "hard" test for a time sentence. It's hard, because the
+	 * tagger does not recognise the verb properly.
+	 */
+	@Test
+	public void positiveHardTimeTest() {
+		// this test should go through, but it currently isn't analyzed
+		// properly.
+		// stanford doesn't recognise the verb "passes".
+		Annotation doc4 = annotateClassifications("A very short time passes.");
+		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
+		assertThat("passes sentence classified wrong",
+				sentence4.get(Classification.class),
+				is(Classification.TimeDescription));
+	}
+	
+	/**
+	 * This is the "hard" test for a time sentence. It's hard, because the
+	 * tagger does not recognise the verb properly.
+	 */
+	@Test
+	public void negativeHardErrorTest() {
+		// this test should go through, but it currently isn't analyzed
+		// properly.
+		// stanford doesn't recognise the verb "passes".
+		Annotation doc4 = annotateClassifications("A very short time passes.");
+		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
+		assertThat("passes sentence classified wrong",
+				sentence4.get(Classification.class),
+				not(is(Classification.ErrorDescription)));
+	}
 }
