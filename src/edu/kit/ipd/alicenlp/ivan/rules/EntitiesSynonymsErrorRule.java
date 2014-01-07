@@ -56,6 +56,10 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 		setupWordNet();
 	}
 	
+	/** @param doc 
+	 * @param canWrite If true, this rule may modify existing annotations.
+	 * 
+	 */
 	@Override
 	public boolean apply(Annotation doc, boolean canWrite) throws JWNLException {
 		for (EntityInfo info : state) {
