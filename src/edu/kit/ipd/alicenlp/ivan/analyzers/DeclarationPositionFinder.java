@@ -375,11 +375,14 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 			if(!head.equals(graph.getFirstRoot()))
 			{
 				head = graph.getFirstRoot();
+				log(Redwood.DBG, "Name recognition selected head: " + head);
 			}
 			else 
 			{
 				// if not, try the direct objects instead
 				head = graph.getChildWithReln(head, EnglishGrammaticalRelations.DIRECT_OBJECT);
+				
+				log(Redwood.DBG, "Name recognition is falling back on direct object: " + head);
 			}
 		}
 		
@@ -403,9 +406,13 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		for (IndexedWord n : namesIW) {
 			if(n.tag().equals("PRP"))
 			{
+				log(Redwood.DBG, "Name is a preposition.");
 				// this part doesn't even work:
 //				CoreferenceResolver cresolver = CoreferenceResolver.getInstance();
 //				n.setValue(cresolver.resolve(n)); // this is probably a bad idea
+			}
+			else {
+				//log(Redwood.DBG, "Name is not a preposition.");
 			}
 		}
 		return names;
