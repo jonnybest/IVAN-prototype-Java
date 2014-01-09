@@ -716,7 +716,7 @@ public class SwingWindow {
 			// TODO: implement problem1
 			// 1. check for names
 			List<String> names = DeclarationPositionFinder
-					.recogniseNames(sentence); // recognises named und unnamed
+					.recogniseEntities(sentence); // recognises named und unnamed
 												// entities in this sentence
 			// 2. are they declared already?
 

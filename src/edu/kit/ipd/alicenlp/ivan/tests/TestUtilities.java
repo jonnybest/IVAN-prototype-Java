@@ -104,7 +104,7 @@ public abstract class TestUtilities {
 		CoreMap annoSentence = annotateSingleDeclaration(solution.getKey());
 		annoSentence.get(TreeAnnotation.class).pennPrint();
 		List<String> einfos = DeclarationPositionFinder
-				.recogniseNames(annoSentence);
+				.recogniseEntities(annoSentence);
 		if (annoSentence.get(Classification.class) != null
 				&& annoSentence.get(Classification.class).equals(
 						Classification.ErrorDescription)) {

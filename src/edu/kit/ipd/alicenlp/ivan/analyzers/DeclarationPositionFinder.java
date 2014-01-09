@@ -12,14 +12,19 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.jcraft.jsch.Logger;
+
+import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
+import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -204,7 +209,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		 */
 		try {
 			// get ALL the names
-			List<String> names = recogniseNames(sentence);
+			List<String> names = recogniseEntities(sentence);
 			// get THE location for this sentence. yes, this assumes they're all standing in the same spot
 			EntityInfo locs = getLocation(sentence);
 			// get THE direction for all the entities in this sentence. yes, this assumes they're all facing the same way
@@ -346,7 +351,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// it's probably safe to simply get everything that's in the subject
 		// TODO: name -> entity mapping
 		List<EntityInfo> infos = new ArrayList<EntityInfo>();
-		List<String> names = recogniseNames(sentence);
+		List<String> names = recogniseEntities(sentence);
 		for (String n : names) {
 			if (!mystate.containsName(n)) {
 				infos.add(new EntityInfo(n));				
@@ -363,7 +368,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 * @return
 	 * @throws IvanException 
 	 */
-	public static List<String> recogniseNames(CoreMap sentence) throws IvanException {
+	public static List<String> recogniseEntities(CoreMap sentence) throws IvanException {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord head = BaseRule.getSubject(graph);
 		
@@ -468,6 +473,24 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	@Override
 	public void annotate(Annotation annotation) {
 		this.mystate = new InitialState();
+		
+		AliasByCorefRule aliasRule = new AliasByCorefRule();
+		try {
+			// extract names from the text
+			if(aliasRule.apply(annotation))
+			{
+				// add each found name to the state
+				for (CorefMention ms : aliasRule.getMentions()) {
+					// create alias
+					// create and add entity
+					// add alias
+				}				
+			}			
+			
+		} catch (JWNLException e1) {
+			// does not occur
+		}
+		
 		
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			// TODO: do stuff
