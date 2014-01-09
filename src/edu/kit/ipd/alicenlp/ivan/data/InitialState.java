@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.TypesafeMap;
 
@@ -51,10 +52,11 @@ public class InitialState extends HashSet<EntityInfo>
 	/**
 	 * Writes the information in the given {@code value} into the {@link InitialState}. 
 	 * Existing data is not overwritten, but new Entries may be created. Use update() to overwrite data.
-	 * @param value
-	 * @return A reference to the {@link EntityInfo} which is now present in the {@link InitialState}.
+	 * @param alias A proper name
+	 * @param entity The entity information to save under this alias 
+	 * @return A reference to the representative {@link EntityInfo} 
 	 */
-	public EntityInfo merge(EntityInfo value){
+	public EntityInfo map(String alias, EntityInfo entity){
 		return null;
 	}
 	
@@ -101,59 +103,6 @@ public class InitialState extends HashSet<EntityInfo>
 		return haschanged;
 	}
 
-	/**
-	 * Updates the given {@code value} with  
-	 * Existing data may be overwritten, but no new Entries may be created. Use merge() to create new entries.
-	 * @param e
-	 * @return
-	 */
-	private boolean update(EntityInfo e) {
-		return update(null, e);		
-	}
-
-	/**
-	 * Update the entity with the given name and overwrite data. No new entries may be created. Use merge() to create new entries.
-	 * @param Name
-	 * @param e
-	 */
-	private boolean update(String Name, EntityInfo e) {		
-		if (Name == null) {	// name is not given, so we will resolve by Entity description only
-			ArrayList<EntityInfo> elist = namesset.get(e.getEntity());
-			if (elist == null)
-			{
-				// entry does not exist
-				return false;
-			}
-			if (elist.size() == 1) {
-				// update entity
-				EntityInfo oldentry = elist.get(0);
-				oldentry.update(e);
-				return true;
-			}
-			System.err.println("Entity is not unique. Call updateAll() or try accessing this one by name.");
-			return false;
-		}
-		else {	// a name is given. Try to find the entity to update first by name, then by entity. Also, save the name if not known, yet.
-			ArrayList<EntityInfo> elist;
-			if (namesset.containsKey(Name)) {
-				elist = namesset.get(Name);
-			}
-			else {
-				// introduce a new name
-				elist = namesset.get(e.getEntity());
-				namesset.put(Name, elist);
-			}
-			// assert that the state is consistent
-			assert elist != null; // "The information for this name or entity is null.");
-			assert elist.size() == 1; // "The entry for this entity or name is not unique.");			
-			
-			// update entity
-			EntityInfo oldentry = elist.get(0);
-			oldentry.update(e);
-			
-			return true;
-		}
-	}
 
 	public boolean containsName(String n) {
 		return namesset.containsKey(n);
@@ -185,7 +134,7 @@ public class InitialState extends HashSet<EntityInfo>
 	 * Use {@code getSingle(String)} if you want to assert a singleton result. 
 	 * 
 	 * @param name The given name or the entity name to look for
-	 * @returns all the entities found under this name 
+	 * @return all the entities found under this name 
 	 */
 	public ArrayList<EntityInfo> get(String name)
 	{
@@ -224,4 +173,20 @@ public class InitialState extends HashSet<EntityInfo>
 		}
 		return null;
 	}
+
+	/** Adds an alias which is also an EntityInfo
+	 * 
+	 * @param entity
+	 */
+	public void addAlias(EntityInfo entity) {
+		entity.setIsProperName(true);
+		ArrayList<EntityInfo> list = namesset.get(entity.getEntity());
+		if(list == null)
+			list = new ArrayList<>();
+		
+		list.add(entity);
+		namesset.put(entity.getEntity(), list);
+	}
+	
+	
 }
