@@ -19,6 +19,10 @@ import edu.kit.ipd.alicenlp.ivan.data.InitialState;
  */
 public class InitialStateTest {
 
+	/** Elaborate test for merging
+	 * 
+	 * @throws IvanInvalidMappingException
+	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public final void test() throws IvanInvalidMappingException {
@@ -64,6 +68,10 @@ public class InitialStateTest {
 		}
 	}
 
+	/** Simple test without merging
+	 * 
+	 * @throws IvanInvalidMappingException
+	 */
 	@SuppressWarnings("static-method")
 	@Test
 	public final void hasNameTest() throws IvanInvalidMappingException
