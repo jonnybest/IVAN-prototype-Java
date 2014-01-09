@@ -6,6 +6,7 @@ package edu.kit.ipd.alicenlp.ivan.rules;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.extjwnl.JWNLException;
 import edu.stanford.nlp.dcoref.CorefChain;
@@ -29,10 +30,14 @@ public class AliasByCorefRule implements IDocumentRule {
 	public boolean apply(Annotation doc) throws JWNLException {
 		
 		Map<Integer, CorefChain> map = doc.get(CorefChainAnnotation.class);
+		if(map == null)
+			return false; // can't work with that
 		
-		for(int i = 1; i <= map.size(); i++)
+		for(Entry<Integer, CorefChain> thing : map.entrySet())
 		{
-			CorefChain chain = map.get(i);
+			CorefChain chain = thing.getValue();
+			if(chain == null)
+				continue;
 			
 			for (CorefMention m : chain.getMentionsInTextualOrder()) {
 				if(m.mentionType == MentionType.PROPER)
