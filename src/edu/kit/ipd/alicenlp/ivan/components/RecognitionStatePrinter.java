@@ -47,7 +47,7 @@ public class RecognitionStatePrinter {
 		StringBuilder sb = new StringBuilder();
 		
 		// 1. talk about the names
-		if(!declarations.hasNames())
+		if(!declarations.hasAliases())
 		{
 			sb.append("None of the entities in this description have a name.");
 			sep(sb);
