@@ -43,12 +43,13 @@ import edu.stanford.nlp.util.IntTuple;
  * @author Jonny
  * 
  */
-public class AliasHearstRule implements ISentenceRule {
+public class AliasHearstRule implements ISentenceRule, ICorefResultRule {
 
 	private CorefMention representative;
 	private Map<IntPair, Set<CorefMention>> mentionMap = new HashMap<IntPair, Set<CorefMention>>();
 	private CorefChain mychain;
 	private ArrayList<CorefMention> mentionlist = new ArrayList<>();
+	private HashMap<CorefMention, CorefMention> entitymap = new HashMap<>();
 
 	/**
 	 * Extracts
@@ -57,10 +58,12 @@ public class AliasHearstRule implements ISentenceRule {
 	 */
 	@Override
 	public boolean apply(CoreMap Sentence) throws JWNLException {
-		
+		// fetch graph
 		SemanticGraph graph = Sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		// fetch default root. hope there are not more
 		IndexedWord root = graph.getFirstRoot();
 		
+		// these are keywords which must be present
 		String[] validheads = {"called", "named"};
 
 		// does the validheads contain root?
@@ -78,52 +81,82 @@ public class AliasHearstRule implements ISentenceRule {
 			return false;
 		}
 		
+		// deal with entity mentions
+		// retrieve subject. this is going to be the entity description
 		IndexedWord entityHead = BaseRule.getSubject(graph);
+		// if there is none, we fail
 		if(entityHead == null)
 			return false;		
+		// save words for later
 		ArrayList<IndexedWord> entitywords = new ArrayList<>();
+		// retrieve multi-word subject phrase
 		String entityString = BaseRule.resolveNN(entityHead, graph, entitywords);
-		
+		// fetch the sentence number. this is a 1-based index for the coref data structure
 		int sentencenumber = Sentence.get(SentenceIndexAnnotation.class);
+		// this is the position description (sentence x, first mention)
 		IntPair entitypos = new IntPair(sentencenumber, 1);
 		
-		CorefMention entitymention = buildMention(MentionType.NOMINAL, 
-				entitywords.get(0).get(BeginIndexAnnotation.class), 
-				entityHead.get(EndIndexAnnotation.class), 
-				entitypos, entityString);
+		// create a mention from our data
+		CorefMention entitymention = buildMention(MentionType.NOMINAL, // non-alias, non-pronomial mention 
+				entitywords.get(0).get(BeginIndexAnnotation.class), // first word marks beginning of result span
+				entityHead.get(EndIndexAnnotation.class), // last word (head) marks the end
+				entitypos, entityString); // save position and the whole string for easy reading
+		// this is for storing mentions in the map later
 		HashSet<CorefMention> entityset = new HashSet<>();
+		// save the entity mention
 		entityset.add(entitymention);
+		// map this collection to the document-relative, 1-based position
 		mentionMap.put(entitypos, entityset);
 		
+		// deal with aliases
+		// retrieve object. this is going to be the alias description
 		IndexedWord aliasHead = BaseRule.getDirectObject(root, graph);
+		// if there's none, we fail
 		if(aliasHead == null)
-			return false;		
+			return false;
+		// save all the words
 		ArrayList<IndexedWord> aliaswords = new ArrayList<>();
+		// fetch all the words
 		String aliasString = BaseRule.resolveNN(aliasHead, graph, aliaswords);
-		
+		// save the position for later (sentence x, second mention)
 		IntPair aliaspos = new IntPair(sentencenumber, 2);
 		
-		CorefMention aliasmention = buildMention(MentionType.PROPER, 
+		// create mention data
+		CorefMention aliasmention = buildMention(MentionType.PROPER, // alias mention with a proper name 
 				aliaswords.get(0).get(BeginIndexAnnotation.class), 
 				aliasHead.get(EndIndexAnnotation.class), 
 				aliaspos, aliasString);
+		// save the alias in the structure neccessary for coref
 		HashSet<CorefMention> aliasset = new HashSet<>();
 		aliasset.add(aliasmention);
 		mentionMap.put(aliaspos, aliasset);
 		
+		// we think that aliases are more representative
 		representative = aliasmention;
 		
-		buildChain();
-		buildList();
+		buildChain(); // build a chain. this is not really neccessary, but we want to be as similar to actual coreference resolution as possible
+		buildList(); // this list is neccessary to satisfy the ICorefResultRule interface
 		
 		return true;
 	}
 
+	/**
+	 * utility for creating a coref chain
+	 */
 	void buildChain()
 	{
 		mychain = new CorefChain(0, mentionMap, representative);
 	}
 	
+	/** utility for creating mentions
+	 * 
+	 * @param type
+	 * @param startIndex
+	 * @param endIndex
+	 * @param position
+	 * @param mentionSpan
+	 * @return
+	 */
 	CorefMention buildMention(MentionType type, int startIndex, int endIndex,
 			IntTuple position, String mentionSpan) {
 		
@@ -136,8 +169,16 @@ public class AliasHearstRule implements ISentenceRule {
 	 * 
 	 * @return
 	 */
-	public List<CorefMention> getMentions() {		
+	public List<CorefMention> getAliasMentions() {		
 		return mentionlist;
+	}
+	
+	/**
+	 * Retrieve the entity mention for a given proper mention
+	 */
+	@Override
+	public CorefMention getEntity(CorefMention alias) {
+		return entitymap.get(alias);
 	}
 
 	/**
