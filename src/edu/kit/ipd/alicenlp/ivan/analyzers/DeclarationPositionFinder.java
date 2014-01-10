@@ -22,6 +22,7 @@ import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
+import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
@@ -515,6 +516,46 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		
 		
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			// find alias mappings
+			AliasHearstRule sentencerule = new AliasHearstRule();
+			try {
+				// check for alias declarations
+				if(sentencerule.apply(sentence))
+				{
+					for (CorefMention ms : sentencerule.getAliasMentions()) {
+						// create alias
+						String alias = ms.mentionSpan;
+						// create and add entity
+						// find mention head
+						CorefMention entity = sentencerule.getEntity(ms);
+						if(entity == null)
+						{
+							// it didn't find any nominal mentions for this name
+							mystate.map(alias, null); // create a mapping for an unknown entity
+							continue; 
+						}
+						// retrieve and convert index
+						int sentenceIndex /* 0-based index for arrays */ = sentencerule.getEntity(ms).sentNum - 1; /* 1- based index */
+						CoreMap sen = annotation.get(SentencesAnnotation.class).get(sentenceIndex);
+						// retrieve and convert index
+						int entityHeadIndex /* 0-based index for arrays */ = entity.headIndex - 1; /* 1- based index */
+						CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
+						String headstring = head.lemma();
+						EntityInfo ei = new EntityInfo(headstring);
+						// add alias
+						mystate.map(alias, ei);
+					}
+					// stop processing more rules for this sentence
+					continue;
+				}
+			} catch (JWNLException e1) {
+				log("Should not be reachable.");
+			} catch (IvanInvalidMappingException e) {
+				e.printStackTrace();
+				log(Redwood.ERR, e);
+			}
+			
+			
 			// TODO: do stuff
 			LocationListAnnotation list = findLocationAsTrees(sentence);
 			if(!list.isEmpty())
