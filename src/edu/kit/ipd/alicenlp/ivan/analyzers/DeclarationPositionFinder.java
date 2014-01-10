@@ -17,6 +17,7 @@ import com.jcraft.jsch.Logger;
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
+import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
@@ -480,15 +481,36 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 			if(aliasRule.apply(annotation))
 			{
 				// add each found name to the state
-				for (CorefMention ms : aliasRule.getMentions()) {
+				for (CorefMention ms : aliasRule.getAliasMentions()) {
 					// create alias
+					String alias = ms.mentionSpan;
 					// create and add entity
+					// find mention head
+					CorefMention entity = aliasRule.getEntity(ms);
+					if(entity == null)
+					{
+						// it didn't find any nominal mentions for this name
+						mystate.map(alias, null); // create a mapping for an unknown entity
+						continue; 
+					}
+					// retrieve and convert index
+					int sentenceIndex /* 0-based index for arrays */ = aliasRule.getEntity(ms).sentNum - 1; /* 1- based index */
+					CoreMap sen = annotation.get(SentencesAnnotation.class).get(sentenceIndex);
+					// retrieve and convert index
+					int entityHeadIndex /* 0-based index for arrays */ = entity.headIndex - 1; /* 1- based index */
+					CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
+					String headstring = head.lemma();
+					EntityInfo ei = new EntityInfo(headstring);
 					// add alias
-				}				
-			}			
-			
+					mystate.map(alias, ei);
+				}
+			}
 		} catch (JWNLException e1) {
+			log("It should not be physically possible to see this message.");
 			// does not occur
+		} catch (IvanInvalidMappingException e) {
+			e.printStackTrace();
+			log(Redwood.ERR, e);
 		}
 		
 		

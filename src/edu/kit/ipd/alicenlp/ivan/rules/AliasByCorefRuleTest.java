@@ -11,8 +11,12 @@ import net.sf.extjwnl.JWNLException;
 import org.junit.Test;
 
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
 
 @SuppressWarnings("javadoc")
 public class AliasByCorefRuleTest 
@@ -32,7 +36,7 @@ public class AliasByCorefRuleTest
 		
 		assertTrue("Nothing recognised", rule.apply(thing)); // runs rule
 				
-		List<CorefMention> mentions = rule.getMentions();
+		List<CorefMention> mentions = rule.getAliasMentions();
 		
 		assertThat("Too few results", mentions.size(), is(1));
 		
@@ -40,6 +44,31 @@ public class AliasByCorefRuleTest
 		
 		assertThat("Name does not match", m.mentionSpan, is("Spanky"));
 		
+		assertThat("Description does not match", rule.getEntity(m).mentionSpan, is("a dog"));
+	}
+	
+	@Test
+	public void indexTest() throws JWNLException
+	{
+		String samplesentence = "Terror in the nights outlasted Batman's second cousin. Spanky is a dog."; 
+		Annotation annotation = annotate(samplesentence);
+
+		AliasByCorefRule aliasRule = new AliasByCorefRule();		
+		assertTrue("Nothing recognised", aliasRule.apply(annotation)); // runs rule				
+		List<CorefMention> mentions = aliasRule.getAliasMentions();
+		
+		CorefMention ms = mentions.get(3);		
+		
+		assertThat(ms.mentionSpan, is("Spanky"));
+		assertThat(aliasRule.getEntity(ms).mentionSpan, is("a dog"));
+		
+		int entityHeadIndex = aliasRule.getEntity(ms).headIndex - 1;
+		int sentenceNum = aliasRule.getEntity(ms).sentNum - 1;
+		CoreMap sen = annotation.get(SentencesAnnotation.class).get(sentenceNum);
+		CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
+		String headstring = head.lemma();
+		
+		assertThat(headstring, is("dog"));
 	}
 
 	

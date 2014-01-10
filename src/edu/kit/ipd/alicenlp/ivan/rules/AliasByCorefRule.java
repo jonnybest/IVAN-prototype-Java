@@ -4,6 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -21,7 +22,8 @@ import edu.stanford.nlp.pipeline.Annotation;
  */
 public class AliasByCorefRule implements IDocumentRule {
 
-	private ArrayList<CorefMention> mentions = new ArrayList<>();
+	private ArrayList<CorefMention> aliasmentions = new ArrayList<>();
+	private HashMap<CorefMention, CorefMention> entitymap = new HashMap<>();
 
 	/* (non-Javadoc)
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.IDocumentRule#apply(edu.stanford.nlp.pipeline.Annotation)
@@ -39,21 +41,32 @@ public class AliasByCorefRule implements IDocumentRule {
 			if(chain == null)
 				continue;
 			
-			for (CorefMention m : chain.getMentionsInTextualOrder()) {
-				if(m.mentionType == MentionType.PROPER)
+			for (CorefMention alias : chain.getMentionsInTextualOrder()) {
+				if(alias.mentionType == MentionType.PROPER) // found an alias
 				{
-					mentions.add(m);
+					// add the alias
+					aliasmentions.add(alias);
+					// search for a nominal mention
+					// we simply take the first nominal mention that pops up
+					for (CorefMention entity : chain.getMentionsInTextualOrder()) {
+						if(entity.mentionType == MentionType.NOMINAL) // found an non-alias mention
+						{
+							// map the alias onto this nominal mention
+							entitymap.put(alias, entity);
+						}
+					}
+					// go to next coref chain chain
 					break;
 				}
 			}
 		}
 		
-		if(mentions.size() > 0)
+		if(aliasmentions.size() > 0)
 		{
 			return true;
 		}
 		else {
-			mentions = null;
+			aliasmentions = null;
 			return false;
 		}
 	}
@@ -69,8 +82,16 @@ public class AliasByCorefRule implements IDocumentRule {
 	 * @return A list of aliases
 	 * 
 	 */
-	public List<CorefMention> getMentions() {
-		return mentions;
+	public List<CorefMention> getAliasMentions() {
+		return aliasmentions;
 	}
 
+	/** If the rule found anything, this method retrieves the first nominal mention for the given alias.
+	 * @param alias The name to look for
+	 * @return A nominal mention which has a reference to the given name
+	 */
+	public CorefMention getEntity(CorefMention alias)
+	{
+		return entitymap.get(alias);
+	}
 }

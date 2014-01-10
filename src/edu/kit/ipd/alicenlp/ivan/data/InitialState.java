@@ -63,6 +63,34 @@ public class InitialState extends HashSet<EntityInfo> {
 	 * 
 	 */
 	public void map(String alias, EntityInfo entity) throws IvanInvalidMappingException{
+		// shortcut for handling special null mappings
+		if(entity == null)
+		{
+			// add a null mapping for an unknown entity
+			// if this alias does not already exist, add it.
+			if(!alias.contains(alias))
+			{
+				// there are already null mappings in place. append ours
+				if (entitiesToAliases.containsKey(null)) {
+					List<String> existing = entitiesToAliases.get(null);
+					// check for duplicates and append
+					if(!existing.contains(alias))
+						existing.add(alias);
+				}
+				// there are no null mappings so far. create a list and append ours
+				else {
+					List<String> mylist = new ArrayList<>();
+					// check for duplicates and append
+					if(!mylist.contains(alias))
+						mylist.add(alias);
+					entitiesToAliases.put(null, mylist);
+				}
+			}
+			// else: if this alias already exists, there is no new information in the null mapping
+			return;
+		}
+		
+		// not allowed: creating explicit mappings between identical names
 		if(alias.equals(entity.getEntity()))
 			throw new IvanInvalidMappingException("Cannot map an alias to an entity with the same name as the alias.");
 		
