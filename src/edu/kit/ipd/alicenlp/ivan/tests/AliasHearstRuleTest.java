@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.kit.ipd.alicenlp.ivan.rules;
+package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
@@ -13,6 +13,7 @@ import net.sf.extjwnl.JWNLException;
 
 import org.junit.Test;
 
+import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;

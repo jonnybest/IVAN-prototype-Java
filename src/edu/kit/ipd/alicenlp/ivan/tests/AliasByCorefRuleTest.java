@@ -1,4 +1,4 @@
-package edu.kit.ipd.alicenlp.ivan.rules;
+package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.core.Is.*;
@@ -10,6 +10,7 @@ import net.sf.extjwnl.JWNLException;
 
 import org.junit.Test;
 
+import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
