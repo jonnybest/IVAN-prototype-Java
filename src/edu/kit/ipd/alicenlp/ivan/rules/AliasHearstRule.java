@@ -49,6 +49,9 @@ public class AliasHearstRule implements ISentenceRule, ICorefResultRule {
 	private Map<IntPair, Set<CorefMention>> mentionMap = new HashMap<IntPair, Set<CorefMention>>();
 	private CorefChain mychain;
 	private ArrayList<CorefMention> mentionlist = new ArrayList<>();
+	/** It's a mapping between Alias -> Entity
+	 * 
+	 */
 	private HashMap<CorefMention, CorefMention> entitymap = new HashMap<>();
 
 	/**
@@ -136,6 +139,9 @@ public class AliasHearstRule implements ISentenceRule, ICorefResultRule {
 		
 		buildChain(); // build a chain. this is not really neccessary, but we want to be as similar to actual coreference resolution as possible
 		buildList(); // this list is neccessary to satisfy the ICorefResultRule interface
+		
+		// add result mapping
+		entitymap.put(aliasmention, entitymention);
 		
 		return true;
 	}

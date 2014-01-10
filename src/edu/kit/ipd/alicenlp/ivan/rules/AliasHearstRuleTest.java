@@ -53,7 +53,7 @@ public class AliasHearstRuleTest {
 
 			assertThat("Name does not match", m.mentionSpan, is("Spanky"));
 			
-			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("The dog"));
+			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("dog"));
 		}
 		
 		{
@@ -73,7 +73,7 @@ public class AliasHearstRuleTest {
 			CorefMention m = mentions.get(0);
 
 			assertThat("Name does not match", m.mentionSpan, is("Fluffy"));
-			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("The cat"));
+			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("cat"));
 		}
 
 	}
