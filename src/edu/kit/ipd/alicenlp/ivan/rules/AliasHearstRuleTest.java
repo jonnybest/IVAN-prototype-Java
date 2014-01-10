@@ -51,9 +51,11 @@ public class AliasHearstRuleTest {
 
 			CorefMention m = mentions.get(0);
 
-			assertThat("Name does not match", m.mentionSpan, is("Spanky"));
-			
+			assertThat("Name does not match", m.mentionSpan, is("Spanky"));			
 			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("dog"));
+			
+			assertThat("alias index is wrong", m.headIndex, is(5));			
+			assertThat("entity index wrong", rule.getEntity(m).headIndex, is(2));
 		}
 		
 		{
@@ -74,6 +76,9 @@ public class AliasHearstRuleTest {
 
 			assertThat("Name does not match", m.mentionSpan, is("Fluffy"));
 			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("cat"));
+			
+			assertThat("alias index is wrong", m.headIndex, is(5));			
+			assertThat("entity index wrong", rule.getEntity(m).headIndex, is(2));
 		}
 
 	}
