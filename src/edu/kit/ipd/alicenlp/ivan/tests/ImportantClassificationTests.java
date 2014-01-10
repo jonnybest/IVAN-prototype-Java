@@ -1,6 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateClassifications;
+import static edu.stanford.nlp.util.logging.Redwood.log;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertEquals;
@@ -8,16 +9,27 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
+import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.SpanAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.Redwood;
 
 /**
  * Tests the sentence type classifier with working tests which are absolutely
@@ -330,6 +342,112 @@ public class ImportantClassificationTests {
 				sentence3.get(Classification.class),
 				is(not(Classification.ActionDescription)));
 
+	}
+
+	/**
+	 * A positive test for ERROR annotations. If this test passes, the analyzer
+	 * identified an undesirable sentence.
+	 */
+	@Test
+	public void positiveNoSynonymousAgentsErrorTest() {
+		{
+			/*
+			 * rule: different agents cannot be synonyms of each other reason:
+			 * we resolve synonyms to the same Alice entity. They need a name at
+			 * least.
+			 */
+			Annotation doc = annotateClassifications("On the left side in the background, there is a rabbit. "
+					+ "On the right side, in the foreground, there is a hare.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(1);
+
+			CoreLabel bunny = findWord("hare",
+					sentence.get(TokensAnnotation.class));
+			log("span: " + bunny.get(SpanAnnotation.class));
+			log(Redwood.DBG, bunny.get(CharacterOffsetBeginAnnotation.class)
+					+ " " + bunny.get(CharacterOffsetEndAnnotation.class)
+					+ " offsets");
+			Span bunnyspan = makeSpan(bunny);
+			log(bunnyspan);
+
+			List<IvanErrorMessage> myerrors = doc.get(DocumentErrorAnnotation.class);
+			assertNotNull("Error tag is missing.",
+					myerrors);
+
+			assertThat("hare/bunny error classified wrong",
+					sentence.get(Classification.class),
+					is(Classification.ErrorDescription));
+
+			assertThat(myerrors.get(0).getSpan(), is(bunnyspan));
+		}
+	}
+	
+	/**
+	 * A negative test for ERROR annotations. If this test passes, the analyzer
+	 * correctly ignored a desirable sentence.
+	 */
+	@Test
+	public void negativeNoSynonymousAgentsErrorTest() {
+		{
+			/*
+			 * rule: different agents cannot be synonyms of each other reason:
+			 * we resolve synonyms to the same Alice entity. They need a name at
+			 * least.
+			 */
+			{
+				/** Make sure that names are alright.
+				 * 
+				 */
+				Annotation doc = annotateClassifications("On the left side in the background, there is a rabbit."
+						+ " The rabbit is called Harry."
+						+ " On the right side, in the foreground, there is a hare."
+						+ " The hare is called Lucas.");
+	
+				List<IvanErrorMessage> errors = doc
+						.get(DocumentErrorAnnotation.class);
+				if(errors != null)
+				{
+					for (IvanErrorMessage err : errors) {
+						assertThat("Error tag should not be present if proper names are used!",
+								err.getType(), is(not(IvanErrorType.SYNONYMS)));
+					}
+				}
+			}
+			/*
+			 * rule: no synonyms, no errors.
+			 */
+			{
+				/** Make sure that non-synonymous usages are alright.
+				 * 
+				 */
+				Annotation doc = annotateClassifications("On the left side in the background, there is a bunny."
+						+ " On the right side, in the foreground, there is a hare."
+						);
+	
+				List<IvanErrorMessage> errors = doc
+						.get(DocumentErrorAnnotation.class);
+				if(errors != null)
+				{
+					for (IvanErrorMessage err : errors) {	
+						assertThat("Error tag should not be present for non-synonyms!",
+								err.getType(), is(not(IvanErrorType.SYNONYMS)));
+					}
+				}
+			}
+		}
+	}
+
+	private static Span makeSpan(CoreLabel label) {
+		return Span.fromValues(label.get(CharacterOffsetBeginAnnotation.class),
+				label.get(CharacterOffsetEndAnnotation.class));
+	}
+
+	private static CoreLabel findWord(String name, List<CoreLabel> list) {
+		for (CoreLabel c : list) {
+			if (c.originalText().equalsIgnoreCase(name)) {
+				return c;
+			}
+		}
+		return null;
 	}
 
 }
