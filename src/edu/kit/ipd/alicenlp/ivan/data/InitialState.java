@@ -267,9 +267,42 @@ public class InitialState extends HashSet<EntityInfo> {
 	 * @return
 	 */
 	public EntityInfo getSingle(String name) {
+		if(!aliases.containsKey(name))
+			return null;
+		
 		List<EntityInfo> infos = aliases.get(name);
-		assert infos.size() == 1;
-		return infos.get(0);
+		// if there is only one, return that
+		if(infos.size() == 1)
+		{
+			return infos.get(0);
+		}
+		else {
+			// merge existing infos into a new one
+			EntityInfo resultinfo = new EntityInfo(name);
+			for (EntityInfo ei : infos) {
+				EntityInfo tmp = resultinfo; // save progress
+				
+				if (!ei.isProperName()) {
+					// the best entity description is always the longest non-aliased mention 
+					if(ei.getEntity().length() > resultinfo.getEntity().length())
+					{
+						resultinfo = ei; // put best matching info
+					}
+				}
+
+				// merge progress
+				if(!resultinfo.hasLocation())
+				{
+					resultinfo.setLocation(tmp.getLocation());
+				}
+				if(!resultinfo.hasDirection())
+				{
+					resultinfo.setDirection(tmp.getDirection());
+				}
+				
+			}
+			return resultinfo;
+		}
 	}
 
 	/**

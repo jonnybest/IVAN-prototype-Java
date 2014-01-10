@@ -245,8 +245,8 @@ public class HardClassificationTest {
 	}
 	
 	/**
-	 * A positive test for ERROR annotations. If this test passes, the analyzer
-	 * identified an undesirable sentence.
+	 * A negative test for ERROR annotations. If this test passes, the analyzer
+	 * correctly ignored a desirable sentence.
 	 */
 	@Test
 	public void negativeNoSynonymousAgentsErrorTest() {
@@ -267,10 +267,12 @@ public class HardClassificationTest {
 	
 				List<IvanErrorMessage> errors = doc
 						.get(DocumentErrorAnnotation.class);
-				for (IvanErrorMessage err : errors) {
-					
-					assertThat("Error tag should not be present if proper names are used!",
-							err.getType(), is(not(IvanErrorType.SYNONYMS)));
+				if(errors != null)
+				{
+					for (IvanErrorMessage err : errors) {
+						assertThat("Error tag should not be present if proper names are used!",
+								err.getType(), is(not(IvanErrorType.SYNONYMS)));
+					}
 				}
 			}
 			/*
@@ -286,10 +288,12 @@ public class HardClassificationTest {
 	
 				List<IvanErrorMessage> errors = doc
 						.get(DocumentErrorAnnotation.class);
-				for (IvanErrorMessage err : errors) {
-					
-					assertThat("Error tag should not be present for non-synonyms!",
-							err.getType(), is(not(IvanErrorType.SYNONYMS)));
+				if(errors != null)
+				{
+					for (IvanErrorMessage err : errors) {	
+						assertThat("Error tag should not be present for non-synonyms!",
+								err.getType(), is(not(IvanErrorType.SYNONYMS)));
+					}
 				}
 			}
 		}
