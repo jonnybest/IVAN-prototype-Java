@@ -95,14 +95,14 @@ public class AliasHearstRule implements ISentenceRule, ICorefResultRule {
 		// retrieve multi-word subject phrase
 		String entityString = BaseRule.resolveNN(entityHead, graph, entitywords);
 		// fetch the sentence number. this is a 1-based index for the coref data structure
-		int sentencenumber = Sentence.get(SentenceIndexAnnotation.class);
+		int sentencenumber /* 1-based */ = Sentence.get(SentenceIndexAnnotation.class) + 1; /* zero-based */
 		// this is the position description (sentence x, first mention)
 		IntPair entitypos = new IntPair(sentencenumber, 1);
 		
 		// create a mention from our data
 		CorefMention entitymention = buildMention(MentionType.NOMINAL, // non-alias, non-pronomial mention 
-				entitywords.get(0).get(BeginIndexAnnotation.class), // first word marks beginning of result span
-				entityHead.get(EndIndexAnnotation.class), // last word (head) marks the end
+				entitywords.get(0).get(IndexAnnotation.class), // first word marks beginning of result span
+				entityHead.get(IndexAnnotation.class), // last word (head) marks the end
 				entitypos, entityString); // save position and the whole string for easy reading
 		// this is for storing mentions in the map later
 		HashSet<CorefMention> entityset = new HashSet<>();
@@ -126,8 +126,8 @@ public class AliasHearstRule implements ISentenceRule, ICorefResultRule {
 		
 		// create mention data
 		CorefMention aliasmention = buildMention(MentionType.PROPER, // alias mention with a proper name 
-				aliaswords.get(0).get(BeginIndexAnnotation.class), 
-				aliasHead.get(EndIndexAnnotation.class), 
+				aliaswords.get(0).get(IndexAnnotation.class), 
+				aliasHead.get(IndexAnnotation.class), 
 				aliaspos, aliasString);
 		// save the alias in the structure neccessary for coref
 		HashSet<CorefMention> aliasset = new HashSet<>();
@@ -167,7 +167,7 @@ public class AliasHearstRule implements ISentenceRule, ICorefResultRule {
 			IntTuple position, String mentionSpan) {
 		
 		return new CorefMention(type, Number.SINGULAR, Gender.UNKNOWN,
-				Animacy.ANIMATE, startIndex, endIndex, 0, 0, 0, position.get(0),
+				Animacy.ANIMATE, startIndex, endIndex, endIndex, 0, 0, position.get(0),
 				position, mentionSpan);
 	}
 
