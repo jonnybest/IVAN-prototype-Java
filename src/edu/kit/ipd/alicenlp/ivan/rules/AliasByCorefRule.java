@@ -20,7 +20,7 @@ import edu.stanford.nlp.pipeline.Annotation;
  * @author Jonny
  *
  */
-public class AliasByCorefRule implements IDocumentRule {
+public class AliasByCorefRule implements IDocumentRule, ICorefResultRule {
 
 	private ArrayList<CorefMention> aliasmentions = new ArrayList<>();
 	private HashMap<CorefMention, CorefMention> entitymap = new HashMap<>();
