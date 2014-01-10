@@ -45,13 +45,15 @@ public class AliasHearstRuleTest {
 
 			assertTrue("Nothing recognised", rule.apply(thing)); // runs rule
 
-			List<CorefMention> mentions = rule.getMentions();
+			List<CorefMention> mentions = rule.getAliasMentions();
 
 			assertThat("Too few results", mentions.size(), is(1));
 
 			CorefMention m = mentions.get(0);
 
 			assertThat("Name does not match", m.mentionSpan, is("Spanky"));
+			
+			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("The dog"));
 		}
 		
 		{
@@ -64,13 +66,14 @@ public class AliasHearstRuleTest {
 
 			assertTrue("Nothing recognised", rule.apply(thing)); // runs rule
 
-			List<CorefMention> mentions = rule.getMentions();
+			List<CorefMention> mentions = rule.getAliasMentions();
 
 			assertThat("Too few results", mentions.size(), is(1));
 
 			CorefMention m = mentions.get(0);
 
 			assertThat("Name does not match", m.mentionSpan, is("Fluffy"));
+			assertThat("Entity does not match", rule.getEntity(m).mentionSpan, is("The cat"));
 		}
 
 	}
