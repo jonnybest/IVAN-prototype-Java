@@ -258,10 +258,8 @@ public class InitialState extends HashSet<EntityInfo> {
 	}
 
 	/**
-	 * Returns the singleton value to which the specified name is mapped, or
-	 * null if this map contains no mapping for the name. It will break, if
-	 * there is more than one match for the name, so use {@code get(String)}
-	 * instead.
+	 * Returns the first value to which the specified name is mapped, or
+	 * null if this map contains no mapping for the name. 
 	 * 
 	 * @param name
 	 * @return
@@ -270,39 +268,45 @@ public class InitialState extends HashSet<EntityInfo> {
 		if(!aliases.containsKey(name))
 			return null;
 		
-		List<EntityInfo> infos = aliases.get(name);
-		// if there is only one, return that
-		if(infos.size() == 1)
-		{
+		List<EntityInfo> infos = aliases.get(name); // span = null
+		if(infos.size() > 0)
 			return infos.get(0);
-		}
-		else {
-			// merge existing infos into a new one
-			EntityInfo resultinfo = new EntityInfo(name);
-			for (EntityInfo ei : infos) {
-				EntityInfo tmp = resultinfo; // save progress
-				
-				if (!ei.isProperName()) {
-					// the best entity description is always the longest non-aliased mention 
-					if(ei.getEntity().length() > resultinfo.getEntity().length())
-					{
-						resultinfo = ei; // put best matching info
-					}
-				}
-
-				// merge progress
-				if(!resultinfo.hasLocation())
-				{
-					resultinfo.setLocation(tmp.getLocation());
-				}
-				if(!resultinfo.hasDirection())
-				{
-					resultinfo.setDirection(tmp.getDirection());
-				}
-				
-			}
-			return resultinfo;
-		}
+		else 
+			return null;
+//		// if there is only one, return that
+//		if(infos.size() == 1)
+//		{
+//			return infos.get(0);
+//		}
+//		else {
+//			// merge existing infos into a new one
+//			EntityInfo resultinfo = new EntityInfo(name);
+//			for (EntityInfo ei : infos) {
+//				EntityInfo tmp = resultinfo; // save progress
+//				
+//				// if the entity is not a proper name OR if the entity is not from the text, we consider swapping them
+//				if (!ei.isProperName() || resultinfo.getEntitySpan() == null) {
+//					// the best entity description is always the longest non-aliased mention 
+//					if(ei.getEntity().length() >= resultinfo.getEntity().length())
+//					{
+//						tmp = resultinfo; // swap infos
+//						resultinfo = ei; // put best matching info
+//					}
+//				}
+//
+//				// merge progress
+//				if(!resultinfo.hasLocation())
+//				{
+//					resultinfo.setLocation(tmp.getLocation());
+//				}
+//				if(!resultinfo.hasDirection())
+//				{
+//					resultinfo.setDirection(tmp.getDirection());
+//				}
+//				
+//			}
+//			return resultinfo;
+//		}
 	}
 
 	/**
