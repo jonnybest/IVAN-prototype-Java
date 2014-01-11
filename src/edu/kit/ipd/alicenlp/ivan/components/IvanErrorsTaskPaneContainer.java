@@ -47,6 +47,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	private static final String QF_ERROR = "error";
 	private static final String QF_NAME = "qf-name";
 
+	/** This action invokes the pipeline and checks the sentence
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class CheckSentencesMetaAction extends AbstractAction {
 		private CheckSentencesMetaAction(String name) {
 			super(name);
@@ -72,6 +77,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action restores all previously ignored problems
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class RestoreAllMetaAction extends AbstractAction {
 		private RestoreAllMetaAction(String name) {
 			super(name);
@@ -99,6 +109,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action ignores all currently displayed problems and clears the panel 
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class IgnoreAllMetaAction extends AbstractAction {
 		private IgnoreAllMetaAction(String name) {
 			super(name);
@@ -155,6 +170,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action ignores a single problem
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class IgnoreProblemAction extends AbstractAction {
 		private final IvanErrorInstance error;
 		private final IvanErrorsTaskPaneContainer tp;
@@ -203,6 +223,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action implements a quick fix: it adds a location
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class AddLocationAction extends AbstractAction {
 		final private IvanErrorInstance myerror;
 		private List<String> stubs = new ArrayList<String>();
@@ -263,6 +288,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		return lastMark;
 	}
 
+	/** This action implements a quick fix: it deletes the offending sentence
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class DeleteSentenceAction extends AbstractAction {
 		private final IvanErrorInstance error;
 
@@ -479,8 +509,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		 * @param i
 		 * @param j
 		 */
-		public CodePoint(Integer i, Integer j) {
-			super();		
+		public CodePoint(Integer i, Integer j) {		
 			if(i < j)
 			{
 				x = i;
@@ -502,7 +531,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		 */
 		public CodePoint(IntPair tuple)
 		{
-			super();
 			int i = tuple.getSource();
 			int j = tuple.getTarget();
 			if(i < j)
@@ -519,13 +547,22 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				this.elems()[1] = i;
 			}
 		}
+		
+		@Override
+		public int hashCode() {
+			return this.elems()[0] * 67 + this.elems()[1];
+		}
 	}
 	
+	/** A bag of problems which have been ignored by the user and should subsequently not be displayed any more.
+	 * 
+	 */
 	private Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	private Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	
 
-	/**
+	/** Create a new component. This component displays errors and user action. It can also modify text in a text component. 
+	 * @param editor The text to work with.
 	 */
 	public IvanErrorsTaskPaneContainer(JTextComponent editor) {
 		txtEditor = editor;
@@ -785,7 +822,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		return createProblem(category, errormsg, Arrays.asList(new CodePoint[]{new CodePoint(i, j)}), references);
 	}
 
-	/** Unified "toString" method for Actions. (Because it seems that ActionX.toString() can't share an implementation.)
+	/** Unified "toString" method for quick fix actions. (Because it seems that ActionX.toString() can't share an implementation.)
 	 * @return ActionX.toString()
 	 */
 	protected String qfActionPrinter(Action action) {
