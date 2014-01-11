@@ -10,6 +10,9 @@ import net.sf.extjwnl.JWNLException;
 
 import org.junit.Test;
 
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -72,6 +75,43 @@ public class AliasByCorefRuleTest
 		assertThat(headstring, is("dog"));
 	}
 
+	/** Verify that the spans have been set (at all)
+	 * @throws JWNLException 
+	 * 
+	 */
+	@Test
+	public void spanTest() throws JWNLException
+	{
+		String samplesentence = "The ground is covered with grass, the sky is blue. \n"
+				+ "In the background on the left hand side there is a PalmTree. \n"
+				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
+				+ "Right to the mailbox there is a Frog facing east. \n"
+				+ "In front of the Bunny there is a Broccoli. \n"
+				+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
+				+ "The Bunny turns to face the Broccoli. \n"
+				+ "The Bunny hops three times to the Broccoli. \n"
+				+ "The Bunny eats the Broccoli. \n"
+				+ "The Bunny turns to face the Frog. \n"
+				+ "The Bunny taps his foot twice. \n"
+				+ "The Frog ribbits. The Frog turns to face northeast. \n"
+				+ "The frog hops three times to northeast. \n"
+				+ "The Bunny turns to face the Mailbox. \n"
+				+ "The Bunny hops three times to the Mailbox. \n"
+				+ "The Bunny opens the Mailbox. \n"
+				+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
+				+ "The Frog hops two times to the Bunny. \n"
+				+ "The Frog disappears. A short time passes.";
+		
+		Annotation annotation = annotate(samplesentence);
+
+		AliasByCorefRule aliasRule = new AliasByCorefRule();		
+		assertTrue("Nothing recognised", aliasRule.apply(annotation)); // runs rule				
+		
+		InitialState state = annotation.get(IvanAnnotations.IvanEntitiesAnnotation.class);
+		for (EntityInfo entityInfo : state) {
+			assertNotNull("span is missing", entityInfo.getEntitySpan());
+		}
+	}
 	
 	private static Annotation annotate(String text) {
 		Annotation doc = new Annotation(text);
