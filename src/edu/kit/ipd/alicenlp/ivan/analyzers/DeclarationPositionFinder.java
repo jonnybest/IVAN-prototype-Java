@@ -31,9 +31,11 @@ import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationSerializer;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -502,6 +504,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 					CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
 					String headstring = head.lemma();
 					EntityInfo ei = new EntityInfo(headstring);
+					ei.setEntitySpan(new Span(head.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), head.get(CoreAnnotations.CharacterOffsetEndAnnotation.class)));
 					// add alias
 					mystate.map(alias, ei);
 				}
@@ -542,6 +545,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 						CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
 						String headstring = head.lemma();
 						EntityInfo ei = new EntityInfo(headstring);
+						ei.setEntitySpan(new Span(head.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), head.get(CoreAnnotations.CharacterOffsetEndAnnotation.class)));
 						// add alias
 						mystate.map(alias, ei);
 					}
