@@ -72,7 +72,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		// no 1st person descriptions (because of missing verb)
 		if(ErrorRule.is1stPerson(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)))
 		{
-			error("Sentences with \"I\" are difficult to understand. "
+			error(IvanErrorType.STYLE, "Sentences with \"I\" are difficult to understand. "
 					+ "Please try not to use \"I\" in a sentence.", sentence);
 			return true;
 		}
@@ -87,7 +87,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		// conjoined verbs are not proper use and lead to parameter errors
 		if(hasCC(getMainVerb(sentence), sentence))
 		{
-			error("The verbs in this sentence both refer to the same thing."
+			error(IvanErrorType.GRAPH, "The verbs in this sentence both refer to the same thing."
 					+ " Instead, please use one verb per sentence."
 					+ " Otherwise we'll probably get it wrong.", sentence);
 			return true;
@@ -103,7 +103,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		// checking verbs. each sentence needs at least one
 		if((getMainVerb(sentence) == null))
 		{
-			error("This sentence needs a verb.", sentence);
+			error(IvanErrorType.GRAPH, "This sentence needs a verb.", sentence);
 			return true;
 		}
 		return false;
@@ -132,13 +132,13 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		// if the sentence has no root, it's an error
 		if(roots.size() == 0)
 		{
-			error("This is not a proper sentence.", sentence);
+			error(IvanErrorType.GRAPH, "This is not a proper sentence.", sentence);
 			return true;
 		}
 		// if the sentence has more than one roots, we're probably missing out
 		else if(roots.size() > 1)
 		{
-			error("IVAN cannot handle sentences with more than a single topic."
+			error(IvanErrorType.STYLE, "IVAN cannot handle sentences with more than a single topic."
 					+ " Try splitting the sentence into two sentences.", sentence);
 			return true;
 		}

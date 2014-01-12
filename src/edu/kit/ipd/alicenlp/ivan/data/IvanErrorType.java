@@ -30,8 +30,12 @@ public enum IvanErrorType {
 	 */
 	, WORDNET // represents a failed wordnet lookup
 	/**  
-	 * Graph errors are due to missing or misbehaving dependency information
+	 * Graph errors are due to missing or misbehaving dependency information in Stanford CoreNLP.
 	 */
 	, GRAPH // represents problems with Stanford CoreNlp's dependency trees
+	/** 
+	 * This error type describes issues with the text's style. Ivan will not process it.
+	 */
+	, STYLE // whatever the text was, it's not being processed by Ivan
 	
 }
