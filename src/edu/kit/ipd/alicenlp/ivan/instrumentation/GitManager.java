@@ -96,6 +96,7 @@ public class GitManager {
 			// that's alright
 			CheckoutCommand co = git.checkout();
 			co.setName(branch);
+			co.setCreateBranch(false);
 			try {
 				co.call();
 			} catch (GitAPIException e1) {
