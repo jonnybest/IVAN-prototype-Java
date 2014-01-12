@@ -97,8 +97,14 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 			// fetches the tag which is called a "category" here
 			String cat = lbl.get(CategoryAnnotation.class);
 			// if the category is "Fragment", we don't want it
-			if(cat.equals("FRAG"))
+			if(cat != null && cat.equals("FRAG"))
+			{
+				error(IvanErrorType.GRAPH,
+						"This sentence seems to contain a fragment. "
+						+ "The sentence is either incomplete or it contains parts which should go in their own sentence.",
+						sentence);
 				return true;
+			}
 		}
 		// meh. didn't find anything
 		return false;
