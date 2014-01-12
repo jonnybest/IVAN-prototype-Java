@@ -47,6 +47,10 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 		// check for a graph
 		if (applyNeedsGraph(sentence))
 			return true;
+		// check for bad penn tags
+		if(applyBadPennTags(sentence))
+			return true;
+		
 		// checking roots:
 		if (applyRoots(sentence))
 			return true;
