@@ -117,7 +117,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		// checking the graph. if the sentence does not have a graph, we can't process it
 		if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).isEmpty())
 		{
-			error("This sentence is intelligible. It probably needs to be longer.", sentence);
+			error(IvanErrorType.GRAPH, "This sentence is intelligible. It probably needs to be longer.", sentence);
 			return true;
 		}
 		return false;
