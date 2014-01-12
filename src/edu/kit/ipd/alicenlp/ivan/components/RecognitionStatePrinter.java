@@ -81,9 +81,13 @@ public class RecognitionStatePrinter {
 					sb.append("A " + entity.getEntity() + " is " + entity.getLocation() + ", " + entity.getDirection() + ".");
 					sep(sb);
 				}
-				else {
+				else if (entities.size() == 2) {
 					appendSentence(entities.remove(), entities.remove(), sb);
 					// no break, because the queue should be empty now anyway
+				}
+				else {
+					EntityInfo entity = entities.remove();
+					sb.append("A " + entity.getEntity() + " is " + entity.getLocation() + ", " + entity.getDirection() + ".");
 				}
 			}
 		}
