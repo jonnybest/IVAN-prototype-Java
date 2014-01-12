@@ -4,21 +4,13 @@
 package edu.kit.ipd.alicenlp.ivan.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import org.jdesktop.swingx.search.ListSearchable;
-
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
-import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
-import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.stanford.nlp.util.Pair;
-import edu.stanford.nlp.util.TypesafeMap;
-import edu.stanford.nlp.util.logging.Redwood;
-import static edu.stanford.nlp.util.logging.PrettyLogger.log;
 
 /**
  * This class manages a set of names and EntityInfos
