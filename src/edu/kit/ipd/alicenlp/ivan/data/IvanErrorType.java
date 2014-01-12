@@ -24,5 +24,10 @@ public enum IvanErrorType {
 	 * This error means that a pronoun (or maybe a name) could not be resolved to an entity. 
 	 */
 	, COREFERENCE // represents a coreference error found by DeclarationPositionFinder
+	/**
+	 * This error means that the analyzer tried to process this sentence and could not proceed,
+	 * because a word was missing in WordNET.
+	 */
+	, WNWMISSING // represents a failed wordnet lookup
 	
 }
