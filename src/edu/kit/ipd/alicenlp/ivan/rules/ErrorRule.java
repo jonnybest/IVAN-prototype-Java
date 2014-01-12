@@ -38,6 +38,9 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 	 */
 	@Override
 	public boolean apply(CoreMap sentence) {
+		// check for a graph
+		if(applyNeedsGraph(sentence))
+			return true;		
 		// checking roots:
 		if(applyRoots(sentence))
 			return true;
@@ -100,6 +103,20 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		if((getMainVerb(sentence) == null))
 		{
 			error("This sentence needs a verb.", sentence);
+			return true;
+		}
+		return false;
+	}
+	
+	/**
+	 * @param sentence
+	 * @return
+	 */
+	public boolean applyNeedsGraph(CoreMap sentence) {
+		// checking the graph. if the sentence does not have a graph, we can't process it
+		if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).isEmpty())
+		{
+			error("This sentence is intelligible. It probably needs to be longer.", sentence);
 			return true;
 		}
 		return false;

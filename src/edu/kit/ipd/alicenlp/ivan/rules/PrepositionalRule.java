@@ -55,6 +55,8 @@ public class PrepositionalRule implements ISentenceRule
 		
 		GrammaticalRelation nsubjreln = GrammaticalRelation.getRelation(NominalSubjectGRAnnotation.class);
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		if(graph.isEmpty())
+			return false;
 		IndexedWord root = graph.getFirstRoot();
 		IndexedWord subject = graph.getChildWithReln(root, nsubjreln);
 		

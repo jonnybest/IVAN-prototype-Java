@@ -374,6 +374,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 */
 	public static List<String> recogniseEntities(CoreMap sentence) throws IvanException {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		if(graph.isEmpty())
+			return null;
+		
 		IndexedWord head = BaseRule.getSubject(graph);
 		
 		// if the nominal subject is a plural word (like "characters" or "people"),
@@ -519,6 +522,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		
 		
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			// do not process sentences which have no graph
+			if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).isEmpty())
+				continue;
 			// find alias mappings
 			AliasHearstRule sentencerule = new AliasHearstRule();
 			try {
