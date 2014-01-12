@@ -210,7 +210,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		else {
 			log(Redwood.ERR, "WordNET did not recognise this verb.");
 			Span errorspan = new Span(root.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), root.get(CoreAnnotations.CharacterOffsetEndAnnotation.class));
-			IvanErrorMessage err = new IvanErrorMessage(IvanErrorType.WNWMISSING, null, errorspan, "The word '" + word + "' is not properly recognised and may cause problems.");
+			IvanErrorMessage err = new IvanErrorMessage(IvanErrorType.WNWMISSING, errorspan, "The word '" + word + "' is not properly recognised and may cause problems.");
 			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, err);
 			return Classification.ErrorDescription;
 		}
@@ -393,7 +393,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 						sentence.get(CharacterOffsetEndAnnotation.class));
 				IvanErrorMessage error = new IvanErrorMessage(
 						IvanErrorType.UNKNOWN,
-						annotation.get(IDAnnotation.class), range,
+						range,
 						"Processing this sentence caused an exception.");
 
 				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,

@@ -126,8 +126,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 		}
 		Span errorspan = badone.getEntitySpan();
 		msg = new IvanErrorMessage(
-				IvanErrorType.SYNONYMS,
-				doc.get(DocIDAnnotation.class), 
+				IvanErrorType.SYNONYMS, 
 				errorspan,
 				"\""+ badone +"\" is a synonym of a previously used name \"" + other + "\"");
 	}

@@ -4,7 +4,6 @@ import edu.stanford.nlp.ie.machinereading.structure.Span;
 
 public class IvanErrorMessage 
 {
-	private final String docId;
 	private final String Message;
 	private final Span Range;
 	
@@ -21,27 +20,20 @@ public class IvanErrorMessage
 	public Span getSpan() {
 		return Range;
 	}
-
-	public String getDocId() {
-		return docId;
-	}
 	
-	public IvanErrorMessage(String document, Integer start, Integer end, String message)
+	public IvanErrorMessage(Integer start, Integer end, String message)
 	{
-		docId = document;
 		Range = Span.fromValues(start, end);
 		Message = message;
 	}
 
-	public IvanErrorMessage(String Id, Span errorspan, String message) {
-		docId = Id;
+	public IvanErrorMessage(Span errorspan, String message) {
 		Range = errorspan;
 		Message = message;
 	}
 	
-	public IvanErrorMessage(IvanErrorType errorId, String Id, Span errorspan, String message) {
+	public IvanErrorMessage(IvanErrorType errorId, Span errorspan, String message) {
 		type = errorId;
-		docId = Id;
 		Range = errorspan;
 		Message = message;
 	}

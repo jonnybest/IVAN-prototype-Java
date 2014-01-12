@@ -167,8 +167,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 	}
 
 	private void error(String message, CoreMap sentence) {
-		msg = new IvanErrorMessage(
-				sentence.get(DocIDAnnotation.class), 
+		msg = new IvanErrorMessage(				
 				sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), 
 				sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class),
 				message);
