@@ -5,28 +5,19 @@ package edu.kit.ipd.alicenlp.ivan.rules;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jdesktop.swingx.search.ListSearchable;
-
-import opennlp.tools.cmdline.coref.CoreferencerTool;
 import net.sf.extjwnl.JWNLException;
-import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.CorefMentionAnnotation;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
-import edu.stanford.nlp.dcoref.CorefCluster;
 import edu.stanford.nlp.dcoref.Dictionaries.Animacy;
 import edu.stanford.nlp.dcoref.Dictionaries.Gender;
 import edu.stanford.nlp.dcoref.Dictionaries.MentionType;
 import edu.stanford.nlp.dcoref.Dictionaries.Number;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.IndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentenceIndexAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
