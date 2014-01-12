@@ -373,9 +373,10 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 * @throws IvanException 
 	 */
 	public static List<String> recogniseEntities(CoreMap sentence) throws IvanException {
+		ArrayList<String> names = new ArrayList<>();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		if(graph.isEmpty())
-			return null;
+			return names;
 		
 		IndexedWord head = BaseRule.getSubject(graph);
 		
@@ -405,7 +406,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 			// check again:
 			if (head == null) {
 				// I'm out of ideas
-				return null;
+				return names;
 			}
 		}
 		
@@ -413,7 +414,8 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// make space for names
 		ArrayList<IndexedWord> namesIW = new ArrayList<IndexedWord>();
 		// follow "and" and "or" conjunctions starting from the head
-		ArrayList<String> names = BaseRule.resolveCc(head, sentence, namesIW);
+		
+		names = BaseRule.resolveCc(head, sentence, namesIW);
 		// resolve personal pronouns
 		for (IndexedWord n : namesIW) {
 			if(n.tag().equals("PRP"))
