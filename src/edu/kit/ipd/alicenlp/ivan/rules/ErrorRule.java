@@ -125,6 +125,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 
 	/**
 	 * @param sentence
+	 * @return 
 	 */
 	public boolean applyRoots(CoreMap sentence) {
 		Collection<IndexedWord> roots = sentence.get(BasicDependenciesAnnotation.class).getRoots();
@@ -144,12 +145,12 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 		return false;
 	}
 
-	private boolean hasCC(IndexedWord mainVerb, CoreMap sentence) {
+	private static boolean hasCC(IndexedWord mainVerb, CoreMap sentence) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		return mainVerb == null ? false :graph.hasChildWithReln(mainVerb, CONJUNCT);
 	}
 
-	private IndexedWord getMainVerb(CoreMap sentence) {
+	private static IndexedWord getMainVerb(CoreMap sentence) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		IndexedWord root = graph.getFirstRoot();
 		if(BaseRule.isPOSFamily(root, "VB"))
