@@ -806,7 +806,7 @@ public class SwingWindow {
 				break;
 			case ErrorDescription:
 				IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
-				Redwood.log(err);
+				Redwood.log("Error in text found: " + err + "; sentence: " + sentence.toString());
 				markIvanError(err.getSpan().start(), err.getSpan().end());
 				// emit error
 				break;
