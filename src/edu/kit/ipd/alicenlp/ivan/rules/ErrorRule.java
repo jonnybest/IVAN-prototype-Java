@@ -7,14 +7,19 @@ import static edu.stanford.nlp.trees.EnglishGrammaticalRelations.CONJUNCT;
 import static edu.stanford.nlp.trees.EnglishGrammaticalRelations.COPULA;
 import static edu.stanford.nlp.trees.EnglishGrammaticalRelations.PREDICATE;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
+import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CategoryAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -25,7 +30,9 @@ import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.LabeledScoredTreeNode;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
+import edu.stanford.nlp.util.ArrayCoreMap;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.IntPair;
 
 /**
  * @author Jonny
@@ -99,10 +106,22 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 			// if the category is "Fragment", we don't want it
 			if(cat != null && cat.equals("FRAG"))
 			{
-				error(IvanErrorType.GRAPH,
+				int tmpstart = Integer.MAX_VALUE,
+						tmpend = 0;
+				for (Tree tree : thing.getLeaves()) {
+					Integer start = ((CoreLabel) tree.label()).get(CharacterOffsetBeginAnnotation.class);
+					if(start < tmpstart)
+						tmpstart = start;
+					Integer end = ((CoreLabel) tree.label()).get(CharacterOffsetEndAnnotation.class);
+					if(end > tmpend)
+						tmpend = end;
+				}
+
+				msg = new IvanErrorMessage(
+						IvanErrorType.GRAPH, 
+						Span.fromValues(tmpstart, tmpend), 
 						"This sentence seems to contain a fragment. "
-						+ "The sentence is either incomplete or it contains parts which should go in their own sentence.",
-						sentence);
+						+ "The sentence is either incomplete or it contains parts which should go in their own sentence.");
 				return true;
 			}
 		}
