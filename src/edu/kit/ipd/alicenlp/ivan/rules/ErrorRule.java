@@ -11,6 +11,7 @@ import java.util.List;
 
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.DocIDAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -168,6 +169,14 @@ public class ErrorRule implements ISentenceRule, IErrorRule
 
 	private void error(String message, CoreMap sentence) {
 		msg = new IvanErrorMessage(				
+				sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), 
+				sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class),
+				message);
+	}
+	
+	private void error(IvanErrorType type, String message, CoreMap sentence) {
+		msg = new IvanErrorMessage(
+				type,				
 				sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), 
 				sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class),
 				message);
