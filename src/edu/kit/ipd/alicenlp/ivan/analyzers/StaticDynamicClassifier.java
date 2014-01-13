@@ -456,13 +456,13 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 	 */
 	private static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
 		// Examples:
-		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
+		// "Dole was defeated by Clinton" nsubjpass(defeated, Dole)
 		GrammaticalRelation nsubjpass = GrammaticalRelation
 				.getRelation(NominalPassiveSubjectGRAnnotation.class);
-		// “That she lied was suspected by everyone” csubjpass(suspected, lied)
+		// "That she lied was suspected by everyone" csubjpass(suspected, lied)
 		GrammaticalRelation csubjpass = GrammaticalRelation
 				.getRelation(ClausalPassiveSubjectGRAnnotation.class);
-		// “Kennedy was killed” auxpass(killed, was)
+		// "Kennedy was killed" auxpass(killed, was)
 		GrammaticalRelation auxrel = GrammaticalRelation
 				.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
 		Boolean passive = false;

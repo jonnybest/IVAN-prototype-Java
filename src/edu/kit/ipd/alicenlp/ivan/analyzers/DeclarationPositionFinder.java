@@ -373,7 +373,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 * @throws IvanException 
 	 */
 	public static List<String> recogniseEntities(CoreMap sentence) throws IvanException {
-		ArrayList<String> names = new ArrayList<>();
+		ArrayList<String> names = new ArrayList<String>();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		if(graph.isEmpty())
 			return names;
