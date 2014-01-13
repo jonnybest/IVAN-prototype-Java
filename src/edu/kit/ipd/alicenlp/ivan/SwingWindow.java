@@ -431,15 +431,15 @@ public class SwingWindow {
 		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
 		
 		// create some mock content
-		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
-		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
-		
-		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
-		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"the cat"});
-		
-		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
-		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
-		
+//		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
+//		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
+//		
+//		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
+//		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"the cat"});
+//		
+//		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
+//		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
+//		
 		containerTaskPanel.createCategory("meta", null);
 		containerTaskPanel.createProblem("meta", null, 0,0);
 		
@@ -676,8 +676,23 @@ public class SwingWindow {
 	 * @throws Exception
 	 */
 	private void processText(String text) throws Exception {
-		clearStyles();
+		
 
+		// prepare the text with our pipeline
+		Annotation doc = annotateClassifications(text);
+		
+		updateErrorsPanel(doc);
+		
+		updateTextMarkers(doc);
+
+		
+	}
+
+	/**
+	 * @param doc
+	 * @throws IvanException
+	 */
+	public void updateErrorsPanel(Annotation doc) throws IvanException {
 		/**
 		 * Until I come up with something better, I need to scrub the state of
 		 * everything each time the analysis runs
@@ -685,7 +700,6 @@ public class SwingWindow {
 		// FIXME: This part is a setup for memory leaks.
 		problemSetMissingDirection.clear();
 		problemSetMissingLocation.clear();
-		Annotation doc = annotateClassifications(text);
 
 		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
 		if(errors != null){
@@ -694,11 +708,11 @@ public class SwingWindow {
 			}
 		}
 		
-		java.util.List<CoreMap> listsentences = doc
+		// retrieve the sentences
+		List<CoreMap> listsentences = doc
 				.get(SentencesAnnotation.class);
-		
+		// retrieve recognition results
 		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class); 
-		
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
 			SemanticGraph depgraph = sentence
@@ -784,7 +798,28 @@ public class SwingWindow {
 				// call a method which iterates over each problem type and displays errors
 				refreshErrorsDisplay();
 			}
+		}
+		
+		diplayWarnings();
+	}
 
+	/**
+	 * @param doc
+	 */
+	public void updateTextMarkers(Annotation doc) {
+		// clear all previous markers
+		clearStyles();
+		// retrieve the sentences
+		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
+		// retrieve recognition results
+		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+		for (CoreMap sentence : listsentences) {
+			// traversing the words in the current sentences
+			SemanticGraph depgraph = sentence
+					.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			if (depgraph.getRoots().isEmpty()) {
+				continue;
+			}
 			/***
 			 * Requirement 2: Classify sentence into Setup descriptions and
 			 * non-setup descriptions
@@ -828,8 +863,6 @@ public class SwingWindow {
 			RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
 			tell(emitterwriter.toString());
 		}
-
-		diplayWarnings();
 	}
 
 	private void markIvanError(int beginPosition, int endPosition) {
