@@ -43,6 +43,7 @@ import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import org.jdesktop.application.Application;
+import org.jdesktop.application.Task;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.languagetool.JLanguageTool;
 import org.languagetool.JLanguageTool.ParagraphHandling;
@@ -53,11 +54,13 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
+import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
@@ -710,7 +713,15 @@ public class SwingWindow {
 		List<CoreMap> listsentences = doc
 				.get(SentencesAnnotation.class);
 		// retrieve recognition results
-		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class); 
+		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+		
+		// process document-wide errors
+		for (IvanErrorMessage documenterror : doc.get(IvanAnnotations.DocumentErrorAnnotation.class)) {
+			String category = createCategory(documenterror.getType());
+			this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
+		}
+		
+		// process sentences
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
 			SemanticGraph depgraph = sentence
@@ -795,6 +806,55 @@ public class SwingWindow {
 		}
 	
 	}
+
+	
+	/**
+	 * A utility method for creating categories by mapping from an IvanErrorType
+	 * @param type 
+	 * @param description 
+	 * @return The category that was assigned for this error.
+	 */
+	public String createCategory(IvanErrorType type) {
+		String defaultcategory = "misc";
+		String category;
+		String description = "";
+		
+		switch (type) {
+		case COREFERENCE:
+			category = "ambigous";
+			description = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
+			break;
+		case GRAPH:
+			category = "grammar";
+			description = "IVAN could not properly analyze this sentence, because of it's unusual structure. "
+					+ "Maybe try a shorter sentence instead?";
+			break;
+		case SYNONYMS:
+			category = "names";
+			description = "This error means that two distinct entities share a synonym. "
+					+ "Try giving names to the characters and things to resolve this issue.";
+			break;
+		case WORDNET:
+			category = "dictionary";
+			description = "This error means that the analyzer tried to process this sentence and could not proceed, "
+					+ "because a word is missing in our dictionary. It would be best, if you could come up with a different "
+					+ "word here.";
+		case STYLE:
+			category = "style";
+			description = "This error means that something in the text does not fit well.";
+			break;
+		case UNKNOWN:
+			category = defaultcategory;
+			break;
+		default:
+			category = defaultcategory;
+			break;
+		}
+		
+		containerTaskPanel.createCategory(category, description);
+		return category;
+	}
+	
 
 	/**
 	 * @param doc
