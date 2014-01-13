@@ -715,10 +715,16 @@ public class SwingWindow {
 		// retrieve recognition results
 		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
 		
-		// process document-wide errors
-		for (IvanErrorMessage documenterror : doc.get(IvanAnnotations.DocumentErrorAnnotation.class)) {
-			String category = createCategory(documenterror.getType());
-			this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
+		// fetch errors
+		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
+		// if errors exist in the document, display them
+		if(errors != null)
+		{
+			// process document-wide errors
+			for (IvanErrorMessage documenterror : errors) {
+				String category = createCategory(documenterror.getType());
+				this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
+			}
 		}
 		
 		// process sentences
@@ -821,11 +827,11 @@ public class SwingWindow {
 		
 		switch (type) {
 		case COREFERENCE:
-			category = "ambigous";
+			category = IvanErrorsTaskPaneContainer.CATEGORY_AMBIGOUS;
 			description = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
 			break;
 		case GRAPH:
-			category = "grammar";
+			category = IvanErrorsTaskPaneContainer.CATEGORY_GRAMMAR;
 			description = "IVAN could not properly analyze this sentence, because of it's unusual structure. "
 					+ "Maybe try a shorter sentence instead?";
 			break;
@@ -896,6 +902,8 @@ public class SwingWindow {
 			case ErrorDescription:
 				IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
 				Redwood.log("Error in text found: " + err + "; sentence: " + sentence.toString());
+				String category = createCategory(err.getType());
+				this.containerTaskPanel.createProblem(category, err.getMessage(), new CodePoint(err.getSpan()));
 				markIvanError(err.getSpan().start(), err.getSpan().end());
 				// emit error
 				break;

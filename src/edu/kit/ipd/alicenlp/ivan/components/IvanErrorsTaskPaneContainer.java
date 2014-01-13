@@ -43,6 +43,18 @@ import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
+	// headline constants
+	/** This constant contains the headline for meta problems.
+	 */
+	private static final String CATEGORY_META = "meta";
+	public static final String CATEGORY_DIRECTION = "direction";
+	public static final String CATEGORY_LOCATION = "location";
+	public static final String CATEGORY_EFFECT = "effect";
+	public static final String CATEGORY_GRAMMAR = "grammar";
+	public static final String CATEGORY_STYLE = "style";
+	public static final String CATEGORY_AMBIGOUS = "ambigous";
+	
+	// quick fix constants (action keys)
 	private static final String QF_ERROR = "error";
 	private static final String QF_NAME = "qf-name";
 
@@ -649,7 +661,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		List<javax.swing.Action> myQuickfixesForThisError = new ArrayList<Action>();
 		
 		/* The DELETE_SENTENCE action */
-		if(error.Category.equals("effect")) // for sentences without effect only
+		if(error.Category.equals(CATEGORY_EFFECT) 
+				|| error.Category.equals(CATEGORY_GRAMMAR)
+				|| error.Category.equals(CATEGORY_STYLE)) // for sentences without effect only
 		{
 			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
 	        javax.swing.Action myAction = new DeleteSentenceAction(displayDescription, error);
@@ -661,7 +675,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 		
 		/* The ADD_SENTENCE action */
-		if(error.Category.equals("location")) /* LOCATION */
+		if(error.Category.equals(CATEGORY_LOCATION)) /* LOCATION */
 		{
 			String[] references = error.Reference;
 			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
@@ -673,7 +687,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			myAction.putValue(QF_NAME, "qf-add"+ Arrays.toString(references));
 			myQuickfixesForThisError.add(myAction);
 		} 
-		else if(error.Category.equals("direction")) /* DIRECTION */
+		else if(error.Category.equals(CATEGORY_DIRECTION)) /* DIRECTION */
 		{ 
 			String[] references = error.Reference;
 			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
@@ -687,7 +701,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 				
 		/* The IGNORE action is almost always available */
-		if(!error.Category.equals("meta"))
+		if(!error.Category.equals(CATEGORY_META))
 		{
 			// instance 
 			final IvanErrorsTaskPaneContainer tp = this;
