@@ -61,7 +61,6 @@ import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -110,7 +109,6 @@ public class SwingWindow {
 	private Component horizontalGlue;
 	private String currentFileName = null;
 	private JMenuBar menuBar;
-	private StanfordCoreNLP mypipeline;
 	
 	/**
 	 * This is the central pipeline which classifies text. This should never be directly accessed. Use getPipeline() instead.
@@ -793,27 +791,21 @@ public class SwingWindow {
 						}
 					}
 				}
-				// 5. create a display for the missing info?
-				// see above
-				// call a method which iterates over each problem type and displays errors
-				refreshErrorsDisplay();
 			}
 		}
-		
-		diplayWarnings();
+	
 	}
 
 	/**
 	 * @param doc
+	 * @throws BadLocationException 
 	 */
-	public void updateTextMarkers(Annotation doc) {
+	public void updateTextMarkers(Annotation doc) throws BadLocationException {
 		// clear all previous markers
 		clearStyles();
 		
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
-		// retrieve recognition results
-		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
 		
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
@@ -871,45 +863,18 @@ public class SwingWindow {
 		}
 	}
 
-	private void markIvanError(int beginPosition, int endPosition) {
-		// TODO Auto-generated method stub
+	private void markIvanError(int beginPosition, int endPosition) throws BadLocationException {
+		// create a painter for lines
 		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
-		try {
-			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			Redwood.log(Redwood.ERR, e);
-		}
-	}
-
-	private void refreshErrorsDisplay() {
-		// TODO Auto-generated method stub
-		
+		// paint the highlights
+		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 	}
 	
-	private void markSpellingError(int beginPosition, int endPosition) {
-		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
-		try {
-			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			System.out
-					.println("SwingWindow.initialize().new KeyAdapter() {...}.markSpellingError()");
-		}				
-	}
-
-	private void diplayWarnings() {
-		// TODO This method manipulates the right-hand actionpanel for
-		// displaying errors and warnings
-		// create a missing-stuff display
-
-		for (EntityInfo info : problemSetMissingLocation) {
-			// TODO: add this entity to the missinglocation problem
-		}
-
-		for (EntityInfo info : problemSetMissingDirection) {
-			// TODO: add this entity to the missingdirection problem
-		}
+	private void markSpellingError(int beginPosition, int endPosition) throws BadLocationException {		
+		// create a painter for lines
+		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED.brighter());
+		// paint the highlights
+		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);			
 	}
 
 	private void tell(String output) {
