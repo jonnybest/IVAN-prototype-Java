@@ -685,7 +685,13 @@ public class SwingWindow {
 		
 		updateTextMarkers(doc);
 
-		
+
+		/** Print state to emitter panel
+		 */
+		// retrieve recognition results
+		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+		RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
+		tell(emitterwriter.toString());
 	}
 
 	/**
@@ -701,12 +707,6 @@ public class SwingWindow {
 		problemSetMissingDirection.clear();
 		problemSetMissingLocation.clear();
 
-		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
-		if(errors != null){
-			for (IvanErrorMessage docer : errors) {
-				markIvanError(docer.getSpan().start(), docer.getSpan().end());
-			}
-		}
 		
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc
@@ -809,10 +809,12 @@ public class SwingWindow {
 	public void updateTextMarkers(Annotation doc) {
 		// clear all previous markers
 		clearStyles();
+		
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
 		// retrieve recognition results
 		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+		
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
 			SemanticGraph depgraph = sentence
@@ -857,11 +859,15 @@ public class SwingWindow {
 			default:
 				break;
 			}
-			
-			/** Print state to emitter panel
-			 */
-			RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
-			tell(emitterwriter.toString());
+		}
+		
+		// paint errors over all previous markers
+		List<IvanErrorMessage> errors = doc
+				.get(IvanAnnotations.DocumentErrorAnnotation.class);
+		if (errors != null) {
+			for (IvanErrorMessage docer : errors) {
+				markIvanError(docer.getSpan().start(), docer.getSpan().end());
+			}
 		}
 	}
 
