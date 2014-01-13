@@ -144,7 +144,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 								keepme.add(otherQuickfix);
 							} else {
 								map.remove(key); // throw it away
+								// save this problem as "ignored" 
 								ignoredProblems.add(otherError);
+								// remove it from the problems which are currently of concern
+								bagofProblems.remove(otherError);
 							}
 						}
 						panel.removeAll();
@@ -194,6 +197,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			JXTaskPane panel = mypanes.get(error.Category);
 			// get the actions configured for this panel
 			ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
+			// FIXME change behaviour of saving to iterate panel.getContentPane().getComponents() and only remove pertaining components OR retaining all non-action components by default or something like that 
 			List<Action> keepme = new LinkedList<Action>();
 			for (Object key : map.keys()) {
 				Action otherQuickfix = map.get(key);
@@ -207,11 +211,16 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 					map.remove(key); // throw it away
 				}
 			}
+			// clean the panel of excess elements
 			panel.removeAll();
 			for (Action action : keepme) {
 				panel.add(action);
 			}
+			panel.updateUI();
+			// save this problem as "ignored" 
 			ignoredProblems.add(error);
+			// remove it from the problems which are currently of concern
+			bagofProblems.remove(error);
 			System.out.println("This action's error is " + getValue(QF_ERROR));
 			System.out.println(tp.toString());
 		}
@@ -457,6 +466,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 							return false;
 						}
 					}
+					return true;
 				}
 			}
 			return false;
@@ -548,6 +558,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * @param description
 	 */
 	public void createCategory(String title, String description) {
+		// does this pane already exist?
+		if(mypanes.containsKey(title))
+		{
+			// yes. nop
+			return;
+		}
+		
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
 		if(description != null){
@@ -574,9 +591,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		if(tsk != null)
 		{
 			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, null, errormsg, references);
-			boolean present = this.ignoredProblems.contains(error);
-			if(!present){
-				this.bagofProblems.add(error);
+			// has the user previously ignored this error?
+			boolean ignored = this.ignoredProblems.contains(error);
+			if(!ignored){
+				// is this error already listed?
+				if(!this.bagofProblems.add(error))
+				{
+					return false;
+				}
+				// add another quick fix for this category
 				createQuickfixes(error);
 				return true;
 			}
