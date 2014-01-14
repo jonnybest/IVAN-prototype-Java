@@ -153,18 +153,4 @@ public class HardDeclarationsTests {
 		checkEntrySet(sol);
 	}
 
-	/** Test for direction
-	 * 
-	 */
-	@Test
-	public void testCatDirection()
-	{
-		String text = "There is a cat looking north.";
-		Annotation doc = TestUtilities.annotateDeclarations(text);
-		InitialState state = doc.get(IvanEntitiesAnnotation.class);
-		System.out.println(state.toString());
-		assertThat("cat does not exist in recognition", state.hasEntity("cat"), is(true));
-		assertNotNull(state.getSingle("cat"));
-		assertThat(state.getSingle("cat").getDirection(), is("north"));
-	}
 }
