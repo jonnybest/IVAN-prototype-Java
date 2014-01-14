@@ -4,6 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan.data;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +14,8 @@ import java.util.Map.Entry;
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.logging.PrettyLogger;
+import edu.stanford.nlp.util.logging.Redwood;
 
 /**
  * This class manages a set of names and EntityInfos
@@ -429,4 +432,12 @@ public class InitialState extends HashSet<EntityInfo> {
 		return entitiesToAliases.get(null) == null || !entitiesToAliases.get(null).contains(alias);
 	}
 
+	@Override
+	public String toString()
+	{
+		StringBuilder cb = new StringBuilder();
+		cb.append(this.entitiesToAliases.toString());
+		cb.append(super.toString());
+		return cb.toString();
+	}
 }
