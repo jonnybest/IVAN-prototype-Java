@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Map.Entry;
 
+import org.hamcrest.Matcher;
+
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
@@ -24,6 +26,7 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public abstract class TestUtilities {
 
+	public static final String PROPERTIES_ANNOTATORS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier";
 	private static StanfordCoreNLP declarationsPipeline;
 	private static StanfordCoreNLP classificationsPipeline;
 
@@ -58,7 +61,7 @@ public abstract class TestUtilities {
 					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 			// configure pipeline
 			props.put(
-					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+					"annotators", PROPERTIES_ANNOTATORS); //$NON-NLS-1$ //$NON-NLS-2$
 			classificationsPipeline = new StanfordCoreNLP(props);
 		}
 

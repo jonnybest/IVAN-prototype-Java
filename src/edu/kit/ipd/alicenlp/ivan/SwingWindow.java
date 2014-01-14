@@ -70,6 +70,7 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.PrettyLogger;
 import edu.stanford.nlp.util.logging.Redwood;
 
 /** This is the main class if IVAN. It creates the user interface and manages all the other components. 
@@ -79,6 +80,26 @@ import edu.stanford.nlp.util.logging.Redwood;
  */
 public class SwingWindow {
 
+	protected static final String PROPERTIES_ANNOTATORS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier";
+	protected static final String DEFAULT_TEXT = "The ground is covered with grass, the sky is blue. \n"
+			+ "In the background on the left hand side there is a PalmTree. \n"
+			+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
+			+ "Right to the mailbox there is a Frog facing east. \n"
+			+ "In front of the Bunny there is a Broccoli. \n"
+			+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
+			+ "The Bunny turns to face the Broccoli. \n"
+			+ "The Bunny hops three times to the Broccoli. \n"
+			+ "The Bunny eats the Broccoli. \n"
+			+ "The Bunny turns to face the Frog. \n"
+			+ "The Bunny taps his foot twice. \n"
+			+ "The Frog ribbits. The Frog turns to face northeast. \n"
+			+ "The frog hops three times to northeast. \n"
+			+ "The Bunny turns to face the Mailbox. \n"
+			+ "The Bunny hops three times to the Mailbox. \n"
+			+ "The Bunny opens the Mailbox. \n"
+			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
+			+ "The Frog hops two times to the Bunny. \n"
+			+ "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
@@ -99,14 +120,6 @@ public class SwingWindow {
 	 */
 	private JTextPane emitterTextPane;
 	
-	/** This set contains problematic entity information regarding location.
-	 * 
-	 */
-	private Set<EntityInfo> problemSetMissingLocation;
-	/** This set contains entity information which is missing a direction
-	 * 
-	 */
-	private Set<EntityInfo> problemSetMissingDirection;
 	private JXBusyLabel busyLabel;
 	private JButton btnSaveCheck;
 	private Component horizontalGlue;
@@ -162,25 +175,7 @@ public class SwingWindow {
 //		txtEditor.setDisplayLineNumbers(true);
 		// txtEditor.setDocument(doc);
 
-		txtEditor.setText("The ground is covered with grass, the sky is blue. \n"
-				+ "In the background on the left hand side there is a PalmTree. \n"
-				+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
-				+ "Right to the mailbox there is a Frog facing east. \n"
-				+ "In front of the Bunny there is a Broccoli. \n"
-				+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
-				+ "The Bunny turns to face the Broccoli. \n"
-				+ "The Bunny hops three times to the Broccoli. \n"
-				+ "The Bunny eats the Broccoli. \n"
-				+ "The Bunny turns to face the Frog. \n"
-				+ "The Bunny taps his foot twice. \n"
-				+ "The Frog ribbits. The Frog turns to face northeast. \n"
-				+ "The frog hops three times to northeast. \n"
-				+ "The Bunny turns to face the Mailbox. \n"
-				+ "The Bunny hops three times to the Mailbox. \n"
-				+ "The Bunny opens the Mailbox. \n"
-				+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
-				+ "The Frog hops two times to the Bunny. \n"
-				+ "The Frog disappears. A short time passes.");
+		txtEditor.setText(DEFAULT_TEXT);
 
 		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
 
@@ -634,10 +629,6 @@ public class SwingWindow {
 	 * stuff with the taskpane and the emitter, that code goes here as well.
 	 */
 	private void setupFeedback() {
-		// prepare a list for the problems
-		this.problemSetMissingDirection = new HashSet<EntityInfo>();
-		this.problemSetMissingLocation = new HashSet<EntityInfo>();
-
 		// tell the errors panel where our editor is so it can apply quick fixes
 		this.containerTaskPanel.setEditor(this.txtEditor);
 	}
@@ -700,21 +691,7 @@ public class SwingWindow {
 	 * @throws IvanException
 	 */
 	public void updateErrorsPanel(Annotation doc) throws IvanException {
-		/**
-		 * Until I come up with something better, I need to scrub the state of
-		 * everything each time the analysis runs
-		 */
-		// FIXME: This part is a setup for memory leaks.
-		problemSetMissingDirection.clear();
-		problemSetMissingLocation.clear();
 
-		
-		// retrieve the sentences
-		List<CoreMap> listsentences = doc
-				.get(SentencesAnnotation.class);
-		// retrieve recognition results
-		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
-		
 		// fetch errors
 		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
 		// if errors exist in the document, display them
@@ -726,91 +703,9 @@ public class SwingWindow {
 				this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
 			}
 		}
+		if(errors != null)
+			PrettyLogger.log("Document wide errors", errors);
 		
-		// process sentences
-		for (CoreMap sentence : listsentences) {
-			// traversing the words in the current sentences
-			SemanticGraph depgraph = sentence
-					.get(CollapsedCCProcessedDependenciesAnnotation.class);
-			if (depgraph.getRoots().isEmpty()) {
-				continue;
-			}
-
-
-			/***
-			 * Requirement 1: Check subject for entity or name and extract name,
-			 * position and direction if possible Also, save name in name list
-			 * and save position and direction in EntityInfo.
-			 */
-			// TODO: implement problem1
-			// 1. check for names
-			List<String> names = DeclarationPositionFinder
-					.recogniseEntities(sentence); // recognises named und unnamed
-												// entities in this sentence
-			// 2. are they declared already?
-
-			// -- for each name:
-			for (String n : names) {
-				// 4. while we're at it (iterating), check if there is any info
-				// missing for this name
-				/*
-				 * I have two options: 1. retrieve the entityinfo, check for
-				 * missing data, display a warning to the user or 2. retrieve
-				 * entityinfo, check for missing data, store the entityinfo in a
-				 * list corresponding with the problem type and later call a
-				 * method for each problem type which displays a compact list of
-				 * missing things. I chose 2.
-				 */
-				List<EntityInfo> declarednames = entitiesState.get(n);
-
-				for (EntityInfo infoOnName : declarednames) {
-
-					if (!infoOnName.hasLocation()) {
-						// try to get a loc from the current sentence. if not,
-						// add to problems. if yes, remove from problems
-						EntityInfo moreinfo = DeclarationPositionFinder
-								.getLocation(sentence);
-						if (moreinfo == null || !moreinfo.hasLocation()) {
-							// Bad! This sentence contains no location info and
-							// we are still missing location info
-							problemSetMissingLocation.add(infoOnName);
-						} else {
-							// fixme: the info may not relate to the proper name
-							assert infoOnName.getEntity().equals(
-									moreinfo.getEntity());
-
-							// good! this sentence contains info, so lets merge
-							// the two
-							infoOnName.setLocation(moreinfo.getLocation());
-							// and remove the problem entry if we had one
-							@SuppressWarnings("unused")
-							boolean success = problemSetMissingLocation
-									.remove(infoOnName);
-						}
-					}
-					if (!infoOnName.hasDirection()) {
-						// try to get a dir from the current sentence. if not,
-						// add to problems. if yes, remove from problems
-						EntityInfo moreinfo = DeclarationPositionFinder
-								.getDirection(sentence);
-						if (moreinfo == null || !moreinfo.hasDirection()) {
-							// Bad! This sentence contains no location info and
-							// we are still missing location info
-							problemSetMissingDirection.add(infoOnName);
-						} else {
-							// good! this sentence contains info, so lets merge
-							// the two
-							infoOnName.setDirection(moreinfo.getDirection());
-							// and remove the problem entry if we had one
-							@SuppressWarnings("unused")
-							boolean success = problemSetMissingDirection
-									.remove(infoOnName);
-						}
-					}
-				}
-			}
-		}
-	
 	}
 
 	
@@ -1027,7 +922,8 @@ public class SwingWindow {
 					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
 			// configure pipeline
 			props.put(
-					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+//					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
+					"annotators", PROPERTIES_ANNOTATORS); //$NON-NLS-1$ //$NON-NLS-2$
 			stanfordCentralPipeline = new StanfordCoreNLP(props);
 		}
 		

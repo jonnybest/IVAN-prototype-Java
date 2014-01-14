@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
@@ -28,6 +29,7 @@ public class IncompleteEntitiesErrorRuleTest {
 	 * Test method for {@link edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule#apply(edu.stanford.nlp.pipeline.Annotation, boolean)}.
 	 * @throws JWNLException 
 	 */
+	@SuppressWarnings("static-method")
 	@Test
 	public final void testApplyAnnotationBoolean() throws JWNLException {
 		
@@ -38,7 +40,9 @@ public class IncompleteEntitiesErrorRuleTest {
 		IncompleteEntitiesErrorRule rule = new IncompleteEntitiesErrorRule(state);
 		boolean okay = rule.apply(annotate);
 		assertFalse("recognition failed", okay);
-				
+		
+		assertNull(annotate.get(DocumentErrorAnnotation.class));
+		
 		PrettyLogger.log(annotate.get(CorefChainAnnotation.class));
 		PrettyLogger.log(state);
 		

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
+import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.stanford.nlp.util.Pair;
 
 /**
@@ -416,6 +417,16 @@ public class InitialState extends HashSet<EntityInfo> {
 			}
 		}
 		return null;
+	}
+
+	/** Find out if this alias has been initialized.
+	 * Specifically, this method looks at the null-mappings, which contains all unmapped aliases. 
+	 * 
+	 * @param alias
+	 * @return
+	 */
+	public boolean hasEntity(String alias) {
+		return entitiesToAliases.get(null) == null || !entitiesToAliases.get(null).contains(alias);
 	}
 
 }

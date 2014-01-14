@@ -75,7 +75,7 @@ public class IncompleteEntitiesErrorRule implements IDocumentRule
 			String entity = uniqueMapping.first;
 
 			// is properly initialized (pertaining to has-both-name-and-entity)
-			boolean initPresent = uniqueMapping.first != null;
+			boolean initPresent = state.hasEntity(alias);
 			// has a direction?
 			boolean dirPresent = false;
 			// has a location?
@@ -95,7 +95,7 @@ public class IncompleteEntitiesErrorRule implements IDocumentRule
 				msg.add(err);
 			}
 			// 
-			final boolean hasName = alias != entity;
+			final boolean hasName = state.hasName(entity);
 			// entity is missing a location
 			if(!locPresent)
 			{
