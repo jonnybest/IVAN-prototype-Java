@@ -39,5 +39,15 @@ public enum IvanErrorType {
 	 * This error type describes issues with the text's style. Ivan will not process it.
 	 */
 	, STYLE // whatever the text was, it's not being processed by Ivan
+	/** 
+	 * This error type indicates incomplete entity description. The entity in question is missing 
+	 * a location.
+	 */
+	, LOCATION // The entity in question does not have any location.
+	/** 
+	 * This error type indicates incomplete entity description. The entity in question is missing
+	 * a direction.
+	 */
+	, DIRECTION // The entity in question does not have any direction
 	
 }

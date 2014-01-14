@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
 import edu.stanford.nlp.util.Pair;
@@ -337,7 +338,7 @@ public class InitialState extends HashSet<EntityInfo> {
 	 * This method creates a simple view onto the entites with names: The left
 	 * hand string is the entity, the right hand string its assigned name.
 	 * 
-	 * @return a list
+	 * @return a list where each pair corresponds to exactly one entity
 	 */
 	public List<Pair<String, String>> getEntityNames() {
 		List<Pair<String, String>> list = new ArrayList<>();
@@ -399,6 +400,22 @@ public class InitialState extends HashSet<EntityInfo> {
 	 */
 	public List<String> getNames(String entityClass) {
 		return entitiesToAliases.get(entityClass);
+	}
+
+	/** Find the entity type for a given alias.
+	 * 
+	 * @param Alias The proper name to look for
+	 * @return The known entity type or <code>null</code> if no entity type is known.
+	 */
+	public String getEntity(String Alias) {
+		if(aliases.containsKey(Alias))
+		{
+			for (Entry<String, List<String>> mapping : entitiesToAliases.entrySet()) {
+				if(mapping.getValue().contains(Alias))
+					return mapping.getKey();
+			}
+		}
+		return null;
 	}
 
 }

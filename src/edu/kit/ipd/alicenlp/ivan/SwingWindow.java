@@ -849,11 +849,17 @@ public class SwingWindow {
 			category = "style";
 			description = "This error means that something in the text does not fit well.";
 			break;
-		case UNKNOWN:
-			category = defaultcategory;
+		case DIRECTION:
+			category = IvanErrorsTaskPaneContainer.CATEGORY_DIRECTION;
+			description = "These entities are missing a location. Where do they stand in the scene?";
+			break;
+		case LOCATION:
+			category = IvanErrorsTaskPaneContainer.CATEGORY_LOCATION;
+			description = "These entities are missing a direction. Where or what do they face?";
 			break;
 		default:
 			category = defaultcategory;
+			description = "Other errors:";
 			break;
 		}
 		

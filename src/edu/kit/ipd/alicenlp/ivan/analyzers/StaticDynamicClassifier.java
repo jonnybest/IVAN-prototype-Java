@@ -26,6 +26,7 @@ import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
+import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
@@ -384,10 +385,13 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				sentence.set(
 						IvanAnnotations.SentenceClassificationAnnotation.class,
 						sentenceclass);
+				
+				// check for initial state consistency
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
 				log(Redwood.ERR, "Error while classifying sentences.", e);
 			} catch (NullPointerException | java.lang.AssertionError e) {
+				log(Redwood.ERR, "Error while classifying sentences.", e);
 				Span range = Span.fromValues(
 						sentence.get(CharacterOffsetBeginAnnotation.class),
 						sentence.get(CharacterOffsetEndAnnotation.class));
@@ -403,9 +407,24 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			}
 		}
 		try {
+			// run classifier
 			classifyDocument(annotation);
+			// check recognition state for missing entries
+			IncompleteEntitiesErrorRule staterule = new IncompleteEntitiesErrorRule(annotation.get(IvanAnnotations.IvanEntitiesAnnotation.class));
+			// run check
+			if(staterule.apply(annotation))
+			{
+				// save results
+				if(annotation.get(IvanAnnotations.DocumentErrorAnnotation.class) != null){
+					annotation.get(IvanAnnotations.DocumentErrorAnnotation.class).addAll(staterule.getErrorMessages());
+				}
+				else {
+					annotation.set(IvanAnnotations.DocumentErrorAnnotation.class, staterule.getErrorMessages());
+				}
+			}
 		} catch (JWNLException e) {
-			log(Redwood.ERR, e);
+			log(Redwood.ERR, e);			
+			e.printStackTrace();
 		}
 	}
 

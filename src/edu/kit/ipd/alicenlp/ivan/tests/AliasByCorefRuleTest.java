@@ -15,17 +15,45 @@ import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
+import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.PrettyLogger;
 
 @SuppressWarnings("javadoc")
 public class AliasByCorefRuleTest 
 {
 
+	/** Tests a specific text that yielded odd results. 
+	 * 
+	 * @throws JWNLException
+	 */
+	@Test
+	public void testLucas() throws JWNLException
+	{
+		String text = "Lucas is a wizard. Lucas is on the right hand side. Lucas is looking north.";
+		Annotation annotate = annotate(text);
+		AliasByCorefRule rule = new AliasByCorefRule();
+		boolean okay = rule.apply(annotate);
+		assertTrue("recognition failed", okay);
+		
+		InitialState state = annotate.get(IvanAnnotations.IvanEntitiesAnnotation.class);		
+		PrettyLogger.log(annotate.get(CorefChainAnnotation.class));
+		PrettyLogger.log(state);
+		
+		assertThat("wizard not recognised", state.getEntity("Lucas"), is("wizard"));
+		
+		assertThat("error in entity list", state.getEntityNames().get(0).first, is("wizard"));
+	}
+	
+	
+
+	
 	/**
 	 * Asser that the rule can find a name in a sample sentence.
 	 * @throws JWNLException 
