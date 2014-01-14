@@ -165,6 +165,6 @@ public class HardDeclarationsTests {
 		System.out.println(state.toString());
 		assertThat("cat does not exist in recognition", state.hasEntity("cat"), is(true));
 		assertNotNull(state.getSingle("cat"));
-		assertThat(state.getSingle("cat").getDirection(), is("looking north"));
+		assertThat(state.getSingle("cat").getDirection(), is("north"));
 	}
 }
