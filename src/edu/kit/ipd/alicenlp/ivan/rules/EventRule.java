@@ -73,7 +73,8 @@ public class EventRule implements ISentenceRule {
 		}
 	}
 
-	/**
+	/** TRUE if this is an event. FALSE if it is not. 
+	 * Default is FALSE.
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.ISentenceRule#apply(edu.stanford.nlp.util.CoreMap)
 	 */
 	@Override
@@ -95,6 +96,8 @@ public class EventRule implements ISentenceRule {
 		for (CoreLabel v : verbs) {
 
 			IndexWord wnw = dictionary.getIndexWord(POS.VERB, v.lemma());
+			if(wnw == null)
+				return false;
 			/*
 			 * This loop is where the real magic happens. If the word
 			 * <code>v</code> can be interpreted as meaning anything on

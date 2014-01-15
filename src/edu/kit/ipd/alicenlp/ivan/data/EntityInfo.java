@@ -150,6 +150,15 @@ public class EntityInfo
 	{
 		entitydefinition = range;
 	}
+	
+	/** Fake entities have not been extracted from the text and are missing the span coordinates.
+	 * 
+	 * @return TRUE, if this entity is missing coordinates.
+	 */
+	public boolean isFake()
+	{
+		return entitydefinition == null;
+	}
 
 	public boolean isProperName() {
 		return isProperName;

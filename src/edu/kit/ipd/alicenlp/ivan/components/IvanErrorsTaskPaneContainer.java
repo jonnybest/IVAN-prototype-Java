@@ -29,6 +29,8 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
+import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -41,9 +43,26 @@ import edu.kit.ipd.alicenlp.ivan.SwingWindow;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
+	// headline constants
+	/** This constant contains the headline for meta problems.
+	 */
+	private static final String CATEGORY_META = "meta";
+	public static final String CATEGORY_DIRECTION = "direction";
+	public static final String CATEGORY_LOCATION = "location";
+	public static final String CATEGORY_EFFECT = "effect";
+	public static final String CATEGORY_GRAMMAR = "grammar";
+	public static final String CATEGORY_STYLE = "style";
+	public static final String CATEGORY_AMBIGOUS = "ambigous";
+	
+	// quick fix constants (action keys)
 	private static final String QF_ERROR = "error";
 	private static final String QF_NAME = "qf-name";
 
+	/** This action invokes the pipeline and checks the sentence
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class CheckSentencesMetaAction extends AbstractAction {
 		private CheckSentencesMetaAction(String name) {
 			super(name);
@@ -69,6 +88,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action restores all previously ignored problems
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class RestoreAllMetaAction extends AbstractAction {
 		private RestoreAllMetaAction(String name) {
 			super(name);
@@ -96,6 +120,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action ignores all currently displayed problems and clears the panel 
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class IgnoreAllMetaAction extends AbstractAction {
 		private IgnoreAllMetaAction(String name) {
 			super(name);
@@ -127,7 +156,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 								keepme.add(otherQuickfix);
 							} else {
 								map.remove(key); // throw it away
+								// save this problem as "ignored" 
 								ignoredProblems.add(otherError);
+								// remove it from the problems which are currently of concern
+								bagofProblems.remove(otherError);
 							}
 						}
 						panel.removeAll();
@@ -152,6 +184,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action ignores a single problem
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class IgnoreProblemAction extends AbstractAction {
 		private final IvanErrorInstance error;
 		private final IvanErrorsTaskPaneContainer tp;
@@ -172,6 +209,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			JXTaskPane panel = mypanes.get(error.Category);
 			// get the actions configured for this panel
 			ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
+			// FIXME change behaviour of saving to iterate panel.getContentPane().getComponents() and only remove pertaining components OR retaining all non-action components by default or something like that 
 			List<Action> keepme = new LinkedList<Action>();
 			for (Object key : map.keys()) {
 				Action otherQuickfix = map.get(key);
@@ -185,11 +223,16 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 					map.remove(key); // throw it away
 				}
 			}
+			// clean the panel of excess elements
 			panel.removeAll();
 			for (Action action : keepme) {
 				panel.add(action);
 			}
+			panel.updateUI();
+			// save this problem as "ignored" 
 			ignoredProblems.add(error);
+			// remove it from the problems which are currently of concern
+			bagofProblems.remove(error);
 			System.out.println("This action's error is " + getValue(QF_ERROR));
 			System.out.println(tp.toString());
 		}
@@ -200,6 +243,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This action implements a quick fix: it adds a location
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class AddLocationAction extends AbstractAction {
 		final private IvanErrorInstance myerror;
 		private List<String> stubs = new ArrayList<String>();
@@ -260,6 +308,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		return lastMark;
 	}
 
+	/** This action implements a quick fix: it deletes the offending sentence
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	private final class DeleteSentenceAction extends AbstractAction {
 		private final IvanErrorInstance error;
 
@@ -350,15 +403,42 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
+	/** This is the error representation for the Errors Task Pane
+	 * 
+	 * @author Jonny
+	 *
+	 */
 	public class IvanErrorInstance {
 
+		/**
+		 * Related text from the document (like an offending preposition)
+		 */
 		final public String[] Reference;
+		/**
+		 * The Category is defines the heading under which this error is displayed
+		 */
 		final public String Category;
+		/**
+		 * The code points are the places related to this specific error instance.
+		 */
 		final public List<CodePoint> Codepoints;
-		final public String Quickfix;
+		/**
+		 * This string identifies the quick fix for this problem (like "qf-add[boy, girl]") 
+		 */
+		final public String Quickfix;		
+		/**
+		 * This is the sentence which is cause for the error.
+		 */
 		final public String Problem;		
 
-		public IvanErrorInstance(String category, List<CodePoint> codepoints, String qf, String prob)  
+		/** Creates a new specific error
+		 * 
+		 * @param category Headline for this type of error
+		 * @param codepoints Where this error occurs (spans in the text)
+		 * @param qf The identifier for the quick fix, if available
+		 * @param prob The problematic sentence in verbatim
+		 */
+		public IvanErrorInstance(final String category, final List<CodePoint> codepoints, final String qf, final String prob)  
 		{
 			Category = category;
 			Codepoints = codepoints;
@@ -366,6 +446,14 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			Problem = prob;			
 			Reference = null;
 		}
+		/** Creates a new specific error
+		 * 
+		 * @param category Headline for this type of error
+		 * @param codepoints Where this error occurs (spans in the text)
+		 * @param qf The identifier for the quick fix, if available
+		 * @param prob The problematic sentence in verbatim
+		 * @param refs Problematic words or short passages from the text
+		 */
 		public IvanErrorInstance(String category, List<CodePoint> codepoints, String qf, String prob, String[] refs)  
 		{
 			Category = category;
@@ -390,6 +478,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 							return false;
 						}
 					}
+					return true;
 				}
 			}
 			return false;
@@ -414,44 +503,25 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			
 			return outstr.toString();
 		}
+		@Override
+		public int hashCode() {			
+			return Category.hashCode() ^ toString().intern().hashCode();
+		}
 	}
 
 	private Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
 	final private Font errorInfoFont = new Font("Calibri", 0, 11);
 	private JTextComponent txtEditor = null;
 
-	public class CodePoint extends Tuple<Integer, Integer>{
-
-		public CodePoint(Integer x, Integer y) {
-			super(x, y);		}
-		
-	}
-	
-	public class Tuple<X, Y> { 
-		public final X x; 
-		public final Y y; 
-		public Tuple(X x, Y y) { 
-			this.x = x; 
-			this.y = y; 
-		} 
-		
-		@Override
-		public boolean equals(Object obj) {
-			if(obj instanceof Tuple<?, ?>)
-			{
-				Tuple<?, ?> other = (Tuple<?, ?>) obj;
-				if (x.equals(other.x) && y.equals(other.y))
-					return true;
-			}
-			return false;
-		}
-	}
-
+	/** A bag of problems which have been ignored by the user and should subsequently not be displayed any more.
+	 * 
+	 */
 	private Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	private Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	
 
-	/**
+	/** Create a new component. This component displays errors and user action. It can also modify text in a text component. 
+	 * @param editor The text to work with.
 	 */
 	public IvanErrorsTaskPaneContainer(JTextComponent editor) {
 		txtEditor = editor;
@@ -500,6 +570,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * @param description
 	 */
 	public void createCategory(String title, String description) {
+		// does this pane already exist?
+		if(mypanes.containsKey(title))
+		{
+			// yes. nop
+			return;
+		}
+		
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
 		if(description != null){
@@ -512,14 +589,29 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		mypanes.put(title, pane);
 	}
 
+	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
+	 * Problems are not added, if the user previously ignored them.
+	 * 
+	 * @param category Problem category (heading)
+	 * @param errormsg User-readable error message with advice
+	 * @param codepoints Points in the document that should be highlighted to the user
+	 * @param references Relating text (like specific names in the document)
+	 * @return TRUE if the problem was inserted, otherwise FALSE
+	 */
 	public boolean createProblem(String category, String errormsg, List<CodePoint> codepoints, String[] references) {
 		JXTaskPane tsk = mypanes.get(category);
 		if(tsk != null)
 		{
 			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, null, errormsg, references);
-			boolean present = this.ignoredProblems.contains(error);
-			if(!present){
-				this.bagofProblems.add(error);
+			// has the user previously ignored this error?
+			boolean ignored = this.ignoredProblems.contains(error);
+			if(!ignored){
+				// is this error already listed?
+				if(!this.bagofProblems.add(error))
+				{
+					return false;
+				}
+				// add another quick fix for this category
 				createQuickfixes(error);
 				return true;
 			}
@@ -569,7 +661,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		List<javax.swing.Action> myQuickfixesForThisError = new ArrayList<Action>();
 		
 		/* The DELETE_SENTENCE action */
-		if(error.Category.equals("effect")) // for sentences without effect only
+		if(error.Category.equals(CATEGORY_EFFECT) 
+				|| error.Category.equals(CATEGORY_GRAMMAR)
+				|| error.Category.equals(CATEGORY_STYLE)) // for sentences without effect only
 		{
 			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
 	        javax.swing.Action myAction = new DeleteSentenceAction(displayDescription, error);
@@ -581,7 +675,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 		
 		/* The ADD_SENTENCE action */
-		if(error.Category.equals("location")) /* LOCATION */
+		if(error.Category.equals(CATEGORY_LOCATION)) /* LOCATION */
 		{
 			String[] references = error.Reference;
 			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
@@ -593,7 +687,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			myAction.putValue(QF_NAME, "qf-add"+ Arrays.toString(references));
 			myQuickfixesForThisError.add(myAction);
 		} 
-		else if(error.Category.equals("direction")) /* DIRECTION */
+		else if(error.Category.equals(CATEGORY_DIRECTION)) /* DIRECTION */
 		{ 
 			String[] references = error.Reference;
 			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
@@ -607,7 +701,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 				
 		/* The IGNORE action is almost always available */
-		if(!error.Category.equals("meta"))
+		if(!error.Category.equals(CATEGORY_META))
 		{
 			// instance 
 			final IvanErrorsTaskPaneContainer tp = this;
@@ -662,21 +756,48 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 //    @org.jdesktop.application.Action 
 //    public void delete() { } 
 
+	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
+	 * Problems are not added, if the user previously ignored them.
+	 * 
+	 * @param category Problem category (heading)
+	 * @param errormsg User-readable error message with advice
+	 * @param codepoint Single point in the document that should be highlighted to the user
+	 * @return TRUE if the problem was inserted, otherwise FALSE
+	 */
 	public boolean createProblem(String category, String errormsg, CodePoint codepoint) {
 		return createProblem(category, errormsg, Arrays.asList(new CodePoint[]{codepoint}), null);
 	}
 
-	public boolean createProblem(String category, String errormsg, int x, int y) {
-		return createProblem(category, errormsg, new CodePoint(x, y));
+	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
+	 * Problems are not added, if the user previously ignored them.
+	 * 
+	 * @param category Problem category (heading)
+	 * @param errormsg User-readable error message with advice
+	 * @param i Code point coordinate number one
+	 * @param j Code point coordinate number two
+	 * @return TRUE if the problem was inserted, otherwise FALSE
+	 */
+	public boolean createProblem(String category, String errormsg, int i, int j) {
+		return createProblem(category, errormsg, new CodePoint(i, j));
 	}
 
+	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
+	 * Problems are not added, if the user previously ignored them.
+	 * 
+	 * @param category Problem category (heading)
+	 * @param errormsg User-readable error message with advice
+	 * @param i Code point coordinate number one
+	 * @param j Code point coordinate number two 
+	 * @param references Relating text (like specific names in the document)
+	 * @return TRUE if the problem was inserted, otherwise FALSE
+	 */
 	public boolean createProblem(String category, String errormsg, int i, int j,
 			String[] references) {
 		return createProblem(category, errormsg, Arrays.asList(new CodePoint[]{new CodePoint(i, j)}), references);
 	}
 
-	/**
-	 * @return
+	/** Unified "toString" method for quick fix actions. (Because it seems that ActionX.toString() can't share an implementation.)
+	 * @return ActionX.toString()
 	 */
 	protected String qfActionPrinter(Action action) {
 		IvanErrorInstance err = (IvanErrorInstance) action.getValue(QF_ERROR);
@@ -707,11 +828,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		return outstr.toString();
 	}
 
+	/** This method sets the editor window to allow this component direct modification of user text.
+	 * @param txtEditor
+	 */
 	public void setEditor(JTextComponent txtEditor) {
 		this.txtEditor = txtEditor;
 	}
 
-	/**
+	/** This applies quick fixes which require insertion in the editor panel.
+	 * 
 	 * @param markThisPart 
 	 * 
 	 */

@@ -122,6 +122,30 @@ public class DirectionKeywordRule implements ISentenceRule {
 				}
 			}
 		}
+		
+		// participal modifier rules for facing
+		{
+			String kw = "look";
+			GrammaticalRelation rel = EnglishGrammaticalRelations.PARTICIPIAL_MODIFIER;
+			List<SemanticGraphEdge> lst = graph.findAllRelns(rel);
+			if (!lst.isEmpty()) {
+				// partmod.lemma().equalsIgnoreCase(kw))
+				for (SemanticGraphEdge edge : lst) {
+					if (edge.getDependent().lemma().equalsIgnoreCase(kw)) {
+						subject = edge.getGovernor();
+						verb = edge.getDependent();
+						// the modifier is probably the last dependent of this
+						// verb
+						IndexedWord mod = graph.getChildList(verb).get(
+								graph.getChildList(verb).size() - 1);
+						// setDirection(printTree(match(edge.getDependent(),
+						// tree)));
+						setDirection(printTree(match(mod, tree, null, true)));
+						return true;
+					}
+				}
+			}
+		}
 
 		// relative clause modifier rules for turned
 		{

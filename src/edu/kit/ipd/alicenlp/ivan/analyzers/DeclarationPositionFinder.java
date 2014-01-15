@@ -12,21 +12,30 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import com.jcraft.jsch.Logger;
+
+import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
+import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
+import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
+import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.AnnotationSerializer;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -204,7 +213,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		 */
 		try {
 			// get ALL the names
-			List<String> names = recogniseNames(sentence);
+			List<String> names = recogniseEntities(sentence);
 			// get THE location for this sentence. yes, this assumes they're all standing in the same spot
 			EntityInfo locs = getLocation(sentence);
 			// get THE direction for all the entities in this sentence. yes, this assumes they're all facing the same way
@@ -346,7 +355,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// it's probably safe to simply get everything that's in the subject
 		// TODO: name -> entity mapping
 		List<EntityInfo> infos = new ArrayList<EntityInfo>();
-		List<String> names = recogniseNames(sentence);
+		List<String> names = recogniseEntities(sentence);
 		for (String n : names) {
 			if (!mystate.containsName(n)) {
 				infos.add(new EntityInfo(n));				
@@ -363,8 +372,12 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 * @return
 	 * @throws IvanException 
 	 */
-	public static List<String> recogniseNames(CoreMap sentence) throws IvanException {
+	public static List<String> recogniseEntities(CoreMap sentence) throws IvanException {
+		ArrayList<String> names = new ArrayList<String>();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		if(graph.isEmpty())
+			return names;
+		
 		IndexedWord head = BaseRule.getSubject(graph);
 		
 		// if the nominal subject is a plural word (like "characters" or "people"),
@@ -375,11 +388,14 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 			if(!head.equals(graph.getFirstRoot()))
 			{
 				head = graph.getFirstRoot();
+				log(Redwood.DBG, "Name recognition selected head: " + head);
 			}
 			else 
 			{
 				// if not, try the direct objects instead
 				head = graph.getChildWithReln(head, EnglishGrammaticalRelations.DIRECT_OBJECT);
+				
+				log(Redwood.DBG, "Name recognition is falling back on direct object: " + head);
 			}
 		}
 		
@@ -390,7 +406,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 			// check again:
 			if (head == null) {
 				// I'm out of ideas
-				return null;
+				return names;
 			}
 		}
 		
@@ -398,14 +414,19 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 		// make space for names
 		ArrayList<IndexedWord> namesIW = new ArrayList<IndexedWord>();
 		// follow "and" and "or" conjunctions starting from the head
-		ArrayList<String> names = BaseRule.resolveCc(head, sentence, namesIW);
+		
+		names = BaseRule.resolveCc(head, sentence, namesIW);
 		// resolve personal pronouns
 		for (IndexedWord n : namesIW) {
 			if(n.tag().equals("PRP"))
 			{
+				log(Redwood.DBG, "Name is a preposition.");
 				// this part doesn't even work:
 //				CoreferenceResolver cresolver = CoreferenceResolver.getInstance();
 //				n.setValue(cresolver.resolve(n)); // this is probably a bad idea
+			}
+			else {
+				//log(Redwood.DBG, "Name is not a preposition.");
 			}
 		}
 		return names;
@@ -462,7 +483,91 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	public void annotate(Annotation annotation) {
 		this.mystate = new InitialState();
 		
+		AliasByCorefRule aliasRule = new AliasByCorefRule();
+		try {
+			// extract names from the text
+			if(aliasRule.apply(annotation))
+			{
+				// add each found name to the state
+				for (CorefMention ms : aliasRule.getAliasMentions()) {
+					// create alias
+					String alias = ms.mentionSpan;
+					// create and add entity
+					// find mention head
+					CorefMention entity = aliasRule.getEntity(ms);
+					if(entity == null)
+					{
+						// it didn't find any nominal mentions for this name
+						mystate.map(alias, null); // create a mapping for an unknown entity
+						continue; 
+					}
+					// retrieve and convert index
+					int sentenceIndex /* 0-based index for arrays */ = aliasRule.getEntity(ms).sentNum - 1; /* 1- based index */
+					CoreMap sen = annotation.get(SentencesAnnotation.class).get(sentenceIndex);
+					// retrieve and convert index
+					int entityHeadIndex /* 0-based index for arrays */ = entity.headIndex - 1; /* 1- based index */
+					CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
+					String headstring = head.lemma();
+					EntityInfo ei = new EntityInfo(headstring);
+					ei.setEntitySpan(new Span(head.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), head.get(CoreAnnotations.CharacterOffsetEndAnnotation.class)));
+					// add alias
+					mystate.map(alias, ei);
+				}
+			}
+		} catch (JWNLException e1) {
+			log("It should not be physically possible to see this message.");
+			// does not occur
+		} catch (IvanInvalidMappingException e) {
+			e.printStackTrace();
+			log(Redwood.ERR, e);
+		}
+		
+		
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
+			// do not process sentences which have no graph
+			if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).isEmpty())
+				continue;
+			// find alias mappings
+			AliasHearstRule sentencerule = new AliasHearstRule();
+			try {
+				// check for alias declarations
+				if(sentencerule.apply(sentence))
+				{
+					for (CorefMention ms : sentencerule.getAliasMentions()) {
+						// create alias
+						String alias = ms.mentionSpan;
+						// create and add entity
+						// find mention head
+						CorefMention entity = sentencerule.getEntity(ms);
+						if(entity == null)
+						{
+							// it didn't find any nominal mentions for this name
+							mystate.map(alias, null); // create a mapping for an unknown entity
+							continue; 
+						}
+						// retrieve and convert index
+						int sentenceIndex /* 0-based index for arrays */ = sentencerule.getEntity(ms).sentNum - 1; /* 1- based index */
+						CoreMap sen = annotation.get(SentencesAnnotation.class).get(sentenceIndex);
+						// retrieve and convert index
+						int entityHeadIndex /* 0-based index for arrays */ = entity.headIndex - 1; /* 1- based index */
+						CoreLabel head = sen.get(TokensAnnotation.class).get(entityHeadIndex);
+						String headstring = head.lemma();
+						EntityInfo ei = new EntityInfo(headstring);
+						ei.setEntitySpan(new Span(head.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), head.get(CoreAnnotations.CharacterOffsetEndAnnotation.class)));
+						// add alias
+						mystate.map(alias, ei);
+					}
+					// stop processing more rules for this sentence
+					continue;
+				}
+			} catch (JWNLException e1) {
+				log("Should not be reachable.");
+			} catch (IvanInvalidMappingException e) {
+				e.printStackTrace();
+				log(Redwood.ERR, e);
+			}
+			
+			
 			// TODO: do stuff
 			LocationListAnnotation list = findLocationAsTrees(sentence);
 			if(!list.isEmpty())

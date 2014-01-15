@@ -236,7 +236,18 @@ public abstract class BaseRule {
 	 * @param graph The sentence to look in.
 	 * @return A distinct word
 	 */
-	private static String resolveNN(IndexedWord head, SemanticGraph graph) {
+	public static String resolveNN(IndexedWord head, SemanticGraph graph) {
+		return resolveNN(head, graph, new ArrayList<IndexedWord>());
+	}
+	
+	/** This method attempts to resolve noun phrases which consist of more than one word.
+	 * More precisely, it looks for nn dependencies below {@code head} and creates an entity.
+	 * @param head The head of the noun phrase
+	 * @param graph The sentence to look in.
+	 * @param words The words which make up the noun phrase
+	 * @return A distinct word
+	 */
+	public static String resolveNN(IndexedWord head, SemanticGraph graph, ArrayList<IndexedWord> words) {
 		List<IndexedWord> nns = graph.getChildrenWithReln(head, EnglishGrammaticalRelations.NOUN_COMPOUND_MODIFIER);
 		String name = "";
 		// check for nulls. if there is nothing here, we have nothing to do.
@@ -244,8 +255,12 @@ public abstract class BaseRule {
 			for (IndexedWord part : nns) {
 				name += part.word();
 				name += " ";
+				
+				words.add(part); // save this word as a part of the results
 			}
-			name += head.word();
+			// append the head word ("starting" word)
+			name += head.word();			
+			words.add(head);// save this word as a part of the results			
 			return name;
 		}
 		else {

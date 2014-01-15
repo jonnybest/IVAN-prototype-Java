@@ -56,6 +56,10 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 		setupWordNet();
 	}
 	
+	/** @param doc 
+	 * @param canWrite If true, this rule may modify existing annotations.
+	 * 
+	 */
 	@Override
 	public boolean apply(Annotation doc, boolean canWrite) throws JWNLException {
 		for (EntityInfo info : state) {
@@ -122,8 +126,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 		}
 		Span errorspan = badone.getEntitySpan();
 		msg = new IvanErrorMessage(
-				IvanErrorType.SYNONYMS,
-				doc.get(DocIDAnnotation.class), 
+				IvanErrorType.SYNONYMS, 
 				errorspan,
 				"\""+ badone +"\" is a synonym of a previously used name \"" + other + "\"");
 	}
@@ -150,7 +153,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 	 */
 	private boolean isOkay(String entity) throws JWNLException {
 		// if this entity is named, we can shortcut the whole process and simply check for name collisions.
-		if(hasName(entity) && nameDoesNotCollide(entity))
+		if(hasName(entity))
 		{
 			return true;
 		}
@@ -180,11 +183,6 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 			// if this is the same as the entity, everything is fine
 		}
 		return true;
-	}
-
-	private boolean nameDoesNotCollide(String entity) {
-		
-		return false;
 	}
 
 	private boolean hasName(String entity) {

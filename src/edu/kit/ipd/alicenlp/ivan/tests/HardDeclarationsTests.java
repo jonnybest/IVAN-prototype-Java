@@ -3,6 +3,11 @@
  */
 package edu.kit.ipd.alicenlp.ivan.tests;
 
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.checkEntrySet;
 
 import java.util.AbstractMap;
@@ -11,6 +16,10 @@ import java.util.Map.Entry;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
+import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.util.logging.PrettyLogger;
 
 /**
  * @author Jonny
@@ -143,5 +152,5 @@ public class HardDeclarationsTests {
 				new String[] { "frog" });
 		checkEntrySet(sol);
 	}
-	
+
 }

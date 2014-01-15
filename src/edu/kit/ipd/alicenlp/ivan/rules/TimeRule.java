@@ -13,6 +13,12 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
+ * The rule for classifying time is as follows: A) if the noun "time" occurs,
+ * the sentence mentions time B) if the verb "elapse" or its synonyms (pass, go
+ * by) occur, it mentions passing C) if the NER tag for "duration" is present,
+ * the sentence has a duration A sentence classifies as TimeDescription, if (A
+ * && B || C ) holds.
+ * 
  * @author Jonny
  *
  */

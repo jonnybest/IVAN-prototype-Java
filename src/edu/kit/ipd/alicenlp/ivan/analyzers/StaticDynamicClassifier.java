@@ -26,14 +26,17 @@ import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
+import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.DocIDAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.IDAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -49,74 +52,81 @@ import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.Redwood;
 
-/** This class decides whether a sentence pertains to the initial state of the scene before runtime (SETUP)
- * or to changes to the scene during runtime (ACTION, EVENT, TIME). It also finds sentence-based issues and
- * document-based issues (ERROR).
+/**
+ * This class decides whether a sentence pertains to the initial state of the
+ * scene before runtime (SETUP) or to changes to the scene during runtime
+ * (ACTION, EVENT, TIME). It also finds sentence-based issues and document-based
+ * issues (ERROR).
  * 
  * @author Jonny
- *
+ * 
  */
-public class StaticDynamicClassifier extends IvanAnalyzer  
-{
+public class StaticDynamicClassifier extends IvanAnalyzer {
 	static private StaticDynamicClassifier myinstance = null;
 	private Dictionary dictionary;
 	/**
-	 * this classifier's own private pipeline. in the user didn't bother to go through the proper interface.
+	 * this classifier's own private pipeline. in the user didn't bother to go
+	 * through the proper interface.
 	 */
 	private static StanfordCoreNLP pipeline;
-	
-	/** This is the main method for classificatin. It classifies a single sentence.
-	 * It may perform better, if the Annotations from DeclarationPositionFinder are present.
+
+	/**
+	 * This is the main method for classificatin. It classifies a single
+	 * sentence. It may perform better, if the Annotations from
+	 * DeclarationPositionFinder are present.
 	 * 
 	 * @param sentence
 	 * @return
 	 * @throws JWNLException
 	 */
-	private Classification classifySentenceAnnotation(CoreMap sentence) throws JWNLException
-	{
+	private Classification classifySentenceAnnotation(CoreMap sentence)
+			throws JWNLException {
 		// stop on already classified sentences
-		if(sentence.get(Classification.class) != null)
+		if (sentence.get(Classification.class) != null)
 			return sentence.get(Classification.class);
-		
-		IndexedWord root = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getFirstRoot();
+
+		IndexedWord root = sentence.get(
+				CollapsedCCProcessedDependenciesAnnotation.class)
+				.getFirstRoot();
 
 		// this is the default result, if nothing else matches
 		Classification defaultclass = Classification.ActionDescription;
-		
-		/** This is a new style of classifying. Simply create a rule to check and call "apply".
-		 *  The apply method is responsible for producing the result and all we have to do
-		 *  is to decide what to do with the result.
-		 *  In most cases, we simply want to annotate.
+
+		/**
+		 * This is a new style of classifying. Simply create a rule to check and
+		 * call "apply". The apply method is responsible for producing the
+		 * result and all we have to do is to decide what to do with the result.
+		 * In most cases, we simply want to annotate.
 		 */
 		// does this sentence container an error?
 		ErrorRule checkError = new ErrorRule();
-		if(checkError.apply(sentence))
-		{
+		if (checkError.apply(sentence)) {
 			System.out.println("bad sentence found");
-			sentence.set(ErrorMessageAnnotation.class, checkError.getErrorMessage());
+			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
+					checkError.getErrorMessage());
 			return Classification.ErrorDescription;
 		}
-		
+
 		// does this sentence contain an event?
 		EventRule checkevent = new EventRule();
 		// yes!
-		if(checkevent.apply(sentence))
-		{
+		if (checkevent.apply(sentence)) {
 			System.out.println("Event found");
-			// since we only support one classification, return the classification instantly
+			// since we only support one classification, return the
+			// classification instantly
 			return Classification.EventDescription;
 		}
-		
+
 		// does this sentence explicitly reference time or duration?
 		TimeRule checkTime = new TimeRule();
 		// yes!
-		if(checkTime.apply(sentence))
-		{
+		if (checkTime.apply(sentence)) {
 			System.out.print("Time reference found");
 			return Classification.TimeDescription;
 		}
-		
-		/** Old style classification follows. 
+
+		/**
+		 * Old style classification follows.
 		 * 
 		 */
 		// short classification fix for broken sentences (wrong copula)
@@ -134,7 +144,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			if (verbs.size() == 1) {
 				String word = verbs.get(0).toString();
 				// hint 3: the only verb is "to be"
-				IndexWord wnetlemma = dictionary.lookupIndexWord(POS.VERB, word);
+				IndexWord wnetlemma = dictionary
+						.lookupIndexWord(POS.VERB, word);
 				IndexWord tobe = dictionary.getIndexWord(POS.VERB, "be");
 				if (tobe.equals(wnetlemma)) {
 					// ex: "Henry, Liv and Paddy are dogs."
@@ -142,63 +153,67 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 				}
 			}
 		}
-		
+
 		// normal classification rules follow:
-		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
-//		System.out.println(graph.toString());
+		SemanticGraph graph = sentence
+				.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		// System.out.println(graph.toString());
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
 		boolean passive = StaticDynamicClassifier.isPassive(root, graph);
-		if(passive)
-		{
+		if (passive) {
 			System.out.println("This sentence is passive.");
-			//return Classification.SetupDescription; // probably a bad idea?
+			// return Classification.SetupDescription; // probably a bad idea?
 		}
-		
+
 		// classify by lexical file num
 		IndexWord wnetw = dictionary.lookupIndexWord(POS.VERB, word);
-		if (wnetw == null) {
-			return Classification.ErrorDescription;
-		}
-		wnetw.sortSenses();
-		List<Synset> senses = wnetw.getSenses();
-		Synset mcs = senses.get(0); // most common sense
-		long lexnum = mcs.getLexFileNum();
+		if (wnetw != null) {
+			wnetw.sortSenses();
+			List<Synset> senses = wnetw.getSenses();
+			Synset mcs = senses.get(0); // most common sense
+			long lexnum = mcs.getLexFileNum();
 
-		if (lexnum == 42)
-		{
-			// stative
-			// TODO: make sure this actually refers to a state; not a changing
-			// state
-			List<Pointer> pointers = mcs.getPointers(PointerType.HYPERNYM);
-			if (pointers.size() > 0) {
-				printHypernymfeedback(word, pointers);
-//				System.out.print("Hypernym lexname: ");
-//				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
-			}
-			return Classification.SetupDescription;
-		}
-		else if (senses.size() > 1 && senses.get(1).getLexFileNum() == 42) {			
-			System.out.println("Second synset:");
-			List<Pointer> pointers = senses.get(1).getPointers(PointerType.HYPERNYM);
-			if (pointers.size() > 0) {
-				printHypernymfeedback(word, pointers);
-//				System.out.print("Hypernym lexname: ");
-//				System.out.println(pointers.get(0).getTargetSynset().getLexFileName());			
-			}
-			return Classification.SetupDescription;
-		}
-		else if (lexnum == 36) // verb.creation			
-		{
-			// ex: "The roof of the shed is painted blue, like the sky." 
-			if(passive)
-			{
-				if (!StaticDynamicClassifier.hasAgent(root, graph)) {
-					// ex: The roof is painted by the father.
-					return Classification.ActionDescription;
+			if (lexnum == 42) {
+				// stative
+				// TODO: make sure this actually refers to a state; not a
+				// changing
+				// state
+				List<Pointer> pointers = mcs.getPointers(PointerType.HYPERNYM);
+				if (pointers.size() > 0) {
+					printHypernymfeedback(word, pointers);
+					// System.out.print("Hypernym lexname: ");
+					// System.out.println(pointers.get(0).getTargetSynset().getLexFileName());
 				}
 				return Classification.SetupDescription;
+			} else if (senses.size() > 1 && senses.get(1).getLexFileNum() == 42) {
+				System.out.println("Second synset:");
+				List<Pointer> pointers = senses.get(1).getPointers(
+						PointerType.HYPERNYM);
+				if (pointers.size() > 0) {
+					printHypernymfeedback(word, pointers);
+					// System.out.print("Hypernym lexname: ");
+					// System.out.println(pointers.get(0).getTargetSynset().getLexFileName());
+				}
+				return Classification.SetupDescription;
+			} else if (lexnum == 36) // verb.creation
+			{
+				// ex: "The roof of the shed is painted blue, like the sky."
+				if (passive) {
+					if (!StaticDynamicClassifier.hasAgent(root, graph)) {
+						// ex: The roof is painted by the father.
+						return Classification.ActionDescription;
+					}
+					return Classification.SetupDescription;
+				}
 			}
+		}
+		else {
+			log(Redwood.ERR, "WordNET did not recognise this verb.");
+			Span errorspan = new Span(root.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), root.get(CoreAnnotations.CharacterOffsetEndAnnotation.class));
+			IvanErrorMessage err = new IvanErrorMessage(IvanErrorType.WORDNET, errorspan, "The word '" + word + "' is not properly recognised and may cause problems.");
+			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, err);
+			return Classification.ErrorDescription;
 		}
 
 		return defaultclass;
@@ -208,34 +223,40 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	 * @param word
 	 * @param pointers
 	 */
-	private static void printHypernymfeedback(String word, List<Pointer> pointers) {		
-		System.out.println("To " + word + " is one way to " + 
-				pointers.get(0).getTargetSynset().getWords().get(0).getLemma() + ".");
+	private static void printHypernymfeedback(String word,
+			List<Pointer> pointers) {
+		System.out.println("To "
+				+ word
+				+ " is one way to "
+				+ pointers.get(0).getTargetSynset().getWords().get(0)
+						.getLemma() + ".");
 	}
 
-	/** This is a simple default constructor which sets up wordnet.
+	/**
+	 * This is a simple default constructor which sets up wordnet.
 	 * 
 	 */
-	private StaticDynamicClassifier() 
-	{
+	private StaticDynamicClassifier() {
 		// this creates a wordnet dictionary
 		setupWordNet();
-		
+
 		if (myinstance == null) {
 			myinstance = this;
 		}
 	}
 
-	/** This is the constructor for the Stanford Pipeline Interface
+	/**
+	 * This is the constructor for the Stanford Pipeline Interface
 	 * 
-	 * @param name  
-	 * @param properties 
+	 * @param name
+	 * @param properties
 	 */
 	public StaticDynamicClassifier(String name, Properties properties) {
 		// this creates a wordnet dictionary
 		setupWordNet();
 
-		// do not assign any instace, because I fear multiple annotators may be interfering with each other if the references escape pipeline context		
+		// do not assign any instace, because I fear multiple annotators may be
+		// interfering with each other if the references escape pipeline context
 	}
 
 	protected Boolean hasWordNetEntry(String verb) throws JWNLException {
@@ -245,20 +266,22 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			if (word == null || !word.getLemma().equals(verb)) {
 				// skip
 				//System.err.println("-- Cannot find word \"" + verb + "\" in WordNet dictionary."); //$NON-NLS-1$ //$NON-NLS-2$
-				//System.err.println();
+				// System.err.println();
 				return false;
-			}
-			else 
+			} else
 				return true;
-		}
-		else
+		} else
 			return true;
 	}
-	
-	/** Finds whole word to multi-word verbs like phrasal verbs
-	 * @param graph The sentence this word occurs in
-	 * @param word The word to find parts for
-	 * @return The whole verb (in base form) as it exists in WordNet 
+
+	/**
+	 * Finds whole word to multi-word verbs like phrasal verbs
+	 * 
+	 * @param graph
+	 *            The sentence this word occurs in
+	 * @param word
+	 *            The word to find parts for
+	 * @return The whole verb (in base form) as it exists in WordNet
 	 * @throws JWNLException
 	 */
 	protected String expandVerb(IndexedWord word, SemanticGraph graph)
@@ -267,33 +290,30 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		if (StaticDynamicClassifier.hasParticle(word, graph)) {
 			String particle = null;
 			particle = StaticDynamicClassifier.getParticle(word, graph).word();
-			//System.err.println(particle);
+			// System.err.println(particle);
 			String combinedword = lemma + " " + particle;
 			if (hasWordNetEntry(combinedword)) {
-				lemma = combinedword;							
+				lemma = combinedword;
 			}
-		}
-		else if(StaticDynamicClassifier.hasPrepMod(word, graph)) {
+		} else if (StaticDynamicClassifier.hasPrepMod(word, graph)) {
 			String prepmod = null;
 			prepmod = StaticDynamicClassifier.getPrepMod(word, graph).word();
-			//System.err.println(prepmod);
+			// System.err.println(prepmod);
 			String combinedword = lemma + " " + prepmod;
 			if (hasWordNetEntry(combinedword)) {
-				lemma = combinedword;							
+				lemma = combinedword;
 			}
-		}
-		else if(StaticDynamicClassifier.hasDirectObjectNP(word, graph)) {
+		} else if (StaticDynamicClassifier.hasDirectObjectNP(word, graph)) {
 			String dirobstr = null;
 			IndexedWord direObj = null;
 			direObj = BaseRule.getDirectObject(word, graph);
 			CoreLabel det = BaseRule.getDeterminer(direObj, graph);
 			if (det != null) {
 				dirobstr = det.word() + " " + direObj.word();
-			}
-			else {
+			} else {
 				dirobstr = direObj.word();
 			}
-			//System.err.println(direObj);
+			// System.err.println(direObj);
 			String combinedword = lemma + " " + dirobstr;
 			if (hasWordNetEntry(combinedword)) {
 				lemma = combinedword;
@@ -302,43 +322,47 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		return lemma;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#setDictionary(net.sf.extjwnl.dictionary.Dictionary)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#setDictionary(net.sf.extjwnl
+	 * .dictionary.Dictionary)
 	 */
-	
+
 	public void setDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
 	}
-	
+
 	/**
 	 * 
 	 */
 	protected void setupWordNet() {
 		// set up properties file
-	    String propsFile = "file_properties.xml";
-	    FileInputStream properties = null;
-	    try {
-	    	properties = new FileInputStream(propsFile);
-	    } catch (FileNotFoundException e1) {
-	    	e1.printStackTrace();
-	    }
-	    
-	    // create a dictionary and run the analytics
-	    try {
-	    	
-	    	// run
-	    	if (dictionary == null) {
-				//new style, instance dictionary
+		String propsFile = "file_properties.xml";
+		FileInputStream properties = null;
+		try {
+			properties = new FileInputStream(propsFile);
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		// create a dictionary and run the analytics
+		try {
+
+			// run
+			if (dictionary == null) {
+				// new style, instance dictionary
 				dictionary = Dictionary.getInstance(properties);
 			}
-	    } catch (Exception e) {
-	    	e.printStackTrace();
-	    	System.exit(-1);
-	    }
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
 	}
-	
 
-	/** The classifier is a singleton.
+	/**
+	 * The classifier is a singleton.
 	 * 
 	 * @return
 	 */
@@ -350,57 +374,77 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	}
 
 	@Override
-	public void annotate(Annotation annotation) 
-	{
+	public void annotate(Annotation annotation) {
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
-			// process 
+			// process
 			try {
 				Classification sentenceclass = classifySentenceAnnotation(sentence);
 				// FIXME: this call is deprecated
 				sentence.set(Classification.class, sentenceclass);
-				// this is the proper way to annotate 
-				sentence.set(IvanAnnotations.SentenceClassificationAnnotation.class, sentenceclass);
+				// this is the proper way to annotate
+				sentence.set(
+						IvanAnnotations.SentenceClassificationAnnotation.class,
+						sentenceclass);
+				
+				// check for initial state consistency
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
 				log(Redwood.ERR, "Error while classifying sentences.", e);
-			} 
-			catch (NullPointerException|java.lang.AssertionError e)
-			{
-				Span range = Span.fromValues(sentence.get(CharacterOffsetBeginAnnotation.class), 
+			} catch (NullPointerException | java.lang.AssertionError e) {
+				log(Redwood.ERR, "Error while classifying sentences.", e);
+				Span range = Span.fromValues(
+						sentence.get(CharacterOffsetBeginAnnotation.class),
 						sentence.get(CharacterOffsetEndAnnotation.class));
-				IvanErrorMessage error = new IvanErrorMessage(IvanErrorType.UNKNOWN,
-						annotation.get(IDAnnotation.class), 
-						range, 
+				IvanErrorMessage error = new IvanErrorMessage(
+						IvanErrorType.UNKNOWN,
+						range,
 						"Processing this sentence caused an exception.");
 
-				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, 
+				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
 						error);
-				sentence.set(Classification.class, Classification.ErrorDescription);
+				sentence.set(Classification.class,
+						Classification.ErrorDescription);
 			}
 		}
 		try {
+			// run classifier
 			classifyDocument(annotation);
+			// check recognition state for missing entries
+			IncompleteEntitiesErrorRule staterule = new IncompleteEntitiesErrorRule(annotation.get(IvanAnnotations.IvanEntitiesAnnotation.class));
+			// run check
+			if(staterule.apply(annotation))
+			{
+				// save results
+				if(annotation.get(IvanAnnotations.DocumentErrorAnnotation.class) != null){
+					annotation.get(IvanAnnotations.DocumentErrorAnnotation.class).addAll(staterule.getErrorMessages());
+				}
+				else {
+					annotation.set(IvanAnnotations.DocumentErrorAnnotation.class, staterule.getErrorMessages());
+				}
+			}
 		} catch (JWNLException e) {
-			log(Redwood.ERR, e);
+			log(Redwood.ERR, e);			
+			e.printStackTrace();
 		}
 	}
 
-	private static void classifyDocument(Annotation annotation) throws JWNLException {
+	private static void classifyDocument(Annotation annotation)
+			throws JWNLException {
 		// TODO: implement document-wide error checking
-		List<IvanErrorMessage> errors = annotation.get(DocumentErrorAnnotation.class);
-		if(errors == null)
+		List<IvanErrorMessage> errors = annotation
+				.get(DocumentErrorAnnotation.class);
+		if (errors == null)
 			errors = new ArrayList<IvanErrorMessage>();
 
-		// lets check the entities for consistency. 
+		// lets check the entities for consistency.
 		InitialState entities = annotation.get(IvanEntitiesAnnotation.class);
-		if(entities == null)
+		if (entities == null)
 			return; // no entities - nothing to do
-		
-		// 1. distinct entities should not be synonymous to each other 
+
+		// 1. distinct entities should not be synonymous to each other
 		EntitiesSynonymsErrorRule rule = new EntitiesSynonymsErrorRule(entities);
-		if(rule.apply(annotation, true))
-		{
-			errors.add(rule.getErrorMessage());			
+		if (rule.apply(annotation, true)) {
+			errors.add(rule.getErrorMessage());
 			annotation.set(DocumentErrorAnnotation.class, errors);
 		}
 	}
@@ -417,23 +461,29 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	public Set<Requirement> requires() {
 		Set<Requirement> myreqs = new HashSet<Annotator.Requirement>();
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
-		//myreqs.add(PARSE_REQUIREMENT);
+		// myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
 	}
 
-	/** This method decides whether a given <code>verb</code> has a passive subject or a passive auxiliary.  
+	/**
+	 * This method decides whether a given <code>verb</code> has a passive
+	 * subject or a passive auxiliary.
+	 * 
 	 * @param verb
 	 * @param graph
 	 * @return
 	 */
 	private static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
-		// Examples: 
-		// “Dole was defeated by Clinton” nsubjpass(defeated, Dole)
-		GrammaticalRelation nsubjpass = GrammaticalRelation.getRelation(NominalPassiveSubjectGRAnnotation.class);
-		// “That she lied was suspected by everyone” csubjpass(suspected, lied)
-		GrammaticalRelation csubjpass = GrammaticalRelation.getRelation(ClausalPassiveSubjectGRAnnotation.class);
-		// “Kennedy was killed” auxpass(killed, was)
-		GrammaticalRelation auxrel = GrammaticalRelation.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
+		// Examples:
+		// "Dole was defeated by Clinton" nsubjpass(defeated, Dole)
+		GrammaticalRelation nsubjpass = GrammaticalRelation
+				.getRelation(NominalPassiveSubjectGRAnnotation.class);
+		// "That she lied was suspected by everyone" csubjpass(suspected, lied)
+		GrammaticalRelation csubjpass = GrammaticalRelation
+				.getRelation(ClausalPassiveSubjectGRAnnotation.class);
+		// "Kennedy was killed" auxpass(killed, was)
+		GrammaticalRelation auxrel = GrammaticalRelation
+				.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
 		Boolean passive = false;
 		passive = passive || graph.hasChildWithReln(verb, nsubjpass);
 		passive = passive || graph.hasChildWithReln(verb, csubjpass);
@@ -442,35 +492,49 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 	}
 
 	/**
-	 * Finds any prepositions relating to {@code word}. Requires a non-collapsed graph.
-	 * @param word The word which is being modified
-	 * @param graph A basic graph (non-collapsed) 
+	 * Finds any prepositions relating to {@code word}. Requires a non-collapsed
+	 * graph.
+	 * 
+	 * @param word
+	 *            The word which is being modified
+	 * @param graph
+	 *            A basic graph (non-collapsed)
 	 * @return
 	 */
 	private static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.getChildWithReln(word, reln);
 	}
 
 	private static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}
 
 	private static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
 		return graph.hasChildWithReln(word, reln);
 	}
 
-	/** Decides whether this word has a direct object.
-	 * @param word the word to analyse
-	 * @param graph the sentence to which this word belongs
+	/**
+	 * Decides whether this word has a direct object.
+	 * 
+	 * @param word
+	 *            the word to analyse
+	 * @param graph
+	 *            the sentence to which this word belongs
 	 * @return TRUE, if a direct object is present for this verb
 	 */
-	private static boolean hasDirectObjectNP(IndexedWord word, SemanticGraph graph) {
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
+	private static boolean hasDirectObjectNP(IndexedWord word,
+			SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
 		if (graph.hasChildWithReln(word, reln)) {
-			String pos = graph.getChildWithReln(word, reln).get(PartOfSpeechAnnotation.class);
+			String pos = graph.getChildWithReln(word, reln).get(
+					PartOfSpeechAnnotation.class);
 			if (pos.equalsIgnoreCase("NN")) {
 				return true;
 			}
@@ -478,53 +542,61 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 		return false;
 	}
 
-	/** Returns any particle this <code>verb</code> may have
+	/**
+	 * Returns any particle this <code>verb</code> may have
+	 * 
 	 * @param verb
 	 * @param graph
 	 * @return
 	 */
-	private static IndexedWord getParticle(final IndexedWord verb, final SemanticGraph graph)
-	{
-		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
+	private static IndexedWord getParticle(final IndexedWord verb,
+			final SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
 		return graph.getChildWithReln(verb, reln);
 	}
 
-	/** This method decides whether a given <code>word</code> has an agent.
-	 * 	Ex: "The man has been killed by the police"
-	 *  
+	/**
+	 * This method decides whether a given <code>word</code> has an agent. Ex:
+	 * "The man has been killed by the police"
+	 * 
 	 * @param word
 	 * @param graph
 	 * @return
 	 */
 	private static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
 		// implement a check for agent(root, nounphrase)
-		GrammaticalRelation agentrel = GrammaticalRelation.getRelation(AgentGRAnnotation.class); 
+		GrammaticalRelation agentrel = GrammaticalRelation
+				.getRelation(AgentGRAnnotation.class);
 		return graph.hasChildWithReln(word, agentrel);
 	}
 
-	/** Classify an unprocessed text.
+	/**
+	 * Classify an unprocessed text.
 	 * 
 	 * @param text
 	 * @return
 	 * @throws JWNLException
 	 */
-	public Classification classifySentence(String text) throws JWNLException 
-	{
-		return classifySentenceAnnotation(annotateDeclarations(text).get(SentencesAnnotation.class).get(0));
+	public Classification classifySentence(String text) throws JWNLException {
+		return classifySentenceAnnotation(annotateDeclarations(text).get(
+				SentencesAnnotation.class).get(0));
 	}
 
-	/** This is just a private convenience method for annotating plain text.  
+	/**
+	 * This is just a private convenience method for annotating plain text.
 	 * 
 	 * @param text
 	 * @return
 	 */
 	private static Annotation annotateDeclarations(String text) {
 		Annotation doc = new Annotation(text);
-			
+
 		if (pipeline == null) {
-			// creates a StanfordCoreNLP object, with POS tagging, lemmatization, NER, parsing, and coreference resolution 
+			// creates a StanfordCoreNLP object, with POS tagging,
+			// lemmatization, NER, parsing, and coreference resolution
 			Properties props = new Properties();
-			// alternativ: wsj-bidirectional 
+			// alternativ: wsj-bidirectional
 			try {
 				props.put(
 						"pos.model",
@@ -538,8 +610,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer
 			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
 			pipeline = new StanfordCoreNLP(props);
 		}
-	    
+
 		pipeline.annotate(doc);
-	    return doc;
+		return doc;
 	}
 }
