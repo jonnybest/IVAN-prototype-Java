@@ -273,7 +273,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 		GrammaticalRelation subjclass = GrammaticalRelation
 				.getRelation(NominalSubjectGRAnnotation.class);
 		IndexedWord subject = graph.getChildWithReln(root, subjclass);
-		return subject == null || subject.word().equalsIgnoreCase("I");
+		return subject != null && subject.word().equalsIgnoreCase("I");
 	}
 
 }

@@ -16,6 +16,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
@@ -29,6 +30,7 @@ import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.logging.PrettyLogger;
 import edu.stanford.nlp.util.logging.Redwood;
 
 /**
@@ -229,6 +231,29 @@ public class ImportantClassificationTests {
 			assertThat("I see sentence classified wrong",
 					sentence.get(Classification.class),
 					is(Classification.ErrorDescription));
+		}
+	}
+	
+	/**
+	 * A negative test for ERROR annotations. This test mitigates a regression error.
+	 */
+	@Test
+	public void negative1stPersonErrorTest() {
+		{
+			/*
+			 * rule: no first person reason: verb does not pertain to things
+			 * happening in the scene
+			 */
+			Annotation doc = annotateClassifications("There is a hare facing north. The hare is in the foreground to the left. "
+					+ "There is a rabbit facing west. The rabbit is in the background to the right. The rabbit is called Fluffy.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(4);
+			System.out.println(sentence
+					.get(CollapsedCCProcessedDependenciesAnnotation.class));
+			if(sentence.get(IvanAnnotations.ErrorMessageAnnotation.class) != null)
+				PrettyLogger.log(sentence.get(IvanAnnotations.ErrorMessageAnnotation.class));
+			assertThat("false positive on error recognition",
+					sentence.get(Classification.class),
+					is(not(Classification.ErrorDescription)));
 		}
 	}
 
