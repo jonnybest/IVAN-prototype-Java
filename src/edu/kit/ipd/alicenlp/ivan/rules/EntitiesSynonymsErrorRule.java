@@ -70,7 +70,12 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 			// check this word's usage. if it's okay, save it to the mappings
 			if(isOkay(info.getEntity()))
 			{
-				saveInfo(info.getEntity());
+				// entities with assigned names never collide
+				if(!hasName(info.getEntity()))
+				{					
+					// unnamed entities are saved for later inspection
+					saveInfo(info.getEntity());
+				}
 			}
 			else {
 				createError(doc);
