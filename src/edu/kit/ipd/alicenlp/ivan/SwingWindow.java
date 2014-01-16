@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -163,6 +164,7 @@ public class SwingWindow {
 	@SuppressWarnings("serial") // This class is surely not getting serialized
 	private void initialize() {
 		frmvanInput = new JFrame();
+		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/ivan2.png")));
 		frmvanInput.setLocale(Locale.ENGLISH);
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 612, 511);
