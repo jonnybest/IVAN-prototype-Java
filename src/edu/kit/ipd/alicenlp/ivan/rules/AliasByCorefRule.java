@@ -22,8 +22,8 @@ import edu.stanford.nlp.pipeline.Annotation;
  */
 public class AliasByCorefRule implements IDocumentRule, ICorefResultRule {
 
-	private ArrayList<CorefMention> aliasmentions = new ArrayList<>();
-	private HashMap<CorefMention, CorefMention> entitymap = new HashMap<>();
+	private ArrayList<CorefMention> aliasmentions = new ArrayList<CorefMention>();
+	private HashMap<CorefMention, CorefMention> entitymap = new HashMap<CorefMention, CorefMention>();
 
 	/* (non-Javadoc)
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.IDocumentRule#apply(edu.stanford.nlp.pipeline.Annotation)
