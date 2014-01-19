@@ -29,7 +29,7 @@ public class AliasByCorefRule implements IDocumentRule, ICorefResultRule {
 	 * @see edu.kit.ipd.alicenlp.ivan.rules.IDocumentRule#apply(edu.stanford.nlp.pipeline.Annotation)
 	 */
 	@Override
-	public boolean apply(Annotation doc) throws JWNLException {
+	public boolean apply(Annotation doc) {
 		
 		Map<Integer, CorefChain> map = doc.get(CorefChainAnnotation.class);
 		if(map == null)
@@ -74,7 +74,7 @@ public class AliasByCorefRule implements IDocumentRule, ICorefResultRule {
 	/* Do not use.
 	 */
 	@Override
-	public boolean apply(Annotation doc, boolean canWrite) throws JWNLException {
+	public boolean apply(Annotation doc, boolean canWrite) {
 		return apply(doc);
 	}
 

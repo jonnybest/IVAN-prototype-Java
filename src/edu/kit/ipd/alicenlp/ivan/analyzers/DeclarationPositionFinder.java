@@ -514,9 +514,6 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 					mystate.map(alias, ei);
 				}
 			}
-		} catch (JWNLException e1) {
-			log("It should not be physically possible to see this message.");
-			// does not occur
 		} catch (IvanInvalidMappingException e) {
 			e.printStackTrace();
 			log(Redwood.ERR, e);
