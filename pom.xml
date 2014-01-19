@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>verify-alicenlp</artifactId>
-	<version>1.2</version>
+	<version>1.4</version>
 	<name>Input and verify Alice NLP</name>
 	<description>A prototype for verifying user input for alicenlp.</description>
 	<developers>
@@ -58,22 +58,10 @@
 			<version>3.2.0</version>
 			<classifier>models</classifier>
 		</dependency>
-		<dependency>
-			    
-			<groupId>org.swinglabs.swingx</groupId>
-			    
-			<artifactId>swingx-all</artifactId>
-			    
-			<version>1.6.5-1</version>
-		</dependency>
+		<dependency><groupId>org.swinglabs.swingx</groupId><artifactId>swingx-all</artifactId><version>1.6.5-1</version></dependency>
 		<!-- Test -->
 		<dependency>
-			    
-			<groupId>org.jdesktop</groupId>
-			    
-			<artifactId>appframework</artifactId>
-			    
-			<version>1.0.3</version>
+			<groupId>org.jdesktop</groupId><artifactId>appframework</artifactId><version>1.0.3</version>
 		</dependency>
 		<!-- jgit Core Library -->
 		<dependency>
