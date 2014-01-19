@@ -66,8 +66,7 @@ public class FirstMentionRule implements IDocumentRule {
 	 *      boolean)
 	 */
 	@Override
-	public boolean apply(Annotation doc, boolean canWrite)
-			throws JWNLException, IvanException {
+	public boolean apply(Annotation doc, boolean canWrite) throws IvanException {
 
 		InitialState state = doc
 				.get(IvanAnnotations.IvanEntitiesAnnotation.class);
@@ -123,19 +122,20 @@ public class FirstMentionRule implements IDocumentRule {
 		List<CoreMap> sentences = doc.get(SentencesAnnotation.class);
 		for (int i = 0; i < sentences.size(); i++) {
 			CoreMap s = sentences.get(i);
-			Integer sentenceEnd = s.get(
-					CoreAnnotations.CharacterOffsetEndAnnotation.class);
+			Integer sentenceEnd = s
+					.get(CoreAnnotations.CharacterOffsetEndAnnotation.class);
 			boolean addme = false;
 			while (mi < resultSpans.size() && resultSpans.get(mi) < sentenceEnd) {
 				addme = true;
 				mi++; // converge to size()
 			}
-			// let's see if we found anything 
-			if (addme){
+			// let's see if we found anything
+			if (addme) {
 				// if so, let's add the result
 				results.add(i);
 				if (canWrite) {
-					s.set(IvanAnnotations.SentenceClassificationAnnotation.class, Classification.SetupDescription);
+					s.set(IvanAnnotations.SentenceClassificationAnnotation.class,
+							Classification.SetupDescription);
 				}
 			}
 		}

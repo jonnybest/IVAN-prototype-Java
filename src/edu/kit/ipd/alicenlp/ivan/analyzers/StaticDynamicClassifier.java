@@ -17,6 +17,7 @@ import net.sf.extjwnl.data.Pointer;
 import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
@@ -26,6 +27,7 @@ import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
+import edu.kit.ipd.alicenlp.ivan.rules.FirstMentionRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
@@ -375,6 +377,16 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 
 	@Override
 	public void annotate(Annotation annotation) {
+		// before dealing with each individual sentence, run a document-wide classification
+		FirstMentionRule rule = new FirstMentionRule();
+		try {
+			// pre-tag the sentences based on state data
+			rule.apply(annotation, true);
+		} catch (IvanException e1) {
+			log(e1);
+			e1.printStackTrace();
+		}
+		// annotate each sentence separately
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
 			// process
 			try {
