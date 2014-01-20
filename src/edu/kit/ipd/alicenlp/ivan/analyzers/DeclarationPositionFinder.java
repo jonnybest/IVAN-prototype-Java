@@ -25,6 +25,8 @@ import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
+import edu.kit.ipd.alicenlp.ivan.rules.EntityPurgeRule;
+import edu.kit.ipd.alicenlp.ivan.rules.IDocumentRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
@@ -575,6 +577,16 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 				log(Redwood.ERR, e);
 			}
 		}		
+		
+		// purge useless singletons from cache
+		EntityPurgeRule epr = new EntityPurgeRule();
+		boolean purged = epr.apply(getCurrentState());
+		if(purged)
+		{
+			log("Useless singletons have been purged: " + Arrays.toString(epr.getResults()));
+		}
+		
+		// save state to document
 		annotation.set(IvanEntitiesAnnotation.class, getCurrentState());
 	}
 

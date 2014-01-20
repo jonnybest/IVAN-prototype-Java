@@ -440,4 +440,28 @@ public class InitialState extends HashSet<EntityInfo> {
 		cb.append(super.toString());
 		return cb.toString();
 	}
+
+	/** Removes a given mapping and all assigned entity information from the state
+	 * 
+	 * @param entity The known entity or null (if unknown)
+	 * @param alias The known alias or null (if unknown)
+	 * @return TRUE if anything was removed
+	 */
+	public boolean remove(String entity, String alias) {
+		boolean worked = false;
+		List<String> alist = this.entitiesToAliases.get(entity);
+		if (alist != null) {
+			worked |= alist.remove(alias);
+			if (alias.isEmpty()) {
+				this.entitiesToAliases.remove(entity);
+			}
+		}
+		ArrayList<EntityInfo> infolist = this.aliases.get(alias);
+		if(infolist != null)
+		{
+			worked |= this.removeAll(infolist);
+			this.aliases.remove(alias);
+		}
+		return worked;
+	}
 }
