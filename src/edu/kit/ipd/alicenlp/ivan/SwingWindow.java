@@ -8,6 +8,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -17,6 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -32,6 +35,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -74,10 +78,12 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.logging.PrettyLogger;
 import edu.stanford.nlp.util.logging.Redwood;
 
-/** This is the main class if IVAN. It creates the user interface and manages all the other components. 
+/**
+ * This is the main class if IVAN. It creates the user interface and manages all
+ * the other components.
  * 
  * @author Jonny
- *
+ * 
  */
 public class SwingWindow {
 
@@ -85,32 +91,24 @@ public class SwingWindow {
 	protected static final String DEFAULT_TEXT = "The ground is covered with grass, the sky is blue. \n"
 			+ "In the background on the left hand side there is a PalmTree. \n"
 			+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
-			+ "Right to the mailbox there is a Frog facing east. \n"
-			+ "In front of the Bunny there is a Broccoli. \n"
-			+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
-			+ "The Bunny turns to face the Broccoli. \n"
-			+ "The Bunny hops three times to the Broccoli. \n"
-			+ "The Bunny eats the Broccoli. \n"
-			+ "The Bunny turns to face the Frog. \n"
-			+ "The Bunny taps his foot twice. \n"
-			+ "The Frog ribbits. The Frog turns to face northeast. \n"
-			+ "The frog hops three times to northeast. \n"
-			+ "The Bunny turns to face the Mailbox. \n"
-			+ "The Bunny hops three times to the Mailbox. \n"
-			+ "The Bunny opens the Mailbox. \n"
+			+ "Right to the mailbox there is a Frog facing east. \n" + "In front of the Bunny there is a Broccoli. \n"
+			+ "In the foreground on the right hand side there is a Bunny facing southwest. \n" + "The Bunny turns to face the Broccoli. \n"
+			+ "The Bunny hops three times to the Broccoli. \n" + "The Bunny eats the Broccoli. \n" + "The Bunny turns to face the Frog. \n"
+			+ "The Bunny taps his foot twice. \n" + "The Frog ribbits. The Frog turns to face northeast. \n"
+			+ "The frog hops three times to northeast. \n" + "The Bunny turns to face the Mailbox. \n"
+			+ "The Bunny hops three times to the Mailbox. \n" + "The Bunny opens the Mailbox. \n"
 			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
-			+ "The Frog hops two times to the Bunny. \n"
-			+ "The Frog disappears. A short time passes.";
+			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
 	/**
-	 *  editor panel
+	 * editor panel
 	 */
 	private TextEditorPane txtEditor;
 	/**
-	 *  errors panel
+	 * errors panel
 	 */
 	private IvanErrorsTaskPaneContainer containerTaskPanel;
 
@@ -120,21 +118,18 @@ public class SwingWindow {
 	 * This is the text pane for writing user output.
 	 */
 	private JTextPane emitterTextPane;
-	
+
 	private JXBusyLabel busyLabel;
 	private JButton btnSaveCheck;
 	private Component horizontalGlue;
 	private String currentFileName = null;
 	private JMenuBar menuBar;
-	
-	/**
-	 * This is the central pipeline which classifies text. This should never be directly accessed. Use getPipeline() instead.
-	 */
-	private static StanfordCoreNLP stanfordCentralPipeline;
 
 	/**
 	 * Launch the application.
-	 * @param args not currently used
+	 * 
+	 * @param args
+	 *            not currently used
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -161,20 +156,22 @@ public class SwingWindow {
 	/**
 	 * Do inital stuff, create a UI with a frame and all that
 	 */
-	@SuppressWarnings("serial") // This class is surely not getting serialized
+	@SuppressWarnings("serial")
+	// This class is surely not getting serialized
 	private void initialize() {
 		frmvanInput = new JFrame();
-		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/ivan2.png")));
+		frmvanInput.setIconImage(Toolkit.getDefaultToolkit().getImage(
+				SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/ivan2.png")));
 		frmvanInput.setLocale(Locale.ENGLISH);
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 612, 511);
-		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
+		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		/**
 		 * Initialize the contents of the frame, the EDITOR
 		 */
 		txtEditor = new TextEditorPane();
-//		txtEditor.setDisplayLineNumbers(true);
+		//		txtEditor.setDisplayLineNumbers(true);
 		// txtEditor.setDocument(doc);
 
 		txtEditor.setText(DEFAULT_TEXT);
@@ -184,53 +181,45 @@ public class SwingWindow {
 		txtEditor.addKeyListener(new KeyAdapter() {
 			private JLanguageTool langTool;
 			private int limit = 8;
-			
-			public JLanguageTool getLanguageTool()
-			{
-				 try
-				 {
-					 if(langTool == null)
-					 {
-						 langTool = new JLanguageTool(new AmericanEnglish());
-						 langTool.activateDefaultPatternRules();
-					 }
-					 return langTool;
-				 }
-				 catch (IOException e)
-				 {
-					 return null;
-				 }
+
+			public JLanguageTool getLanguageTool() {
+				try {
+					if (langTool == null) {
+						langTool = new JLanguageTool(new AmericanEnglish());
+						langTool.activateDefaultPatternRules();
+					}
+					return langTool;
+				} catch (IOException e) {
+					return null;
+				}
 			}
-			
+
 			private boolean canCheckSpelling(KeyEvent event) {
 				return false;
-//				if(limit  == 0)
-//				{
-//					limit  = 8;
-//					return true;
-//				}
-//				else {
-//					limit --;
-//					return false;
-//				}
+				//				if(limit  == 0)
+				//				{
+				//					limit  = 8;
+				//					return true;
+				//				}
+				//				else {
+				//					limit --;
+				//					return false;
+				//				}
 			}
+
 			@Override
-			public void keyTyped(KeyEvent arg0) {		
+			public void keyTyped(KeyEvent arg0) {
 				if (canCheckSpelling(arg0)) {
 					try {
 						//				List<RuleMatch> matches = langTool.check("A sentence " +
 						//				    "with a error in the Hitchhiker's Guide tot he Galaxy");
-						List<RuleMatch> matches = getLanguageTool().check(txtEditor
-								.getText(), true, ParagraphHandling.ONLYNONPARA);
+						List<RuleMatch> matches = getLanguageTool().check(txtEditor.getText(), true, ParagraphHandling.ONLYNONPARA);
 						for (RuleMatch match : matches) {
-							System.out.println("Potential error at line "
-									+ match.getLine() + ", column "
-									+ match.getColumn() + ": "
+							System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
 									+ match.getMessage());
 							//					  System.out.println("Suggested correction: " +
 							//					      match.getSuggestedReplacements());
-							markSpellingError(match.getFromPos(),
-									match.getToPos());
+							markSpellingError(match.getFromPos(), match.getToPos());
 							break;
 						}
 					} catch (Exception e) {
@@ -238,21 +227,20 @@ public class SwingWindow {
 					}
 				}
 				if (arg0.getKeyChar() == '.' || arg0.getKeyChar() == '\n') {
-					
+
 					try {
 						startStopWatch();
 						processText(txtEditor.getText());
 						stopAndPrintStopWatch();
 					} catch (Exception e) {
 						e.printStackTrace();
-						System.out
-								.println("SwingWindow.initialize().new KeyAdapter() {...}.keyTyped()");
+						System.out.println("SwingWindow.initialize().new KeyAdapter() {...}.keyTyped()");
 					}
 				}
 			}
 		});
 		/** END of the editor part */
-		
+
 		/**
 		 * Here is where I build the EMITTER panel
 		 */
@@ -260,18 +248,17 @@ public class SwingWindow {
 		emitterTextPane.setText("Hello World!");
 		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
 		emitterTextPane.setEditable(false);
-		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);		
+		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);
 		frmvanInput.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
-		
+
 		/*
 		 * Here is where I build the MENU
 		 */
 		menuBar = new JMenuBar();
 		JMenu filemenu = new JMenu("File ");
-		
+
 		/** Allows the user to LOAD a document into the editor */
-		final Action actionLoad = new SwingAction()
-		{			
+		final Action actionLoad = new SwingAction() {
 			/**
 			 * Loads a document with a jfilechooser dialog
 			 */
@@ -279,7 +266,7 @@ public class SwingWindow {
 				JFileChooser loadChooser = new JFileChooser();
 				loadChooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
 				File file = null;
-				int showOpenDialog = loadChooser.showOpenDialog(txtEditor);				
+				int showOpenDialog = loadChooser.showOpenDialog(txtEditor);
 				switch (showOpenDialog) {
 				case JFileChooser.APPROVE_OPTION:
 					currentFileName = loadChooser.getSelectedFile().getAbsolutePath();
@@ -287,31 +274,29 @@ public class SwingWindow {
 					break;
 				default: // nothing to do
 					return;
-				}				
+				}
 				load(txtEditor, file);
 			}
 		};
 		actionLoad.putValue(Action.NAME, "Load…"); // set the name
 		actionLoad.putValue(Action.SHORT_DESCRIPTION, "Open a file for editing");
-		
+
 		filemenu.add(actionLoad);
 		menuBar.add(filemenu);
-		
-		
+
 		frmvanInput.getContentPane().add(menuBar, BorderLayout.NORTH);
-		
-		
+
 		// this is an action for saving the file (no checking)
 		final Action saveAction = new SwingAction() {
 			public void actionPerformed(ActionEvent arg0) {
-				save(txtEditor);								
+				save(txtEditor);
 			}
 		};
 		saveAction.putValue(Action.NAME, "Save"); // set the name
 		saveAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file");
-		
+
 		filemenu.add(saveAction);
-		
+
 		// this is an action for SAVE AS...
 		final Action saveAsAction = new SwingAction() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -322,16 +307,16 @@ public class SwingWindow {
 				// save things
 				boolean saved = save(txtEditor);
 				// if the save was not successful, restore the old document name
-				if(!saved){
+				if (!saved) {
 					currentFileName = tmpfilename;
 				}
 			}
 		};
 		saveAsAction.putValue(Action.NAME, "Save as…"); // set the name
 		saveAsAction.putValue(Action.SHORT_DESCRIPTION, "Saves to a new file");
-		
+
 		filemenu.add(saveAsAction);
-		
+
 		// this is an action for EXIT...
 		final Action exitAction = new SwingAction() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -340,13 +325,13 @@ public class SwingWindow {
 		};
 		exitAction.putValue(Action.NAME, "Exit"); // set the name
 		exitAction.putValue(Action.SHORT_DESCRIPTION, "Closes the program");
-		
+
 		filemenu.add(exitAction);
-		
+
 		// create an EDIT menu with UNDO, CUT, PASTE and the like
 		JMenu editMenu = new JMenu("Edit ");
-		
-		final Action undoAction = /*undoAction*/ new SwingAction(){
+
+		final Action undoAction = /* undoAction */new SwingAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//txtEditor.doCommand("undo", this);
@@ -356,8 +341,8 @@ public class SwingWindow {
 		undoAction.putValue(Action.NAME, "Undo (Ctrl-Z)");
 		undoAction.putValue(Action.SHORT_DESCRIPTION, "Reverts your last action");
 		editMenu.add(undoAction);
-		
-		final Action redoAction = /*redoAction*/ new SwingAction(){
+
+		final Action redoAction = /* redoAction */new SwingAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				//txtEditor.doCommand("redo", this);
@@ -367,21 +352,21 @@ public class SwingWindow {
 		redoAction.putValue(Action.NAME, "Redo (Ctrl-Y)");
 		redoAction.putValue(Action.SHORT_DESCRIPTION, "Restores the last undo");
 		editMenu.add(redoAction);
-		
+
 		Action copy = txtEditor.getActionMap().get("copy");
 		Action paste = txtEditor.getActionMap().get("paste");
 		Action cut = txtEditor.getActionMap().get("cut");
 		editMenu.add(copy); // FIXME: not enabled in menu :(
 		editMenu.add(cut); // FIXME: not enabled in menu :(
 		editMenu.add(paste);
-		
+
 		// put the edit menu on the menu bar
 		menuBar.add(editMenu);
-		
+
 		// this button triggers a run of the analyzers
 		btnSaveCheck = new JButton("Save and Check (Ctrl-S)");
 		menuBar.add(btnSaveCheck);
-				
+
 		final Action saveCheckAction = new SwingAction() {
 			public void actionPerformed(ActionEvent arg0) {
 				boolean saved = save(txtEditor);
@@ -399,24 +384,23 @@ public class SwingWindow {
 		};
 		saveCheckAction.putValue(Action.NAME, "Save and check"); // set the name
 		saveCheckAction.putValue(Action.SHORT_DESCRIPTION, "Saves the file and runs analysis");
-		
+
 		// setup up the CTRL-S hotkey for running save-and-check from within the editor area
 		InputMap map = txtEditor.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 		map.put(KeyStroke.getKeyStroke("control S"), saveCheckAction);
-		
+
 		btnSaveCheck.addActionListener(saveCheckAction);
-		
-		
+
 		// this glue pushes the spinner to the right
 		horizontalGlue = Box.createHorizontalGlue();
 		menuBar.add(horizontalGlue);
-		
+
 		// this spinner tells the user that analysis is currently running
 		busyLabel = new JXBusyLabel();
 		menuBar.add(busyLabel);
 		busyLabel.setVisible(false);
 		busyLabel.setHorizontalAlignment(SwingConstants.TRAILING);
-		
+
 		/*
 		 * Here is where I build the TASK panel
 		 */
@@ -427,26 +411,26 @@ public class SwingWindow {
 		JScrollPane sp = new JScrollPane(containerTaskPanel);
 		// add our controls to the visible world
 		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
-		
+
 		// create some mock content
-//		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
-//		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
-//		
-//		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
-//		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"the cat"});
-//		
-//		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
-//		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
-//		
+		//		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
+		//		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
+		//		
+		//		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
+		//		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"the cat"});
+		//		
+		//		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
+		//		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
+		//		
 		containerTaskPanel.createCategory("meta", null);
-		containerTaskPanel.createProblem("meta", null, 0,0);
-		
+		containerTaskPanel.createProblem("meta", null, 0, 0);
+
 		System.out.println(containerTaskPanel);
 		System.out.println();
-		
+
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
-		
+
 		// prepare git tracking
 		try {
 			setupTracking();
@@ -466,8 +450,7 @@ public class SwingWindow {
 		File outputfile = null;
 		if (this.currentFileName == null) {
 			JFileChooser jfchooser = new JFileChooser();
-			jfchooser.setFileFilter(new FileNameExtensionFilter("Text file",
-					"txt"));
+			jfchooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
 			int file = jfchooser.showSaveDialog(editor);
 			switch (file) {
 			case JFileChooser.APPROVE_OPTION:
@@ -491,7 +474,7 @@ public class SwingWindow {
 			return false;
 		} finally {
 			try {
-				if(out != null)
+				if (out != null)
 					out.close();
 			} catch (IOException e) {
 				// okay, even close() throws? That's messed up.
@@ -500,7 +483,7 @@ public class SwingWindow {
 		commit(outputfile.getName());
 		return true;
 	}
-	
+
 	/**
 	 * This method performs a commit to the local git repository
 	 */
@@ -519,70 +502,61 @@ public class SwingWindow {
 		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
 	}
 
-	/** Makes sure that any given name is converted into a valid ref name.
-	 git imposes the following rules on how references are named:
-
-    1. They can include slash / for hierarchical (directory) grouping, 
-    	but no slash-separated component can begin with a dot .. 
-
-    2. They must contain at least one /. This enforces the presence of a 
-    	category like heads/, tags/ etc. but the actual names are not restricted. 
-
-    3. They cannot have two consecutive dots .. anywhere. 
-
-    4. They cannot have ASCII control characters (i.e. bytes whose values 
-    	are lower than \040, or \177 DEL), space, tilde ~, caret ^, colon :, 
-    	question-mark ?, asterisk *, or open bracket [ anywhere. 
-
-    5. They cannot end with a slash / nor a dot .. 
-
-    6. They cannot end with the sequence .lock. 
-
-    7. They cannot contain a sequence @{. 
-
-    8. They cannot contain a \. 
-	 
+	/**
+	 * Makes sure that any given name is converted into a valid ref name. git
+	 * imposes the following rules on how references are named:
+	 * 
+	 * 1. They can include slash / for hierarchical (directory) grouping, but no
+	 * slash-separated component can begin with a dot ..
+	 * 
+	 * 2. They must contain at least one /. This enforces the presence of a
+	 * category like heads/, tags/ etc. but the actual names are not restricted.
+	 * 
+	 * 3. They cannot have two consecutive dots .. anywhere.
+	 * 
+	 * 4. They cannot have ASCII control characters (i.e. bytes whose values are
+	 * lower than \040, or \177 DEL), space, tilde ~, caret ^, colon :,
+	 * question-mark ?, asterisk *, or open bracket [ anywhere.
+	 * 
+	 * 5. They cannot end with a slash / nor a dot ..
+	 * 
+	 * 6. They cannot end with the sequence .lock.
+	 * 
+	 * 7. They cannot contain a sequence @{.
+	 * 
+	 * 8. They cannot contain a \.
+	 * 
 	 * @param file
 	 * @return
 	 */
 
 	public static String file2ref(String file) {
 		String ofile = file, // "old file" 
-				nfile = file; // "new file"
-		do
-		{
+		nfile = file; // "new file"
+		do {
 			ofile = nfile; // "new" is the new "old"
-			
+
 			// 3. no double dots
 			nfile = ofile.replace("..", ".");
 
-		}while(!ofile.equals(nfile));
-		
+		} while (!ofile.equals(nfile));
+
 		// work with a char array
 		char[] f = nfile.toCharArray();
 		// 4. no low values
-		for(int i = 0; i < f.length; i++)
-		{
-			if(f[i] < 41 || f[i] > 176)
-			{
+		for (int i = 0; i < f.length; i++) {
+			if (f[i] < 41 || f[i] > 176) {
 				f[i] = 'o';
 			}
-//			System.out.println(Arrays.toString(f));
+			//			System.out.println(Arrays.toString(f));
 		}
 
 		// space, tilde ~, caret ^, colon :, question-mark ?, asterisk *, or open bracket [ anywhere. 
-		nfile = Arrays.toString(f)
-				.replace("[", "")
-				.replace("]", "") // not a violation, but it's produced by Arrays.toString
+		nfile = Arrays.toString(f).replace("[", "").replace("]", "") // not a violation, but it's produced by Arrays.toString
 				.replace(", ", "") // also a byproduct of the array print
-				.replace(" ", "o")
-				.replace("^", "o")
-				.replace(":", "o")
-				.replace("?", "o")
-				.replace("*", "o")
-				.replace(".lock", "ooooo") // 6. They cannot end with the sequence .lock. 
+				.replace(" ", "o").replace("^", "o").replace(":", "o").replace("?", "o").replace("*", "o").replace(".lock", "ooooo") // 6. They cannot end with the sequence .lock. 
 				.replace("@{", "oo") // 7. They cannot contain a sequence @{. 
-				;
+		;
 		return nfile;
 	}
 
@@ -616,11 +590,12 @@ public class SwingWindow {
 	/**
 	 * Reloads the page, even if it is already being displayed
 	 * 
-	 * @param editor destination container
-	 * @param file file to load
+	 * @param editor
+	 *            destination container
+	 * @param file
+	 *            file to load
 	 */
-	public void reload(TextEditorPane editor, File file) 
-	{
+	public void reload(TextEditorPane editor, File file) {
 		Document doc = editor.getDocument();
 		doc.putProperty(Document.StreamDescriptionProperty, null);
 		load(editor, file);
@@ -636,32 +611,32 @@ public class SwingWindow {
 	}
 
 	/**
-	 *  This method invokes the pipeline from other components.
+	 * This method invokes the pipeline from other components.
 	 */
 	public static void processText() {
 		try {
 			instance.processText(instance.txtEditor.getText());
 		} catch (Exception e) {
-			System.err
-					.println("The caller tried to process this text and caused an exception.");
+			System.err.println("The caller tried to process this text and caused an exception.");
 			e.printStackTrace();
 		}
 	}
-	
-	/** This method prepares the git repository and tracking files.
-	 * @throws IOException 
-	 * @throws GitAPIException 
+
+	/**
+	 * This method prepares the git repository and tracking files.
+	 * 
+	 * @throws IOException
+	 * @throws GitAPIException
 	 * 
 	 */
-	private static void setupTracking() throws IOException, GitAPIException
-	{
+	private static void setupTracking() throws IOException, GitAPIException {
 		File dir = new File(GitManager.TRACKINGPATH);
 		dir.mkdir();
-		
+
 		String documentpath = GitManager.TRACKINGPATH + DOCUMENT_TXT;
 		File what = new File(documentpath);
 		what.createNewFile();
-		
+
 		GitManager.safeInit();
 	}
 
@@ -670,22 +645,51 @@ public class SwingWindow {
 	 * @throws Exception
 	 */
 	private void processText(String text) throws Exception {
-		
+
+		final IvanPipeline task = new IvanPipeline(text);
+		task.addPropertyChangeListener(new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt)
+			{
+				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
+
+					Annotation doc;
+					try {
+						doc = task.get();
+					} catch (InterruptedException | ExecutionException e1) {
+						PrettyLogger.log(e1);
+						e1.printStackTrace();
+						return;
+					}
+
+					try {
+						updateErrorsPanel(doc);
+						updateTextMarkers(doc);
+					
+					} catch (IvanException e) {
+						PrettyLogger.log(e);
+						e.printStackTrace();
+					} catch (BadLocationException e) {
+						PrettyLogger.log(e);
+						e.printStackTrace();
+					}
+					/**
+					 * Print state to emitter panel
+					 */
+					// retrieve recognition results
+					InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+					RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
+					tell(emitterwriter.toString());
+				}
+			}
+		});
+
+		task.execute();
 
 		// prepare the text with our pipeline
-		Annotation doc = annotateClassifications(text);
-		
-		updateErrorsPanel(doc);
-		
-		updateTextMarkers(doc);
+//		Annotation doc = task.get();
 
-
-		/** Print state to emitter panel
-		 */
-		// retrieve recognition results
-		InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
-		RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
-		tell(emitterwriter.toString());
 	}
 
 	/**
@@ -697,31 +701,30 @@ public class SwingWindow {
 		// fetch errors
 		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
 		// if errors exist in the document, display them
-		if(errors != null)
-		{
+		if (errors != null) {
 			// process document-wide errors
 			for (IvanErrorMessage documenterror : errors) {
 				String category = createCategory(documenterror.getType());
 				this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
 			}
 		}
-		if(errors != null)
+		if (errors != null)
 			PrettyLogger.log("Document wide errors", errors);
-		
+
 	}
 
-	
 	/**
 	 * A utility method for creating categories by mapping from an IvanErrorType
-	 * @param type 
-	 * @param description 
+	 * 
+	 * @param type
+	 * @param description
 	 * @return The category that was assigned for this error.
 	 */
 	public String createCategory(IvanErrorType type) {
 		String defaultcategory = "misc";
 		String category;
 		String description = "";
-		
+
 		switch (type) {
 		case COREFERENCE:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_AMBIGOUS;
@@ -759,27 +762,25 @@ public class SwingWindow {
 			description = "Other errors:";
 			break;
 		}
-		
+
 		containerTaskPanel.createCategory(category, description);
 		return category;
 	}
-	
 
 	/**
 	 * @param doc
-	 * @throws BadLocationException 
+	 * @throws BadLocationException
 	 */
 	public void updateTextMarkers(Annotation doc) throws BadLocationException {
 		// clear all previous markers
 		clearStyles();
-		
+
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
-		
+
 		for (CoreMap sentence : listsentences) {
 			// traversing the words in the current sentences
-			SemanticGraph depgraph = sentence
-					.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			SemanticGraph depgraph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 			if (depgraph.getRoots().isEmpty()) {
 				continue;
 			}
@@ -823,10 +824,9 @@ public class SwingWindow {
 				break;
 			}
 		}
-		
+
 		// paint errors over all previous markers
-		List<IvanErrorMessage> errors = doc
-				.get(IvanAnnotations.DocumentErrorAnnotation.class);
+		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
 		if (errors != null) {
 			for (IvanErrorMessage docer : errors) {
 				markIvanError(docer.getSpan().start(), docer.getSpan().end());
@@ -840,12 +840,12 @@ public class SwingWindow {
 		// paint the highlights
 		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 	}
-	
-	private void markSpellingError(int beginPosition, int endPosition) throws BadLocationException {		
+
+	private void markSpellingError(int beginPosition, int endPosition) throws BadLocationException {
 		// create a painter for lines
 		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED.brighter());
 		// paint the highlights
-		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);			
+		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 	}
 
 	private void tell(String output) {
@@ -858,11 +858,11 @@ public class SwingWindow {
 	}
 
 	private void markText(int beginPosition, int endPosition, Color color) {
-		
+
 		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(color);
 		try {
 			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-		} catch (BadLocationException e) {			
+		} catch (BadLocationException e) {
 			e.printStackTrace();
 			System.out.println("SwingWindow.markText()");
 		}
@@ -887,48 +887,5 @@ public class SwingWindow {
 
 		public void actionPerformed(ActionEvent e) {
 		}
-	}
-	
-	/**
-	 * Annotates a document with our customized pipeline.
-	 * 
-	 * @param text
-	 *            A text to process
-	 * @return The annotated text
-	 */
-	public static Annotation annotateClassifications(String text) {
-		Annotation doc = new Annotation(text);
-		getPipeline().annotate(doc);
-		return doc;
-	}
-
-	private static StanfordCoreNLP getPipeline() {
-		if (stanfordCentralPipeline == null) {
-			// creates a StanfordCoreNLP object, with POS tagging,
-			// lemmatization,
-			// NER, parsing, and coreference resolution
-			Properties props = new Properties();
-			// alternative: wsj-bidirectional
-			try {
-				props.put(
-						"pos.model",
-						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			// adding our own annotator property
-			props.put("customAnnotatorClass.sdclassifier",
-					"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
-			// adding our declaration finder
-			props.put("customAnnotatorClass.declarations",
-					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
-			// configure pipeline
-			props.put(
-//					"annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier"); //$NON-NLS-1$ //$NON-NLS-2$
-					"annotators", PROPERTIES_ANNOTATORS); //$NON-NLS-1$ //$NON-NLS-2$
-			stanfordCentralPipeline = new StanfordCoreNLP(props);
-		}
-		
-		return stanfordCentralPipeline;
 	}
 }
