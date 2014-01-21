@@ -15,7 +15,10 @@ import org.languagetool.JLanguageTool.ParagraphHandling;
 import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.language.AmericanEnglish;
+import org.languagetool.rules.CommaWhitespaceRule;
+import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
+import org.languagetool.rules.WordRepeatBeginningRule;
 import org.languagetool.rules.patterns.PatternRule;
 import org.omg.CORBA.Environment;
 import org.xml.sax.SAXException;
@@ -62,18 +65,24 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 		
 		if (langTool == null) {
 			languageTool = new MultiThreadedJLanguageTool(new AmericanEnglish(), Language.getLanguageForName("German"));
+			// get and delete some obnoxious default rules
+			List<Rule> things = languageTool.getAllActiveRules();
+			//TODO remove CommaWhitespaceRule
+			//TODO remove WordRepeatBeginningRule
+			languageTool.disableRule("COMMA_PARENTHESIS_WHITESPACE");
+			languageTool.disableRule("WHITESPACE_PUNCTUATION");
+			languageTool.disableRule("ENGLISH_WORD_REPEAT_BEGINNING_RULE");
+			
+			// load my custom rule set
 			System.out.println(JLanguageTool.getDataBroker().getResourceDir());
 			URL grammarrules = ClassLoader.getSystemResource("edu/kit/ipd/alicenlp/ivan/resources/grammar.xml");
 			List<PatternRule> loadPatternRules = languageTool.loadPatternRules(grammarrules.getPath());
 			for (PatternRule patternRule : loadPatternRules) {
 				languageTool.addRule(patternRule);
 			}
-			
-//			languageTool.activateDefaultFalseFriendRules();
-//			langTool.activateDefaultPatternRules();
+			langTool = languageTool;
 		}
 		
-		langTool = languageTool;
 		List<RuleMatch> matches = langTool.check(text, true, ParagraphHandling.NORMAL);
 		return matches;
 	}

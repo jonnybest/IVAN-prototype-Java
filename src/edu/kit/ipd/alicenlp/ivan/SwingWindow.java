@@ -850,12 +850,19 @@ public class SwingWindow {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
-
-					clearStyles();
 					
 					List<RuleMatch> matches;
 					try {
 						matches = speller.get();
+
+						if(matches.size() > 0)
+						{
+							clearStyles();
+							isSpellingOkay = false;
+							// TODO: check again once more in 4.5 seconds in case we missed an event
+						} else {
+							isSpellingOkay = true;
+						}
 
 						for (RuleMatch match : matches) {
 							System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
@@ -867,13 +874,6 @@ public class SwingWindow {
 							break;
 						}
 						
-						if(matches.size() > 0)
-						{
-							isSpellingOkay = false;
-							// TODO: check again once more in 4.5 seconds in case we missed an event
-						} else {
-							isSpellingOkay = true;
-						}
 					} catch (InterruptedException | ExecutionException | BadLocationException e) {
 						PrettyLogger.log(e);
 						e.printStackTrace();
