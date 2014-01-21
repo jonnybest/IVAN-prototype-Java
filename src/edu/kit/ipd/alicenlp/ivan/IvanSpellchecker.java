@@ -4,6 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
 
 import javax.swing.SwingWorker;
@@ -15,6 +16,8 @@ import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
+import org.languagetool.rules.patterns.PatternRule;
+import org.omg.CORBA.Environment;
 import org.xml.sax.SAXException;
 
 import edu.stanford.nlp.parser.lexparser.GermanUnknownWordModel;
@@ -55,13 +58,23 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 	 * @throws SAXException
 	 */
 	private static synchronized List<RuleMatch> check(String text) throws IOException, ParserConfigurationException, SAXException {
+		JLanguageTool languageTool = null;
+		
 		if (langTool == null) {
-			langTool = new MultiThreadedJLanguageTool(new AmericanEnglish(), Language.getLanguageForName("German"));
-			langTool.activateDefaultFalseFriendRules();
+			languageTool = new MultiThreadedJLanguageTool(new AmericanEnglish(), Language.getLanguageForName("German"));
+			System.out.println(JLanguageTool.getDataBroker().getResourceDir());
+			URL grammarrules = ClassLoader.getSystemResource("edu/kit/ipd/alicenlp/ivan/resources/grammar.xml");
+			List<PatternRule> loadPatternRules = languageTool.loadPatternRules(grammarrules.getPath());
+			for (PatternRule patternRule : loadPatternRules) {
+				languageTool.addRule(patternRule);
+			}
 			
+//			languageTool.activateDefaultFalseFriendRules();
+//			langTool.activateDefaultPatternRules();
 		}
-		JLanguageTool languageTool = langTool;
-		List<RuleMatch> matches = languageTool.check(text, true, ParagraphHandling.NORMAL);
+		
+		langTool = languageTool;
+		List<RuleMatch> matches = langTool.check(text, true, ParagraphHandling.NORMAL);
 		return matches;
 	}
 
