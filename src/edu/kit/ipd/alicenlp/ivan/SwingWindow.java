@@ -124,6 +124,7 @@ public class SwingWindow {
 	private Component horizontalGlue;
 	private String currentFileName = null;
 	private JMenuBar menuBar;
+	protected boolean isSpellingOkay;
 
 	/**
 	 * Launch the application.
@@ -179,55 +180,13 @@ public class SwingWindow {
 		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
 
 		txtEditor.addKeyListener(new KeyAdapter() {
-			private JLanguageTool langTool;
-			private int limit = 8;
-
-			public JLanguageTool getLanguageTool() {
-				try {
-					if (langTool == null) {
-						langTool = new JLanguageTool(new AmericanEnglish());
-						langTool.activateDefaultPatternRules();
-					}
-					return langTool;
-				} catch (IOException e) {
-					return null;
-				}
-			}
-
-			private boolean canCheckSpelling(KeyEvent event) {
-				return false;
-				//				if(limit  == 0)
-				//				{
-				//					limit  = 8;
-				//					return true;
-				//				}
-				//				else {
-				//					limit --;
-				//					return false;
-				//				}
-			}
 
 			@Override
 			public void keyTyped(KeyEvent arg0) {
-				if (canCheckSpelling(arg0)) {
-					try {
-						//				List<RuleMatch> matches = langTool.check("A sentence " +
-						//				    "with a error in the Hitchhiker's Guide tot he Galaxy");
-						List<RuleMatch> matches = getLanguageTool().check(txtEditor.getText(), true, ParagraphHandling.ONLYNONPARA);
-						for (RuleMatch match : matches) {
-							System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
-									+ match.getMessage());
-							//					  System.out.println("Suggested correction: " +
-							//					      match.getSuggestedReplacements());
-							markSpellingError(match.getFromPos(), match.getToPos());
-							break;
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				if (arg0.getKeyChar() == '.' || arg0.getKeyChar() == '\n') {
 
+				checkSpelling(txtEditor.getText());
+
+				if (isSpellingOkay) {
 					try {
 						startStopWatch();
 						processText(txtEditor.getText());
@@ -650,8 +609,7 @@ public class SwingWindow {
 		task.addPropertyChangeListener(new PropertyChangeListener() {
 
 			@Override
-			public void propertyChange(PropertyChangeEvent evt)
-			{
+			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
 
 					Annotation doc;
@@ -666,7 +624,7 @@ public class SwingWindow {
 					try {
 						updateErrorsPanel(doc);
 						updateTextMarkers(doc);
-					
+
 					} catch (IvanException e) {
 						PrettyLogger.log(e);
 						e.printStackTrace();
@@ -688,7 +646,7 @@ public class SwingWindow {
 		task.execute();
 
 		// prepare the text with our pipeline
-//		Annotation doc = task.get();
+		//		Annotation doc = task.get();
 
 	}
 
@@ -876,6 +834,53 @@ public class SwingWindow {
 
 	private void startStopWatch() {
 		stopwatch = org.joda.time.DateTime.now();
+	}
+
+	/**
+	 * Invoke the spell checker
+	 */
+	public void checkSpelling(String text){
+		//				List<RuleMatch> matches = langTool.check("A sentence " +
+		//				    "with a error in the Hitchhiker's Guide tot he Galaxy");
+		final IvanSpellchecker speller = new IvanSpellchecker(text);
+		speller.execute();
+
+		speller.addPropertyChangeListener(new PropertyChangeListener() {
+
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
+
+					clearStyles();
+					
+					List<RuleMatch> matches;
+					try {
+						matches = speller.get();
+
+						for (RuleMatch match : matches) {
+							System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
+									+ match.getMessage());
+							System.out.println("Rule: "+ match.getRule().getId());
+							//					  System.out.println("Suggested correction: " +
+							//					      match.getSuggestedReplacements());
+							markSpellingError(match.getFromPos(), match.getToPos());
+							break;
+						}
+						
+						if(matches.size() > 0)
+						{
+							isSpellingOkay = false;
+							// TODO: check again once more in 4.5 seconds in case we missed an event
+						} else {
+							isSpellingOkay = true;
+						}
+					} catch (InterruptedException | ExecutionException | BadLocationException e) {
+						PrettyLogger.log(e);
+						e.printStackTrace();
+					}
+				}
+			}
+		});
 	}
 
 	@SuppressWarnings("serial")
