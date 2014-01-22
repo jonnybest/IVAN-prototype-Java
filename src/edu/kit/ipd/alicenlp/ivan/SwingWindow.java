@@ -13,12 +13,10 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
 import javax.swing.AbstractAction;
@@ -48,30 +46,23 @@ import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
 import org.jdesktop.application.Application;
-import org.jdesktop.application.Task;
 import org.jdesktop.swingx.JXBusyLabel;
-import org.languagetool.JLanguageTool;
-import org.languagetool.JLanguageTool.ParagraphHandling;
-import org.languagetool.language.AmericanEnglish;
 import org.languagetool.rules.RuleMatch;
 
-import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
+import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
-import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.InitialState;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
-import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -125,6 +116,8 @@ public class SwingWindow {
 	private String currentFileName = null;
 	private JMenuBar menuBar;
 	protected boolean isSpellingOkay;
+	private List<RuleMatch> spellingErrors = new ArrayList<>();
+	private long lastAttemptedCheck;
 
 	/**
 	 * Launch the application.
@@ -178,27 +171,6 @@ public class SwingWindow {
 		txtEditor.setText(DEFAULT_TEXT);
 
 		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
-
-		txtEditor.addKeyListener(new KeyAdapter() {
-
-			@Override
-			public void keyTyped(KeyEvent arg0) {
-
-				checkSpelling(txtEditor.getText());
-
-				if (isSpellingOkay) {
-					try {
-						startStopWatch();
-						processText(txtEditor.getText());
-						stopAndPrintStopWatch();
-					} catch (Exception e) {
-						e.printStackTrace();
-						System.out.println("SwingWindow.initialize().new KeyAdapter() {...}.keyTyped()");
-					}
-				}
-			}
-		});
-		/** END of the editor part */
 
 		/**
 		 * Here is where I build the EMITTER panel
@@ -396,6 +368,36 @@ public class SwingWindow {
 		} catch (IOException | GitAPIException e1) {
 			e1.printStackTrace();
 		}
+		
+		delayedInit();
+	}
+
+	/** This method initializes the pipeline and the spell checker
+	 * 
+	 */
+	private void delayedInit() {
+		new SwingWorker<Object, Object>()
+		{
+			@Override
+			protected Object doInBackground() throws Exception {
+				// delay
+				Thread.sleep(500);
+				// init spell checker
+				IvanPipeline.prepare();
+				return null;
+			}
+		}.execute();
+		new SwingWorker<Object, Object>()
+		{
+			@Override
+			protected Object doInBackground() throws Exception {
+				// delay
+				Thread.sleep(2000);
+				// init spell checker
+				IvanSpellchecker.prepare();
+				return null;
+			}
+		}.execute();
 	}
 
 	/**
@@ -446,7 +448,6 @@ public class SwingWindow {
 	/**
 	 * This method performs a commit to the local git repository
 	 */
-	@SuppressWarnings("resource")
 	private void commit(String file) {
 		String branch = file2ref(file);
 		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.TRACKINGPATH;
@@ -603,7 +604,7 @@ public class SwingWindow {
 	 * @param text
 	 * @throws Exception
 	 */
-	private void processText(String text) throws Exception {
+	private void processText(String text) {
 
 		final IvanPipeline task = new IvanPipeline(text);
 		task.addPropertyChangeListener(new PropertyChangeListener() {
@@ -731,7 +732,7 @@ public class SwingWindow {
 	 */
 	public void updateTextMarkers(Annotation doc) throws BadLocationException {
 		// clear all previous markers
-		clearStyles();
+//		clearStyles();
 
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
@@ -846,35 +847,30 @@ public class SwingWindow {
 		speller.execute();
 
 		speller.addPropertyChangeListener(new PropertyChangeListener() {
-
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
 					
-					List<RuleMatch> matches;
 					try {
-						matches = speller.get();
+						spellingErrors = speller.get();
 
-						if(matches.size() > 0)
+						if(spellingErrors.size() > 0)
 						{
-							clearStyles();
 							isSpellingOkay = false;
-							// TODO: check again once more in 4.5 seconds in case we missed an event
 						} else {
 							isSpellingOkay = true;
 						}
-
-						for (RuleMatch match : matches) {
-							System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
-									+ match.getMessage());
-							System.out.println("Rule: "+ match.getRule().getId());
-							//					  System.out.println("Suggested correction: " +
-							//					      match.getSuggestedReplacements());
-							markSpellingError(match.getFromPos(), match.getToPos());
-							break;
+						if (isSpellingOkay) {
+							clearStyles();
+							markSpelling();
+							processText(txtEditor.getText());
 						}
+						else {
+							clearStyles();
+							markSpelling();
+						}	
 						
-					} catch (InterruptedException | ExecutionException | BadLocationException e) {
+					} catch (InterruptedException | ExecutionException e) {
 						PrettyLogger.log(e);
 						e.printStackTrace();
 					}
@@ -891,6 +887,22 @@ public class SwingWindow {
 		}
 
 		public void actionPerformed(ActionEvent e) {
+		}
+	}
+		
+	public void markSpelling() {
+		for (RuleMatch match : spellingErrors) {
+			System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
+					+ match.getMessage());
+			System.out.println("Rule: "+ match.getRule().getId());
+
+			try {
+				markSpellingError(match.getFromPos(), match.getToPos());
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 		}
 	}
 }

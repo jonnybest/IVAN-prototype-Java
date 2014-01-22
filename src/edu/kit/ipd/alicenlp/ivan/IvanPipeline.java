@@ -72,4 +72,8 @@ public class IvanPipeline extends SwingWorker<Annotation, Object> {
 
 		return stanfordCentralPipeline;
 	}
+
+	public static void prepare() {
+		getPipeline();
+	}
 }

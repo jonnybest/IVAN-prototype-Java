@@ -60,9 +60,16 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 */
-	private static synchronized List<RuleMatch> check(String text) throws IOException, ParserConfigurationException, SAXException {
-		JLanguageTool languageTool = null;
+	private static synchronized List<RuleMatch> check(String text) throws IOException, ParserConfigurationException, SAXException {		JLanguageTool languageTool = null;
 		
+		prepare();
+		
+		List<RuleMatch> matches = langTool.check(text, true, ParagraphHandling.NORMAL);
+		return matches;
+	}
+
+	public static void prepare() throws IOException {
+		JLanguageTool languageTool;
 		if (langTool == null) {
 			languageTool = new MultiThreadedJLanguageTool(new AmericanEnglish(), Language.getLanguageForName("German"));
 			// get and delete some obnoxious default rules
@@ -71,6 +78,7 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 			//TODO remove WordRepeatBeginningRule
 			languageTool.disableRule("COMMA_PARENTHESIS_WHITESPACE");
 			languageTool.disableRule("WHITESPACE_PUNCTUATION");
+			languageTool.disableRule("WHITESPACE_RULE");
 			languageTool.disableRule("ENGLISH_WORD_REPEAT_BEGINNING_RULE");
 			
 			// load my custom rule set
@@ -82,9 +90,5 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 			}
 			langTool = languageTool;
 		}
-		
-		List<RuleMatch> matches = langTool.check(text, true, ParagraphHandling.NORMAL);
-		return matches;
 	}
-
 }
