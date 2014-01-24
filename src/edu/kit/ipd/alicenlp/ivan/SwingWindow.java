@@ -666,6 +666,21 @@ public class SwingWindow {
 		// prepare the text with our pipeline
 		//		Annotation doc = task.get();
 
+		final IvanSpellchecker spellchecker = new IvanSpellchecker(text);
+		spellchecker.addPropertyChangeListener(new PropertyChangeListener() {
+			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
+					try {
+						spellingErrors = spellchecker.get();
+						markSpelling();
+					} catch (InterruptedException | ExecutionException e) {
+						e.printStackTrace();
+					}
+				}				
+			}
+		});
 	}
 
 	/**
