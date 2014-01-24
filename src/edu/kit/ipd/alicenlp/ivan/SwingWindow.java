@@ -329,7 +329,7 @@ public class SwingWindow {
 		// this spinner tells the user that analysis is currently running
 		busyLabel = new JXBusyLabel();
 		menuBar.add(busyLabel);
-		busyLabel.setVisible(false);
+//		busyLabel.setVisible(false);
 		busyLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 
 		/*
@@ -376,7 +376,7 @@ public class SwingWindow {
 	 * 
 	 */
 	private void delayedInit() {
-		new SwingWorker<Object, Object>()
+		final SwingWorker<Object, Object> task = new SwingWorker<Object, Object>()
 		{
 			@Override
 			protected Object doInBackground() throws Exception {
@@ -386,7 +386,17 @@ public class SwingWindow {
 				IvanPipeline.prepare();
 				return null;
 			}
-		}.execute();
+		};
+		task.addPropertyChangeListener(new PropertyChangeListener() {			
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
+					busyLabel.setBusy(false);
+				}
+			}
+		});
+		
+		task.execute();
 		new SwingWorker<Object, Object>()
 		{
 			@Override
@@ -398,6 +408,8 @@ public class SwingWindow {
 				return null;
 			}
 		}.execute();
+		
+		busyLabel.setBusy(true);
 	}
 
 	/**
@@ -600,7 +612,8 @@ public class SwingWindow {
 		GitManager.safeInit();
 	}
 
-	/**
+	/** Runs a text analysis and manages user visible feedback
+	 * 
 	 * @param text
 	 * @throws Exception
 	 */
@@ -637,14 +650,18 @@ public class SwingWindow {
 					 * Print state to emitter panel
 					 */
 					// retrieve recognition results
-					InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
-					RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
-					tell(emitterwriter.toString());
+//					InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+//					RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
+//					tell(emitterwriter.toString());
+					
+					busyLabel.setBusy(false);
 				}
 			}
 		});
 
 		task.execute();
+		//this.busyLabel.setVisible(true);
+		this.busyLabel.setBusy(true);
 
 		// prepare the text with our pipeline
 		//		Annotation doc = task.get();

@@ -23,6 +23,9 @@ public class IvanPipeline extends SwingWorker<Annotation, Object> {
 	 */
 	private static StanfordCoreNLP stanfordCentralPipeline;
 
+	/** Creates a new task which annotates <code>document</code> with a stanford corenlp pipeline
+	 * @param document
+	 */
 	public IvanPipeline(String document) {
 		text = document;
 	}
@@ -48,7 +51,7 @@ public class IvanPipeline extends SwingWorker<Annotation, Object> {
 		return doc;
 	}
 
-	private static StanfordCoreNLP getPipeline() {
+	private static synchronized StanfordCoreNLP getPipeline() {
 		if (stanfordCentralPipeline == null) {
 			// creates a StanfordCoreNLP object, with POS tagging,
 			// lemmatization,
