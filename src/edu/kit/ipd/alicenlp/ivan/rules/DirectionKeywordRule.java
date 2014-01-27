@@ -2,6 +2,9 @@ package edu.kit.ipd.alicenlp.ivan.rules;
 
 import static edu.kit.ipd.alicenlp.ivan.rules.BaseRule.*;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
@@ -40,10 +43,22 @@ public class DirectionKeywordRule implements ISentenceRule {
 	 * found, we extract the actual direction with these prepositions.
 	 */
 	public final String[] PrepKeywords = { "towards", "at", "into", "to" };
+	
+	/** These keywords are prototypical directions taken from Stefan Kober's work
+	 * 
+	 */
+	public String[] DirectionKeywords = {"north", "south", "west", "east", "southwest", "northwest", "southeast", "northeast"};
 
 	private IndexedWord verb;
 	private IndexedWord subject;
 	private String direction;
+	
+	/**
+	 * Constructor simply sorts keywords
+	 */
+	public DirectionKeywordRule() {
+		Arrays.sort(DirectionKeywords);
+	}
 
 	@Override
 	public boolean apply(CoreMap Sentence) {
@@ -92,6 +107,17 @@ public class DirectionKeywordRule implements ISentenceRule {
 					setDirection(DirectionKeywordRule.printSubGraph(dobj, Sentence));
 					return true;
 				}
+				
+				// 4. check for any subordinate clause, if it is a keyword
+				Collection<IndexedWord> children = graph.getChildren(root);
+				for (IndexedWord c : children) {
+					String lemma = c.lemma();
+					if(0 < Arrays.binarySearch(DirectionKeywords, lemma))
+					{
+						setDirection(DirectionKeywordRule.printSubGraph(c, Sentence));
+						return true;
+					}
+				}
 				// stop after the first match
 				break;
 			}
@@ -123,7 +149,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 			}
 		}
 		
-		// participal modifier rules for facing
+		// participal modifier rules for look
 		{
 			String kw = "look";
 			GrammaticalRelation rel = EnglishGrammaticalRelations.PARTICIPIAL_MODIFIER;
