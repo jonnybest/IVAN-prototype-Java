@@ -100,6 +100,7 @@ public class FirstMentionRule implements IDocumentRule {
 				}
 			}
 			// first mentions have been found
+			// save the positions where we found them:
 			resultSpans.add(earliestMention.getEntitySpan().start());
 			if (earliestMention != earliestDirection && earliestDirection != null)
 				resultSpans.add(earliestDirection.getEntitySpan().start());
@@ -107,6 +108,7 @@ public class FirstMentionRule implements IDocumentRule {
 				resultSpans.add(earliestMention.getEntitySpan().start());
 		}
 		Collections.sort(resultSpans);
+		// save and classify 
 		int mi = 0; // mention index
 		List<CoreMap> sentences = doc.get(SentencesAnnotation.class);
 		for (int i = 0; i < sentences.size(); i++) {
