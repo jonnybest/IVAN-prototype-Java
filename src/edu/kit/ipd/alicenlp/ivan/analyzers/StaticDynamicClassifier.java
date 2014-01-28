@@ -131,6 +131,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		 * Old style classification follows.
 		 * 
 		 */
+		// TODO: always return SETUP when root is not a verb. Reason: if nouns or adjectives are more important than the verb, there is no action or event
 		// short classification fix for broken sentences (wrong copula)
 		// hint1: root is no verb
 		if (!BaseRule.isPOSFamily(root, "VB")) {
@@ -163,10 +164,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
 		boolean passive = StaticDynamicClassifier.isPassive(root, graph);
-		if (passive) {
-			System.out.println("This sentence is passive.");
-			// return Classification.SetupDescription; // probably a bad idea?
-		}
+//		if (passive) {
+//			System.out.println("This sentence is passive.");
+//			// return Classification.SetupDescription; // probably a bad idea?
+//		}
 
 		// classify by lexical file num
 		IndexWord wnetw = dictionary.lookupIndexWord(POS.VERB, word);
