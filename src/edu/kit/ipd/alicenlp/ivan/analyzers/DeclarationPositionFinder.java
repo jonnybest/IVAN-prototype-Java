@@ -19,7 +19,7 @@ import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
@@ -57,7 +57,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 {
 	
 	/** This field contains the names and entities. The rules are: only one state per analyzer. */ 
-	private InitialState mystate = new InitialState();
+	private DiscourseModel mystate = new DiscourseModel();
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
@@ -451,7 +451,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 	 * Returns the internal state of the declarations
 	 * @return
 	 */
-	public InitialState getCurrentState()
+	public DiscourseModel getCurrentState()
 	{
 		return mystate;
 	}
@@ -483,7 +483,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer
 
 	@Override
 	public void annotate(Annotation annotation) {
-		this.mystate = new InitialState();
+		this.mystate = new DiscourseModel();
 		
 		AliasByCorefRule aliasRule = new AliasByCorefRule();
 		try {

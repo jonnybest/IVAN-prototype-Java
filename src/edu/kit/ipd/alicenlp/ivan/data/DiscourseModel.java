@@ -23,7 +23,7 @@ import edu.stanford.nlp.util.logging.Redwood;
  * @author Jonny
  * 
  */
-public class InitialState extends HashSet<EntityInfo> {
+public class DiscourseModel extends HashSet<EntityInfo> {
 	/**
 	 * something to make the warning go away
 	 * 
@@ -159,7 +159,7 @@ public class InitialState extends HashSet<EntityInfo> {
 	}
 
 	/**
-	 * This method attempts to add the EntityInfo into this InitialState.
+	 * This method attempts to add the EntityInfo into this DiscourseModel.
 	 */
 	@Override
 	public boolean add(EntityInfo e) {
@@ -170,7 +170,7 @@ public class InitialState extends HashSet<EntityInfo> {
 			if (!entitiesToAliases.containsKey(e.getEntity())) {
 				if (!aliases.containsKey(e.getEntity()))
 					System.err
-							.println("Warning: Unknown entity key. InitialState may be inconsistent.");
+							.println("Warning: Unknown entity key. DiscourseModel may be inconsistent.");
 			}
 			return false;
 		}
@@ -229,7 +229,7 @@ public class InitialState extends HashSet<EntityInfo> {
 	}
 
 	/**
-	 * This method attempts to add all the EntityInfos into this InitialState.
+	 * This method attempts to add all the EntityInfos into this DiscourseModel.
 	 * It will not update any existing entries.
 	 */
 	@Override

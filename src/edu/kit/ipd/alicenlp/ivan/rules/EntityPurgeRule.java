@@ -3,7 +3,7 @@ package edu.kit.ipd.alicenlp.ivan.rules;
 import java.util.ArrayList;
 
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.stanford.nlp.util.Pair;
 
 /** This rule removes all entities which carry no useful information
@@ -20,7 +20,7 @@ public class EntityPurgeRule {
 	 * @param currentState The state to be cleaned
 	 * @return TRUE, if anything has been removed
 	 */
-	public boolean apply(InitialState currentState) {
+	public boolean apply(DiscourseModel currentState) {
 		boolean worked = false;
 		for (Pair<String, String> thing : currentState.getEntityNames()) {
 			String entity = thing.first;

@@ -12,7 +12,7 @@ import net.sf.extjwnl.JWNLException;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations;
@@ -68,7 +68,7 @@ public class FirstMentionRule implements IDocumentRule {
 	@Override
 	public boolean apply(Annotation doc, boolean canWrite) throws IvanException {
 
-		InitialState state = doc.get(IvanAnnotations.IvanEntitiesAnnotation.class);
+		DiscourseModel state = doc.get(IvanAnnotations.IvanEntitiesAnnotation.class);
 		if (state == null)
 			return false; // shortcut
 

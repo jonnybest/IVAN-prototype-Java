@@ -16,7 +16,7 @@ import java.util.Map.Entry;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.logging.PrettyLogger;

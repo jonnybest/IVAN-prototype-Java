@@ -17,7 +17,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.ErrorMessageAnnotation;
@@ -44,13 +44,13 @@ public class IncompleteEntitiesErrorRule implements IDocumentRule
 {
 	ArrayList<IvanErrorMessage> msg;
 	
-	private InitialState state;
+	private DiscourseModel state;
 
 	/** Creates a new Error checking rule
 	 * 
 	 * @param stateToCheck the internal state of the entity recognition which should be verified 
 	 */
-	public IncompleteEntitiesErrorRule(InitialState stateToCheck) {
+	public IncompleteEntitiesErrorRule(DiscourseModel stateToCheck) {
 		state = stateToCheck;
 
 	}

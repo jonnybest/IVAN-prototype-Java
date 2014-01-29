@@ -15,7 +15,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.ErrorMessageAnnotation;
@@ -41,7 +41,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 {
 	IvanErrorMessage msg;
 
-	private InitialState state;
+	private DiscourseModel state;
 	private Dictionary mydictionary;
 	private Map<Synset, String> mappings = new HashMap<Synset, String>();
 	private EntityInfo firstOffendingEntityInfo;
@@ -51,7 +51,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 	 * 
 	 * @param stateToCheck the internal state of the entity recognition which should be verified 
 	 */
-	public EntitiesSynonymsErrorRule(InitialState stateToCheck) {
+	public EntitiesSynonymsErrorRule(DiscourseModel stateToCheck) {
 		state = stateToCheck;
 		setupWordNet();
 	}

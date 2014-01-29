@@ -33,7 +33,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.LocationListAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -434,7 +434,7 @@ public class ImportantDeclarationsTest {
 			proto.learnDeclarations(sentence);
 		}
 
-		InitialState actual = proto.getCurrentState();
+		DiscourseModel actual = proto.getCurrentState();
 		assertThat("count mismatch", actual.size(), is(reference.size()));
 
 		// EntityInfo ground = state.getSingle("ground");
@@ -647,7 +647,7 @@ public class ImportantDeclarationsTest {
 	{
 		String text = "There is a cat looking north.";
 		Annotation doc = TestUtilities.annotateDeclarations(text);
-		InitialState state = doc.get(IvanEntitiesAnnotation.class);
+		DiscourseModel state = doc.get(IvanEntitiesAnnotation.class);
 		System.out.println(state.toString());
 		assertThat("cat does not exist in recognition", state.hasEntity("cat"), is(true));
 		assertNotNull(state.getSingle("cat"));

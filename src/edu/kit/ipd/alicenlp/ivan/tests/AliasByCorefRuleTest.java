@@ -11,7 +11,7 @@ import net.sf.extjwnl.JWNLException;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
@@ -42,7 +42,7 @@ public class AliasByCorefRuleTest
 		boolean okay = rule.apply(annotate);
 		assertTrue("recognition failed", okay);
 		
-		InitialState state = annotate.get(IvanAnnotations.IvanEntitiesAnnotation.class);		
+		DiscourseModel state = annotate.get(IvanAnnotations.IvanEntitiesAnnotation.class);		
 		PrettyLogger.log(annotate.get(CorefChainAnnotation.class));
 		PrettyLogger.log(state);
 		
@@ -135,7 +135,7 @@ public class AliasByCorefRuleTest
 		AliasByCorefRule aliasRule = new AliasByCorefRule();		
 		assertTrue("Nothing recognised", aliasRule.apply(annotation)); // runs rule				
 		
-		InitialState state = annotation.get(IvanAnnotations.IvanEntitiesAnnotation.class);
+		DiscourseModel state = annotation.get(IvanAnnotations.IvanEntitiesAnnotation.class);
 		for (EntityInfo entityInfo : state) {
 			assertNotNull("span is missing", entityInfo.getEntitySpan());
 		}

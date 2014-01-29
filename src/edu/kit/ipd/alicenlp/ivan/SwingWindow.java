@@ -54,7 +54,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
@@ -650,7 +650,7 @@ public class SwingWindow {
 					 * Print state to emitter panel
 					 */
 					// retrieve recognition results
-//					InitialState entitiesState = doc.get(IvanEntitiesAnnotation.class);
+//					DiscourseModel entitiesState = doc.get(IvanEntitiesAnnotation.class);
 //					RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
 //					tell(emitterwriter.toString());
 					

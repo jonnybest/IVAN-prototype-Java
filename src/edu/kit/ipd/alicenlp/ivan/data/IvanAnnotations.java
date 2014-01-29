@@ -36,7 +36,7 @@ public class IvanAnnotations {
 	 * 
 	 */
 	public class IvanEntitiesAnnotation implements
-			TypesafeMap.Key<InitialState> {
+			TypesafeMap.Key<DiscourseModel> {
 
 	}
 

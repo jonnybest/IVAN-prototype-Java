@@ -10,7 +10,7 @@ import java.util.Deque;
 import java.util.List;
 
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.stanford.nlp.util.Pair;
 
 /** This is a glorified printer which translates the internal state 
@@ -24,14 +24,14 @@ public class RecognitionStatePrinter {
 	char separator = ' ';
 	//char separator = '\n';
 	
-	private InitialState declarations;
+	private DiscourseModel declarations;
 
 	public RecognitionStatePrinter()
 	{
 		// default is alright
 	}
 	
-	public RecognitionStatePrinter(InitialState entitiesState) {
+	public RecognitionStatePrinter(DiscourseModel entitiesState) {
 		declarations = entitiesState;
 	}
 
@@ -115,7 +115,7 @@ public class RecognitionStatePrinter {
 		sb.append(separator);
 	}
 
-	protected void setDeclarations(InitialState currentState) {
+	protected void setDeclarations(DiscourseModel currentState) {
 		this.declarations = currentState;		
 	}
 }

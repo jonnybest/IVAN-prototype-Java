@@ -9,7 +9,7 @@ import net.sf.extjwnl.JWNLException;
 
 import org.junit.Test;
 
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
@@ -35,7 +35,7 @@ public class IncompleteEntitiesErrorRuleTest {
 		
 		String text = "Lucas is a wizard. Lucas is on the right hand side. Lucas is looking north.";
 		Annotation annotate = TestUtilities.annotateClassifications(text);
-		InitialState state = annotate.get(IvanEntitiesAnnotation.class);
+		DiscourseModel state = annotate.get(IvanEntitiesAnnotation.class);
 		
 		IncompleteEntitiesErrorRule rule = new IncompleteEntitiesErrorRule(state);
 		boolean okay = rule.apply(annotate);

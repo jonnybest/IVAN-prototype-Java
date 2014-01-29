@@ -19,7 +19,7 @@ import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
@@ -450,7 +450,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			errors = new ArrayList<IvanErrorMessage>();
 
 		// lets check the entities for consistency.
-		InitialState entities = annotation.get(IvanEntitiesAnnotation.class);
+		DiscourseModel entities = annotation.get(IvanEntitiesAnnotation.class);
 		if (entities == null)
 			return; // no entities - nothing to do
 

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
-import edu.kit.ipd.alicenlp.ivan.data.InitialState;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 
 /**
  * @author Jonny
@@ -27,7 +27,7 @@ public class InitialStateTest {
 	@Test
 	public final void test() throws IvanInvalidMappingException {
 		{
-			InitialState mystate = new InitialState();
+			DiscourseModel mystate = new DiscourseModel();
 			
 			EntityInfo e1 = new EntityInfo("dog", "on the left", "south");
 			EntityInfo e2 = new EntityInfo("cat");
@@ -47,7 +47,7 @@ public class InitialStateTest {
 			assertThat("missing entity: Fluffy", mystate.get("Fluffy"), hasItem(new EntityInfo("cat", null, null)));
 		}
 		{
-			InitialState mystate = new InitialState();
+			DiscourseModel mystate = new DiscourseModel();
 			
 			EntityInfo e1 = new EntityInfo("dog", "on the left", "south");
 			EntityInfo e2 = new EntityInfo("cat");
@@ -76,7 +76,7 @@ public class InitialStateTest {
 	@Test
 	public final void hasNameTest() throws IvanInvalidMappingException
 	{
-		InitialState mystate = new InitialState();
+		DiscourseModel mystate = new DiscourseModel();
 		EntityInfo e1 = new EntityInfo("dog", "on the left", "south");
 		mystate.add(e1);
 		assertFalse("unnamed dog wrong", mystate.hasName("dog"));
