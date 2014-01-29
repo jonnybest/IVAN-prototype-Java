@@ -13,7 +13,7 @@ import edu.stanford.nlp.util.Pair;
  */
 public class EntityPurgeRule {
 
-	ArrayList<String> purged = new ArrayList<String>(10);
+	ArrayList<EntityInfo> purged = new ArrayList<EntityInfo>(10);
 	
 	/** Apply this rule and purge useless information
 	 * 
@@ -47,15 +47,18 @@ public class EntityPurgeRule {
 				if(okay)
 				{
 					worked |= okay;
-					purged.add(handle);
+					purged.addAll(infos);
 				}
 			}
 		}
 		return worked;
 	}
 
-	public String[] getResults() {
-		return purged.toArray(new String[]{});
+	/**
+	 * @return All singleton entities which have been removed from the discourse model.
+	 */
+	public EntityInfo[] getResults() {
+		return purged.toArray(new EntityInfo[]{});
 	}
 
 }
