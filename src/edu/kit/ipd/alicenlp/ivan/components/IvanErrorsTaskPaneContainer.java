@@ -22,6 +22,7 @@ import javax.swing.ActionMap;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
+import org.apache.commons.lang.StringUtils;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.swingx.JXLabel;
@@ -657,6 +658,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	protected List<javax.swing.Action> createAvailableQuickfixes(
 			final IvanErrorInstance error) {
 		
+		String ref = StringUtils.abbreviate(StringUtils.join(error.Reference, ", "), 22);
 		// this list will contain the availale fixes
 		List<javax.swing.Action> myQuickfixesForThisError = new ArrayList<Action>();
 		
@@ -665,7 +667,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				|| error.Category.equals(CATEGORY_GRAMMAR)
 				|| error.Category.equals(CATEGORY_STYLE)) // for sentences without effect only
 		{
-			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
 	        javax.swing.Action myAction = new DeleteSentenceAction(displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
@@ -678,7 +680,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		if(error.Category.equals(CATEGORY_LOCATION)) /* LOCATION */
 		{
 			String[] references = error.Reference;
-			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
 	        javax.swing.Action myAction = new AddLocationAction(displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
@@ -690,7 +692,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		else if(error.Category.equals(CATEGORY_DIRECTION)) /* DIRECTION */
 		{ 
 			String[] references = error.Reference;
-			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
 	        javax.swing.Action myAction = new AddDirectionAction(displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
@@ -706,7 +708,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// instance 
 			final IvanErrorsTaskPaneContainer tp = this;
 			// the description to display
-	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y;
+	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
 	        
 	        javax.swing.Action myAction = new IgnoreProblemAction(displayDescription, error, tp);
 			// make the error retrievable
