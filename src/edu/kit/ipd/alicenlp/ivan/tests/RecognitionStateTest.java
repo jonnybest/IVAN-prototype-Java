@@ -1,12 +1,16 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.core.Is.*;
+import static org.hamcrest.core.IsCollectionContaining.*;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -55,18 +59,16 @@ public class RecognitionStateTest extends RecognitionStatePrinter {
 				+ "A monkey is in the middle, facing southwest and"
 				+ "a bucket is behind the monkey and to the right.";
 		
-		DeclarationPositionFinder dclpos = DeclarationPositionFinder.getInstance();
-		this.setDeclarations(dclpos.getCurrentState());
 		
-		Annotation doc = new Annotation(input);		
-		dclpos.getPipeline().annotate(doc);
-		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
-			dclpos.learnDeclarations(sentence);
-		}
+		Annotation doc = TestUtilities.annotateDeclarations(input);
+		DiscourseModel state = doc.get(IvanAnnotations.IvanEntitiesAnnotation.class);
+		
+		this.setDeclarations(state);
+		
 		
 		String output = this.toString();
 		
-		assertEquals("Monkey and bucket", expected, output);
+		assertThat("Monkey and bucket", output, is(expected));
 		
 		//fail("Not yet implemented"); // TODO
 		//CoreferenceResolver corefs = CoreferenceResolver.getInstance();		
