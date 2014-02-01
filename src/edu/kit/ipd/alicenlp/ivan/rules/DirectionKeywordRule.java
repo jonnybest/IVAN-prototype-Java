@@ -97,7 +97,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 				// 2. check for and extract adverbial modifier
 				IndexedWord advmod = DirectionKeywordRule.getAdvMod(root, graph);
 				if (advmod != null) {
-					setDirection(advmod, tree, "ADVP");
+					setDirection(advmod, tree, advmod.tag());
 					return true;
 				}
 
