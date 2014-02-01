@@ -206,7 +206,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 	 */
 	private void setDirection(IndexedWord word, Tree tree, String expectedPOS) {
 		final Tree matchedPart = match(word, tree, expectedPOS, true);
-		setDirection(printTree(matchedPart));
+		setDirection(matchedPart == null ? null : printTree(matchedPart));
 	}
 
 	/**
