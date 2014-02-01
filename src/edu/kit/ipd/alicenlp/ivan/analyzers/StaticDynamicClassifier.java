@@ -86,6 +86,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		// stop on already classified sentences
 		if (sentence.get(Classification.class) != null)
 			return sentence.get(Classification.class);
+		if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getRoots().isEmpty())
+			return Classification.ErrorDescription;
 
 		IndexedWord root = sentence.get(
 				CollapsedCCProcessedDependenciesAnnotation.class)
