@@ -82,6 +82,11 @@ public class FirstMentionRule implements IDocumentRule {
 			EntityInfo earliestDirection = null;
 			for (int i = 0; i < infos.size(); i++) {
 				EntityInfo ei = infos.get(i);
+				// skip flukes. FIXME: prevent doubly recognised entity infos! they are probably caused by malfunctioning declaration recognition.
+				if(earliestMention.getEntitySpan().equals(ei.getEntitySpan()))
+				{
+					earliestMention = ei;
+				}
 				// find first mention
 				if (ei != earliestMention && ei.getEntitySpan().isBefore(earliestMention.getEntitySpan())) {
 					earliestMention = ei;
