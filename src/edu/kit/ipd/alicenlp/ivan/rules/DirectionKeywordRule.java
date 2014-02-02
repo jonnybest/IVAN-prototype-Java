@@ -86,26 +86,22 @@ public class DirectionKeywordRule implements ISentenceRule {
 					if (preplistsubj.size() > 0) {
 						// setDirection(printSubGraph(preplistsubj.get(0),
 						// Sentence));
-						setDirection(preplistsubj.get(0), tree, "PP");
-						return true;
+						return setDirection(preplistsubj.get(0), tree, "PP");
 					} else if (preplistroot.size() > 0) {
-						setDirection(preplistroot.get(0), tree, "PP");
-						return true;
+						return setDirection(preplistroot.get(0), tree, "PP");
 					}
 				}
 
 				// 2. check for and extract adverbial modifier
 				IndexedWord advmod = DirectionKeywordRule.getAdvMod(root, graph);
 				if (advmod != null) {
-					setDirection(advmod, tree, advmod.tag());
-					return true;
+					return setDirection(advmod, tree, null);
 				}
 
 				// 3. check for and extract direct object
 				IndexedWord dobj = getDirectObject(root, graph);
 				if (dobj != null) {
-					setDirection(DirectionKeywordRule.printSubGraph(dobj, Sentence));
-					return true;
+					return setDirection(DirectionKeywordRule.printSubGraph(dobj, Sentence));
 				}
 				
 				// 4. check for any subordinate clause, if it is a keyword
@@ -114,8 +110,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 					String lemma = c.lemma();
 					if(0 < Arrays.binarySearch(DirectionKeywords, lemma))
 					{
-						setDirection(DirectionKeywordRule.printSubGraph(c, Sentence));
-						return true;
+						return setDirection(DirectionKeywordRule.printSubGraph(c, Sentence));
 					}
 				}
 				// stop after the first match
@@ -142,8 +137,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 								graph.getChildList(verb).size() - 1);
 						// setDirection(printTree(match(edge.getDependent(),
 						// tree)));
-						setDirection(printTree(match(mod, tree, null, true)));
-						return true;
+						return setDirection(printTree(match(mod, tree, null, true)));
 					}
 				}
 			}
@@ -166,8 +160,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 								graph.getChildList(verb).size() - 1);
 						// setDirection(printTree(match(edge.getDependent(),
 						// tree)));
-						setDirection(printTree(match(mod, tree, null, true)));
-						return true;
+						return setDirection(printTree(match(mod, tree, null, true)));
 					}
 				}
 			}
@@ -190,8 +183,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 								graph.getChildList(verb).size() - 1);
 						// direction = printSubGraph(edge.getDependent(),
 						// Sentence);
-						setDirection(printTree(match(mod, tree, null, true)));
-						return true;
+						return setDirection(printTree(match(mod, tree, null, true)));
 					}
 				}
 			}
@@ -204,9 +196,10 @@ public class DirectionKeywordRule implements ISentenceRule {
 	 * @param word
 	 * @param tree
 	 */
-	private void setDirection(IndexedWord word, Tree tree, String expectedPOS) {
+	private boolean setDirection(IndexedWord word, Tree tree, String expectedPOS) {
 		final Tree matchedPart = match(word, tree, expectedPOS, true);
 		setDirection(matchedPart == null ? null : printTree(matchedPart));
+		return matchedPart != null;
 	}
 
 	/**
@@ -220,8 +213,9 @@ public class DirectionKeywordRule implements ISentenceRule {
 	 * @param direction
 	 *            the direction to set
 	 */
-	private void setDirection(String direction) {
+	private boolean setDirection(String direction) {
 		this.direction = direction;
+		return direction != null;
 	}
 
 	/**
