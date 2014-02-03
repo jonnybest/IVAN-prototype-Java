@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.List;
 import java.util.Properties;
@@ -475,4 +476,14 @@ public class ImportantClassificationTests {
 		return null;
 	}
 
+	@Test
+	public void testDirectionsInSaloon(){
+		String text = "A saloon is in the left background. A barn is in the background right. A horse is in the foreground left. A monkey is in the foreground right. The saloon is facing south. The barn is facing southwest. The horse is facing the monkey. The monkey is facing the horse.";
+		Annotation doc = TestUtilities.annotateClassifications(text);
+		System.out.println(doc.get(IvanAnnotations.IvanEntitiesAnnotation.class));
+		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
+			assertThat("Bad tag: " + sentence,sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class),is(Classification.SetupDescription));
+		}
+//		fail("stub");
+	}
 }

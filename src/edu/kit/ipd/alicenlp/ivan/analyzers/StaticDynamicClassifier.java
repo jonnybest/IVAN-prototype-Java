@@ -84,8 +84,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 	private Classification classifySentenceAnnotation(CoreMap sentence)
 			throws JWNLException {
 		// stop on already classified sentences
-		if (sentence.get(Classification.class) != null)
-			return sentence.get(Classification.class);
+		if (sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class) != null)
+			return sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class);
 		if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getRoots().isEmpty())
 			return Classification.ErrorDescription;
 
@@ -394,8 +394,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			// process
 			try {
 				Classification sentenceclass = classifySentenceAnnotation(sentence);
-				// FIXME: this call is deprecated
-				sentence.set(Classification.class, sentenceclass);
+
 				// this is the proper way to annotate
 				sentence.set(
 						IvanAnnotations.SentenceClassificationAnnotation.class,
@@ -417,7 +416,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 
 				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
 						error);
-				sentence.set(Classification.class,
+				sentence.set(IvanAnnotations.SentenceClassificationAnnotation.class,
 						Classification.ErrorDescription);
 			}
 		}
