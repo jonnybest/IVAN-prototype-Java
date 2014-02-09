@@ -11,6 +11,7 @@ import org.hamcrest.Matcher;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -108,8 +109,8 @@ public abstract class TestUtilities {
 		annoSentence.get(TreeAnnotation.class).pennPrint();
 		List<String> einfos = DeclarationPositionFinder
 				.recogniseEntities(annoSentence);
-		if (annoSentence.get(Classification.class) != null
-				&& annoSentence.get(Classification.class).equals(
+		if (annoSentence.get(SentenceClassificationAnnotation.class) != null
+				&& annoSentence.get(SentenceClassificationAnnotation.class).equals(
 						Classification.ErrorDescription)) {
 			System.out.println("Error: \"" + solution.getKey()
 					+ "\"\nis not valid IVAN input.");

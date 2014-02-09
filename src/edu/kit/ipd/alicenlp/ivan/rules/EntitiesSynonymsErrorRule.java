@@ -17,6 +17,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.ErrorMessageAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
@@ -106,7 +107,7 @@ public class EntitiesSynonymsErrorRule implements IDocumentRule, IErrorRule
 					// we are here. now put the error in the sentence annotation
 					sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, msg);
 					// also, reclassify the sentence as ERROR
-					Classification previousclass = sentence.set(Classification.class, Classification.ErrorDescription);
+					Classification previousclass = sentence.set(SentenceClassificationAnnotation.class, Classification.ErrorDescription);
 					log(Redwood.DBG, "Sentence tagged as ERROR. Previous tag: " + previousclass);
 					
 				}

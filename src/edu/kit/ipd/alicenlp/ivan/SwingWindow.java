@@ -57,6 +57,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
@@ -779,7 +780,7 @@ public class SwingWindow {
 			 * Requirement 2: Classify sentence into Setup descriptions and
 			 * non-setup descriptions
 			 */
-			StaticDynamicClassifier.Classification sentencetype = sentence.get(Classification.class);
+			StaticDynamicClassifier.Classification sentencetype = sentence.get(SentenceClassificationAnnotation.class);
 
 			// get root for coloring
 			IndexedWord root = depgraph.getFirstRoot();

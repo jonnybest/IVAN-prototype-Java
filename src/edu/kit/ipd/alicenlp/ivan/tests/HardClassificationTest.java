@@ -203,7 +203,7 @@ public class HardClassificationTest {
 		Annotation doc3 = annotateClassifications("She stops in front of the rabbit.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("flame sentence classified wrong",
-				sentence3.get(Classification.class),
+				sentence3.get(SentenceClassificationAnnotation.class),
 				is(Classification.EventDescription));
 	}
 
@@ -218,14 +218,14 @@ public class HardClassificationTest {
 			Annotation doc = annotateClassifications("The scene takes place on the grass.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("takes place sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 		{
 			Annotation doc3 = annotateClassifications("The ground is covered with grass.");
 			CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 			assertThat("simple sentence classified wrong",
-					sentence3.get(Classification.class),
+					sentence3.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 		{
@@ -233,7 +233,7 @@ public class HardClassificationTest {
 			Annotation doc2 = annotateClassifications("The ground is covered with grass, the sky is blue.");
 			CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 			assertThat("comma sentence classified wrong",
-					sentence2.get(Classification.class),
+					sentence2.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -259,9 +259,9 @@ public class HardClassificationTest {
 		Annotation doc = annotateClassifications(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertNotNull("class is missing",
-					sentence.get(Classification.class));
+					sentence.get(SentenceClassificationAnnotation.class));
 			assertThat("facing sentence classified wrong: " + sentence,
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -275,7 +275,7 @@ public class HardClassificationTest {
 			Annotation doc = annotateClassifications("The grinning cat is not visible.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("visible sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -289,7 +289,7 @@ public class HardClassificationTest {
 			Annotation doc = annotateClassifications("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("depicts sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -303,14 +303,14 @@ public class HardClassificationTest {
 			Annotation doc = annotateClassifications("Rightmost of the stage, in the back, is a sunflower, facing towards the characters.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("sunflower sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 		{
 			Annotation doc = annotateClassifications("At the start of the scene, on the left is a light bulb which is off.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("bulb sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 		// Next to the bulb on the ground is a switch, with a brown monkey next
@@ -321,7 +321,7 @@ public class HardClassificationTest {
 					+ "towards the viewer.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("switch sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -339,9 +339,9 @@ public class HardClassificationTest {
 		Annotation doc = annotateClassifications(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertNotNull("class is missing",
-					sentence.get(Classification.class));
+					sentence.get(SentenceClassificationAnnotation.class));
 			assertThat("facing sentence classified wrong: " + sentence,
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -360,9 +360,9 @@ public class HardClassificationTest {
 		Annotation doc = annotateClassifications(text);
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertNotNull("class is missing",
-					sentence.get(Classification.class));
+					sentence.get(SentenceClassificationAnnotation.class));
 			assertThat("takes place sentence classified wrong: " + sentence,
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -376,14 +376,14 @@ public class HardClassificationTest {
 			Annotation doc = annotateClassifications("The grass is green and the sky is blue.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("green sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 		{
 			Annotation doc = annotateClassifications("The sky is blue and the stage is a field of grass.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertThat("blue sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.SetupDescription));
 		}
 	}
@@ -400,7 +400,7 @@ public class HardClassificationTest {
 		Annotation doc4 = annotateClassifications("A very short time passes.");
 		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
 		assertThat("passes sentence classified wrong",
-				sentence4.get(Classification.class),
+				sentence4.get(SentenceClassificationAnnotation.class),
 				is(Classification.TimeDescription));
 	}
 	
@@ -416,7 +416,7 @@ public class HardClassificationTest {
 		Annotation doc4 = annotateClassifications("A very short time passes.");
 		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
 		assertThat("passes sentence classified wrong",
-				sentence4.get(Classification.class),
+				sentence4.get(SentenceClassificationAnnotation.class),
 				not(is(Classification.ErrorDescription)));
 	}
 }

@@ -14,7 +14,9 @@ import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
@@ -84,19 +86,19 @@ public class ClassificationNoDependencyTest {
 		Annotation doc = annotateClassificationsNoDeclarations("The penguin jumps once.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertThat("jumps sentence classified wrong",
-				sentence.get(Classification.class),
+				sentence.get(SentenceClassificationAnnotation.class),
 				is(Classification.ActionDescription));
 
 		Annotation doc2 = annotateClassificationsNoDeclarations("The boy and the girl lift their left arms simulteanously as well.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("lift sentence classified wrong",
-				sentence2.get(Classification.class),
+				sentence2.get(SentenceClassificationAnnotation.class),
 				is(Classification.ActionDescription));
 
 		Annotation doc3 = annotateClassificationsNoDeclarations("After a short pause, the penguin turns around towards the back of the bucket behind it, jumps onto its stomach and slides towards the bucket, flapping its wings again.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("turns around sentence classified wrong",
-				sentence3.get(Classification.class),
+				sentence3.get(SentenceClassificationAnnotation.class),
 				is(Classification.ActionDescription));
 
 	}
@@ -111,23 +113,23 @@ public class ClassificationNoDependencyTest {
 	public void negativeTimeTest() {
 		Annotation doc = annotateClassificationsNoDeclarations("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertNotNull("class is missing", sentence.get(SentenceClassificationAnnotation.class));
 		assertThat("flame sentence classified wrong",
-				sentence.get(Classification.class),
+				sentence.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.TimeDescription)));
 
 		Annotation doc2 = annotateClassificationsNoDeclarations("The scene takes place in the desert.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence2.get(Classification.class));
+		assertNotNull("class is missing", sentence2.get(SentenceClassificationAnnotation.class));
 		assertThat("desert sentence classified wrong",
-				sentence2.get(Classification.class),
+				sentence2.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.TimeDescription)));
 
 		Annotation doc3 = annotateClassificationsNoDeclarations("Ground is covered with green grass.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence3.get(Classification.class));
+		assertNotNull("class is missing", sentence3.get(SentenceClassificationAnnotation.class));
 		assertThat("Ground sentence classified wrong",
-				sentence3.get(Classification.class),
+				sentence3.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.TimeDescription)));
 
 	}
@@ -141,19 +143,19 @@ public class ClassificationNoDependencyTest {
 		Annotation doc = annotateClassificationsNoDeclarations("The grinning cat appears in the branches of the tree.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		assertThat("appears sentence classified wrong",
-				sentence.get(Classification.class),
+				sentence.get(SentenceClassificationAnnotation.class),
 				is(Classification.EventDescription));
 
 		Annotation doc2 = annotateClassificationsNoDeclarations("The bunny jumps into the hole and disappears.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("jumps, disappears sentence classified wrong",
-				sentence2.get(Classification.class),
+				sentence2.get(SentenceClassificationAnnotation.class),
 				is(Classification.EventDescription));
 
 		Annotation doc4 = annotateClassificationsNoDeclarations("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence4 = doc4.get(SentencesAnnotation.class).get(0);
 		assertThat("flame sentence classified wrong",
-				sentence4.get(Classification.class),
+				sentence4.get(SentenceClassificationAnnotation.class),
 				is(Classification.EventDescription));
 
 	}
@@ -167,9 +169,9 @@ public class ClassificationNoDependencyTest {
 	public void negativeErrorTest() {
 		Annotation doc = annotateClassificationsNoDeclarations("The rabbit screams \"Ahhhhhhhh!\" and turns around towards the hole.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertNotNull("class is missing", sentence.get(SentenceClassificationAnnotation.class));
 		assertThat("flame sentence classified wrong",
-				sentence.get(Classification.class),
+				sentence.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.ErrorDescription)));
 	}
 	
@@ -220,9 +222,9 @@ public class ClassificationNoDependencyTest {
 		// the sentences in this test should all have some annotation or another
 		for (CoreMap sentence : doc.get(SentencesAnnotation.class)) {
 			assertTrue("Sentences was not classified: " + sentence.toString(),
-					sentence.containsKey(Classification.class));
-			assertNotNull(sentence.get(Classification.class));
-			System.out.println(sentence.get(Classification.class) + ": "
+					sentence.containsKey(SentenceClassificationAnnotation.class));
+			assertNotNull(sentence.get(SentenceClassificationAnnotation.class));
+			System.out.println(sentence.get(SentenceClassificationAnnotation.class) + ": "
 					+ sentence.toString());
 		}
 
@@ -238,9 +240,9 @@ public class ClassificationNoDependencyTest {
 			Annotation doc = annotateClassificationsNoDeclarations("The rabbit screams \"You cannot stand on the right side!\" and turns around towards the hole.");
 			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 			assertNotNull("class is missing",
-					sentence.get(Classification.class));
+					sentence.get(SentenceClassificationAnnotation.class));
 			assertThat("utterance sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(not(Classification.SetupDescription)));
 		}
 	}
@@ -262,7 +264,7 @@ public class ClassificationNoDependencyTest {
 			System.out.println(sentence
 					.get(CollapsedCCProcessedDependenciesAnnotation.class));
 			assertThat("I see sentence classified wrong",
-					sentence.get(Classification.class),
+					sentence.get(SentenceClassificationAnnotation.class),
 					is(Classification.ErrorDescription));
 		}
 	}
@@ -286,14 +288,14 @@ public class ClassificationNoDependencyTest {
 		Annotation doc2 = annotateClassificationsNoDeclarations("A very short time is passing.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
 		assertThat("passes sentence classified wrong",
-				sentence2.get(Classification.class),
+				sentence2.get(SentenceClassificationAnnotation.class),
 				is(Classification.TimeDescription));
 
 		// contains duration
 		Annotation doc3 = annotateClassificationsNoDeclarations("The fire lasts for around 10 seconds.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
 		assertThat("fire around sentence classified wrong",
-				sentence3.get(Classification.class),
+				sentence3.get(SentenceClassificationAnnotation.class),
 				is(Classification.TimeDescription));
 
 		// there is no time in this sentence. just a state. the duration is
@@ -301,7 +303,7 @@ public class ClassificationNoDependencyTest {
 		// Annotation doc = annotateText("The flames continue to burn.");
 		// CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
 		// assertThat("flames sentence classified wrong",
-		// sentence.get(Classification.class),
+		// sentence.get(SentenceClassificationAnnotation.class),
 		// is(Classification.TimeDescription));
 
 		/** 
@@ -324,25 +326,25 @@ public class ClassificationNoDependencyTest {
 	public void negativeEventTest() {
 		Annotation doc = annotateClassificationsNoDeclarations("A very short time passes.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertNotNull("class is missing", sentence.get(SentenceClassificationAnnotation.class));
 		assertThat("time passes sentence classified wrong",
-				sentence.get(Classification.class),
+				sentence.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.EventDescription)));
 
 		Annotation doc2 = annotateClassificationsNoDeclarations("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence2.get(Classification.class));
+		assertNotNull("class is missing", sentence2.get(SentenceClassificationAnnotation.class));
 		assertThat("frog sentence classified wrong",
-				sentence2.get(Classification.class),
+				sentence2.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.EventDescription)));
 
 		// The start depicts a boy facing to the right of the screen, and a
 		// woman facing to the front.
 		Annotation doc3 = annotateClassificationsNoDeclarations("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence3.get(Classification.class));
+		assertNotNull("class is missing", sentence3.get(SentenceClassificationAnnotation.class));
 		assertThat("depicts sentence classified wrong",
-				sentence3.get(Classification.class),
+				sentence3.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.EventDescription)));
 
 	}
@@ -356,25 +358,25 @@ public class ClassificationNoDependencyTest {
 	public void negativeActionTest() {
 		Annotation doc = annotateClassificationsNoDeclarations("A very short time passes.");
 		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence.get(Classification.class));
+		assertNotNull("class is missing", sentence.get(SentenceClassificationAnnotation.class));
 		assertThat("time passes sentence classified wrong",
-				sentence.get(Classification.class),
+				sentence.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.ActionDescription)));
 
 		Annotation doc2 = annotateClassificationsNoDeclarations("A frog sits left of the Brokkoli facing it.");
 		CoreMap sentence2 = doc2.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence2.get(Classification.class));
+		assertNotNull("class is missing", sentence2.get(SentenceClassificationAnnotation.class));
 		assertThat("sits sentence classified wrong",
-				sentence2.get(Classification.class),
+				sentence2.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.ActionDescription)));
 
 		// The start depicts a boy facing to the right of the screen, and a
 		// woman facing to the front.
 		Annotation doc3 = annotateClassificationsNoDeclarations("A giant flame column appears and consumes the astronaut.");
 		CoreMap sentence3 = doc3.get(SentencesAnnotation.class).get(0);
-		assertNotNull("class is missing", sentence3.get(Classification.class));
+		assertNotNull("class is missing", sentence3.get(SentenceClassificationAnnotation.class));
 		assertThat("appears sentence classified wrong",
-				sentence3.get(Classification.class),
+				sentence3.get(SentenceClassificationAnnotation.class),
 				is(not(Classification.ActionDescription)));
 
 	}
