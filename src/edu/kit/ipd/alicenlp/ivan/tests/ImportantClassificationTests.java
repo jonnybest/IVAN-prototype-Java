@@ -107,8 +107,8 @@ public class ImportantClassificationTests {
 	 */
 	@Test
 	public void positiveEventTest() {
-		Annotation doc = annotateClassifications("The grinning cat appears in the branches of the tree.");
-		CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+		Annotation doc = annotateClassifications("The grinning cat exists. The grinning cat appears in the branches of the tree.");
+		CoreMap sentence = doc.get(SentencesAnnotation.class).get(1);
 		assertThat("appears sentence classified wrong",
 				sentence.get(SentenceClassificationAnnotation.class),
 				is(Classification.EventDescription));
