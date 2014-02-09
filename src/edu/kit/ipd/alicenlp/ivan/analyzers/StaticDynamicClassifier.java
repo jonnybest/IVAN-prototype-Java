@@ -83,10 +83,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 	 */
 	private Classification classifySentenceAnnotation(CoreMap sentence)
 			throws JWNLException {
-		// stop on already classified sentences
-		if (sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class) != null)
-			return sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class);
-		if(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).getRoots().isEmpty())
+
+		// before we really get started, we check for errors
+		if (sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)
+				.getRoots().isEmpty())
 			return Classification.ErrorDescription;
 
 		IndexedWord root = sentence.get(
@@ -111,6 +111,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			return Classification.ErrorDescription;
 		}
 
+		// After we checked for errors, we can continue checking for already classified sentences:
+		if (sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class) != null)
+			return sentence.get(IvanAnnotations.SentenceClassificationAnnotation.class);
+
 		// does this sentence contain an event?
 		EventRule checkevent = new EventRule();
 		// yes!
@@ -133,7 +137,9 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		 * Old style classification follows.
 		 * 
 		 */
-		// TODO: always return SETUP when root is not a verb. Reason: if nouns or adjectives are more important than the verb, there is no action or event
+		// TODO: always return SETUP when root is not a verb. Reason: if nouns
+		// or adjectives are more important than the verb, there is no action or
+		// event
 		// short classification fix for broken sentences (wrong copula)
 		// hint1: root is no verb
 		if (!BaseRule.isPOSFamily(root, "VB")) {
@@ -165,12 +171,6 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		// System.out.println(graph.toString());
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
-		boolean passive = StaticDynamicClassifier.isPassive(root, graph);
-//		if (passive) {
-//			System.out.println("This sentence is passive.");
-//			// return Classification.SetupDescription; // probably a bad idea?
-//		}
-
 		// classify by lexical file num
 		IndexWord wnetw = dictionary.lookupIndexWord(POS.VERB, word);
 		if (wnetw != null) {
@@ -204,6 +204,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			} else if (lexnum == 36) // verb.creation
 			{
 				// ex: "The roof of the shed is painted blue, like the sky."
+				boolean passive = StaticDynamicClassifier.isPassive(root, graph);
 				if (passive) {
 					if (!StaticDynamicClassifier.hasAgent(root, graph)) {
 						// ex: The roof is painted by the father.
@@ -212,11 +213,17 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 					return Classification.SetupDescription;
 				}
 			}
-		}
-		else {
+		} else {
 			log(Redwood.ERR, "WordNET did not recognise this verb.");
-			Span errorspan = new Span(root.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class), root.get(CoreAnnotations.CharacterOffsetEndAnnotation.class));
-			IvanErrorMessage err = new IvanErrorMessage(IvanErrorType.WORDNET, errorspan, "The word '" + word + "' is not properly recognised and may cause problems.");
+			Span errorspan = new Span(
+					root.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class),
+					root.get(CoreAnnotations.CharacterOffsetEndAnnotation.class));
+			IvanErrorMessage err = new IvanErrorMessage(
+					IvanErrorType.WORDNET,
+					errorspan,
+					"The word '"
+							+ word
+							+ "' is not properly recognised and may cause problems.");
 			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, err);
 			return Classification.ErrorDescription;
 		}
@@ -380,7 +387,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 
 	@Override
 	public void annotate(Annotation annotation) {
-		// before dealing with each individual sentence, run a document-wide classification
+		// before dealing with each individual sentence, run a document-wide
+		// classification
 		FirstMentionRule rule = new FirstMentionRule();
 		try {
 			// pre-tag the sentences based on state data
@@ -399,7 +407,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				sentence.set(
 						IvanAnnotations.SentenceClassificationAnnotation.class,
 						sentenceclass);
-				
+
 				// check for initial state consistency
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
@@ -410,13 +418,13 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 						sentence.get(CharacterOffsetBeginAnnotation.class),
 						sentence.get(CharacterOffsetEndAnnotation.class));
 				IvanErrorMessage error = new IvanErrorMessage(
-						IvanErrorType.UNKNOWN,
-						range,
+						IvanErrorType.UNKNOWN, range,
 						"Processing this sentence caused an exception.");
 
 				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
 						error);
-				sentence.set(IvanAnnotations.SentenceClassificationAnnotation.class,
+				sentence.set(
+						IvanAnnotations.SentenceClassificationAnnotation.class,
 						Classification.ErrorDescription);
 			}
 		}
@@ -424,20 +432,25 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			// run classifier
 			classifyDocument(annotation);
 			// check recognition state for missing entries
-			IncompleteEntitiesErrorRule staterule = new IncompleteEntitiesErrorRule(annotation.get(IvanAnnotations.IvanEntitiesAnnotation.class));
+			IncompleteEntitiesErrorRule staterule = new IncompleteEntitiesErrorRule(
+					annotation
+							.get(IvanAnnotations.IvanEntitiesAnnotation.class));
 			// run check
-			if(staterule.apply(annotation))
-			{
+			if (staterule.apply(annotation)) {
 				// save results
-				if(annotation.get(IvanAnnotations.DocumentErrorAnnotation.class) != null){
-					annotation.get(IvanAnnotations.DocumentErrorAnnotation.class).addAll(staterule.getErrorMessages());
-				}
-				else {
-					annotation.set(IvanAnnotations.DocumentErrorAnnotation.class, staterule.getErrorMessages());
+				if (annotation
+						.get(IvanAnnotations.DocumentErrorAnnotation.class) != null) {
+					annotation.get(
+							IvanAnnotations.DocumentErrorAnnotation.class)
+							.addAll(staterule.getErrorMessages());
+				} else {
+					annotation.set(
+							IvanAnnotations.DocumentErrorAnnotation.class,
+							staterule.getErrorMessages());
 				}
 			}
 		} catch (JWNLException e) {
-			log(Redwood.ERR, e);			
+			log(Redwood.ERR, e);
 			e.printStackTrace();
 		}
 	}
