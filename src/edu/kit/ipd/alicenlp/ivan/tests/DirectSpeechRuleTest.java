@@ -31,6 +31,10 @@ public class DirectSpeechRuleTest {
 		DirectSpeechRule positiverule = new DirectSpeechRule();
 		boolean resultpositive = positiverule.apply(pos);
 		assertTrue(resultpositive);
+		
+		Annotation negativeBecauseUseful = TestUtilities.annotateDeclarations("\"Where are you going\" says the cheerleader before she moves to the middle.");
+		CoreMap useful = negativeBecauseUseful.get(SentencesAnnotation.class).get(0);
+		assertFalse("this useful sentence is being ignored", new DirectSpeechRule().apply(useful));
 	}
 
 }
