@@ -101,7 +101,12 @@ public abstract class IvanAnalyzer implements Annotator
 		 * This sentence contains something that we don't want users to write. 
 		 * (The ErrorDescription is not intended to replace exceptions.)
 		 */
-		ErrorDescription
+		ErrorDescription, 
+		/**
+		 * Speech indicates that this sentence consists entirely of direct speech 
+		 * (and may be ignored for most purposes).
+		 */
+		Speech
 	}
 
 	/** This requirement implies that setup sentences are tagged.
