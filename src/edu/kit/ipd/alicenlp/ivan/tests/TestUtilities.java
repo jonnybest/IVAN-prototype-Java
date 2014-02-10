@@ -30,6 +30,8 @@ public abstract class TestUtilities {
 	public static final String PROPERTIES_ANNOTATORS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier";
 	private static StanfordCoreNLP declarationsPipeline;
 	private static StanfordCoreNLP classificationsPipeline;
+	// this pipeline breaks sentences only at line breaks
+	private static StanfordCoreNLP evaluationPipeline;
 
 	/**
 	 * Annotates a document with our customized pipeline.
@@ -137,6 +139,38 @@ public abstract class TestUtilities {
 
 	static CoreMap annotateSingleDeclaration(String text) {
 		return annotateDeclarations(text).get(SentencesAnnotation.class).get(0);
+	}
+
+	static CoreMap annotateSingleClassification(String text) {
+		Annotation doc = new Annotation(text);
+
+		if (evaluationPipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging,
+			// lemmatization, NER, parsing, and coreference resolution
+			Properties props = new Properties();
+			// alternativ: wsj-bidirectional
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			// adding our own annotator property
+			props.put("customAnnotatorClass.sdclassifier",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier");
+			// adding our declaration finder
+			props.put("customAnnotatorClass.declarations",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			// do not split sentences inside direct speech
+			props.setProperty("ssplit.eolonly", "true");
+			// konfiguriere declarationsPipeline
+			props.put("annotators", PROPERTIES_ANNOTATORS); //$NON-NLS-1$ //$NON-NLS-2$
+			evaluationPipeline = new StanfordCoreNLP(props);
+		}
+
+		evaluationPipeline.annotate(doc);
+		return doc.get(SentencesAnnotation.class).get(0);
 	}
 
 }
