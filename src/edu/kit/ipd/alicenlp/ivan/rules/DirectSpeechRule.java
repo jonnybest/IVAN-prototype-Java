@@ -22,7 +22,14 @@ public class DirectSpeechRule implements ISentenceRule {
 	public boolean apply(CoreMap Sentence)
 	{
 
-		String speakerID; // speaker
+		return checkSentence(Sentence);
+	}
+
+	/**
+	 * @param Sentence
+	 * @return
+	 */
+	public static boolean checkSentence(CoreMap Sentence) {
 
 		List<CoreLabel> tokens = Sentence.get(TokensAnnotation.class);
 		if (tokens.size() == 0)
@@ -48,7 +55,7 @@ public class DirectSpeechRule implements ISentenceRule {
 	 * @param token
 	 * @return
 	 */
-	public boolean isSpeech(final CoreLabel token) {
+	public static boolean isSpeech(final CoreLabel token) {
 		String speakerID = token.get(SpeakerAnnotation.class);
 		
 		if (speakerID == null)

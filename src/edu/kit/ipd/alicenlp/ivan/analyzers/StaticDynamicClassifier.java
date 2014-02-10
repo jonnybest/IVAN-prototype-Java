@@ -24,6 +24,7 @@ import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
+import edu.kit.ipd.alicenlp.ivan.rules.DirectSpeechRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EventRule;
@@ -102,6 +103,10 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		 * result and all we have to do is to decide what to do with the result.
 		 * In most cases, we simply want to annotate.
 		 */
+		// is sentence entirely direct speech? if so, we ignore it completely
+		if(new DirectSpeechRule().apply(sentence))
+			return Classification.Speech;
+		
 		// does this sentence container an error?
 		ErrorRule checkError = new ErrorRule();
 		if (checkError.apply(sentence)) {
