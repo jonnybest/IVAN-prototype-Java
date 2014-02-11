@@ -20,6 +20,8 @@ import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CategoryAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.SpeakerAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -52,31 +54,51 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 	@Override
 	public boolean apply(CoreMap sentence) {
 		// check for a graph
-		if (applyNeedsGraph(sentence))
+		if (applyNeedsGraph(sentence)) {
+			System.out.println("ErrorRule.apply(): No graph in '"
+					+ sentence.toString());
 			return true;
+		}
 		// check for bad penn tags
-		if(applyBadPennTags(sentence))
+		if (applyBadPennTags(sentence)) {
+			System.out
+					.println("ErrorRule.apply(): Sentence contains fragment: '"
+							+ sentence.toString());
 			return true;
-		
+		}
+
 		// checking roots:
-		if (applyRoots(sentence))
+		if (applyRoots(sentence)) {
+			System.out
+					.println("ErrorRule.apply(): Sentence must have a single root: '"
+							+ sentence.toString());
 			return true;
+		}
 
-		if (applyNeedsOneVerb(sentence))
+		if (applyNeedsOneVerb(sentence)) {
+			System.out
+					.println("ErrorRule.apply(): Sentence must have at least one verb: '"
+							+ sentence.toString());
 			return true;
-
-		// TODO: sentences with the "fragment" tree annotation are not desirable
-		// also todo: find out what that fragment thing looks like
+		}
 
 		// verbs that are joined by a conjunction are probably missing arguments
 		// and cannot be properly parsed with dependencies
-		if (applyCCVerbs(sentence))
+		if (applyCCVerbs(sentence)) {
+			System.out
+					.println("ErrorRule.apply(): Verbs are conjoined and therefore likely to lack arguments: '"
+							+ sentence.toString());
 			return true;
+		}
 
 		// first person sentences do not have a verb that reflects the action on
 		// the scene
-		if (applyNo1stPerson(sentence))
+		if (applyNo1stPerson(sentence)) {
+			System.out
+					.println("ErrorRule.apply(): Sentence is in 1st person: '"
+							+ sentence.toString());
 			return true;
+		}
 
 		// everything seems to be fine.
 		return false;
@@ -92,36 +114,61 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 	 */
 	public boolean applyBadPennTags(CoreMap sentence) {
 		// maybe do these too?
-		// UCP - Unlike Coordinated Phrase (because it's a pairing of unlike constituents)
-		// SBAR - Subordinate clause, complementizer or WH- and sentence (because they do not fit the genre)
+		// UCP - Unlike Coordinated Phrase (because it's a pairing of unlike
+		// constituents)
+		// SBAR - Subordinate clause, complementizer or WH- and sentence
+		// (because they do not fit the genre)
 
 		// fetch a tree
 		Tree t = sentence.get(TreeAnnotation.class);
 		// iterate through all the nodes
-		for (LabeledScoredTreeNode thing : t.toArray(new LabeledScoredTreeNode[]{})) {
+		for (LabeledScoredTreeNode thing : t
+				.toArray(new LabeledScoredTreeNode[] {})) {
 			// fetches the label which contains tags
 			CoreLabel lbl = (CoreLabel) thing.label();
 			// fetches the tag which is called a "category" here
 			String cat = lbl.get(CategoryAnnotation.class);
 			// if the category is "Fragment", we don't want it
-			if(cat != null && cat.equals("FRAG"))
-			{
-				int tmpstart = Integer.MAX_VALUE,
-						tmpend = 0;
+			if (cat != null && cat.equals("FRAG")) {
+				// check if this fragment is inside direct speech. if so, we can
+				// ignore it.
+				int numleaves = thing.getLeaves().size(); // how long is this
+															// fragment?
+				// where does the fragment begin?
+				int beginFragment = ((CoreLabel) thing.getLeaves().get(0).label())
+						.get(BeginIndexAnnotation.class); //
+				// retrieve the tokens for this sentence
+				List<CoreLabel> tokens = sentence.get(TokensAnnotation.class);
+				// check the tokens inside this fragment
+				for (int i = beginFragment; i < beginFragment + numleaves - 1; i++) {
+					// get the single token
+					CoreLabel token = tokens.get(i);
+					// get the speaker annotation. if this is not the narrator
+					// ("PER0"), we know it is speech and therefore not subject
+					// to analysis.
+					if (token.get(SpeakerAnnotation.class) == null)
+						continue;
+					else if(!"PER0".equals(token.get(SpeakerAnnotation.class)))
+						return false;
+				}
+
+				int tmpstart = Integer.MAX_VALUE, tmpend = 0;
 				for (Tree tree : thing.getLeaves()) {
-					Integer start = ((CoreLabel) tree.label()).get(CharacterOffsetBeginAnnotation.class);
-					if(start < tmpstart)
+					Integer start = ((CoreLabel) tree.label())
+							.get(CharacterOffsetBeginAnnotation.class);
+					if (start < tmpstart)
 						tmpstart = start;
-					Integer end = ((CoreLabel) tree.label()).get(CharacterOffsetEndAnnotation.class);
-					if(end > tmpend)
+					Integer end = ((CoreLabel) tree.label())
+							.get(CharacterOffsetEndAnnotation.class);
+					if (end > tmpend)
 						tmpend = end;
 				}
 
 				msg = new IvanErrorMessage(
-						IvanErrorType.GRAPH, 
-						Span.fromValues(tmpstart, tmpend), 
+						IvanErrorType.GRAPH,
+						Span.fromValues(tmpstart, tmpend),
 						"This sentence seems to contain a fragment. "
-						+ "The sentence is either incomplete or it contains parts which should go in their own sentence.");
+								+ "The sentence is either incomplete or it contains parts which should go in their own sentence.");
 				return true;
 			}
 		}
