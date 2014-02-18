@@ -32,6 +32,7 @@ public abstract class TestUtilities {
 	private static StanfordCoreNLP classificationsPipeline;
 	// this pipeline breaks sentences only at line breaks
 	private static StanfordCoreNLP evaluationPipeline;
+	private static StanfordCoreNLP basicPipeline;
 
 	/**
 	 * Annotates a document with our customized pipeline.
@@ -170,6 +171,35 @@ public abstract class TestUtilities {
 		}
 
 		evaluationPipeline.annotate(doc);
+		return doc.get(SentencesAnnotation.class).get(0);
+	}
+
+	/** ssplit, pos, lemma, parse only
+	 * @param text
+	 * @return
+	 */
+	public static CoreMap annotateSingleBasics(String text) {
+		Annotation doc = new Annotation(text);
+
+		if (basicPipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging,
+			// lemmatization, NER, parsing, and coreference resolution
+			Properties props = new Properties();
+			// alternativ: wsj-bidirectional
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			// konfiguriere declarationsPipeline
+			props.put("annotators", "tokenize, ssplit, pos, lemma, parse"); //$NON-NLS-1$ //$NON-NLS-2$
+			basicPipeline = new StanfordCoreNLP(props);
+		}
+
+		basicPipeline.annotate(doc);
 		return doc.get(SentencesAnnotation.class).get(0);
 	}
 

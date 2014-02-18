@@ -4,6 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan.rules;
 
 import net.sf.extjwnl.JWNLException;
+import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -21,6 +22,7 @@ public interface ISentenceRule {
 	 * @param Sentence
 	 * @return TRUE, if this sentence satisfies the rule. Otherwise FALSE.
 	 * @throws JWNLException Something went wrong with wordnet!
+	 * @throws IvanException 
 	 */
-	boolean apply(CoreMap Sentence) throws JWNLException;
+	boolean apply(CoreMap Sentence) throws JWNLException, IvanException;
 }
