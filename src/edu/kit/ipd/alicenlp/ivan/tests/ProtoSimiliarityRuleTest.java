@@ -2,14 +2,15 @@ package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.junit.Assert.*;
 
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -17,7 +18,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
 import edu.cmu.lti.jawjaw.pobj.POS;
 import edu.cmu.lti.jawjaw.pobj.Synset;
 import edu.cmu.lti.jawjaw.util.WordNetUtil;
@@ -43,7 +43,8 @@ import edu.kit.ipd.alicenlp.ivan.rules.ProtoSimiliarityRule;
 import edu.stanford.nlp.util.CoreMap;
 
 public class ProtoSimiliarityRuleTest {
-
+	static org.apache.logging.log4j.Logger l = org.apache.logging.log4j.LogManager.getLogger();
+	
 	/** set the settings.
 	 * 
 	 */
@@ -53,11 +54,15 @@ public class ProtoSimiliarityRuleTest {
 		WS4JConfiguration.getInstance().setMFS(false); // some kind of shortcut? maybe "use most frequent sense"
 		WS4JConfiguration.getInstance().setStem(false);	// turns of the internal stemmer. our words are already lemmas
 		WS4JConfiguration.getInstance().setLeskNormalize(false); // lesk normalization seems to be broken.
-		
+
+		System.out.println("dbg: " +l.isDebugEnabled());
+		l.debug("hi");
 	}
 	
 	@Test
 	public final void test() throws IvanException {
+		l.trace("hellp");
+		
 		ProtoSimiliarityRule rule = new ProtoSimiliarityRule();
 		CoreMap sent = TestUtilities.annotateSingleBasics("A dog is running away.");
 		rule.apply(sent);

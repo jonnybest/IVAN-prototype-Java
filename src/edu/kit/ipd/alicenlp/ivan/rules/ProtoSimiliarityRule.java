@@ -3,6 +3,7 @@ package edu.kit.ipd.alicenlp.ivan.rules;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.impl.Log4JLogger;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
@@ -38,8 +39,10 @@ import edu.cmu.lti.ws4j.util.WS4JConfiguration;
  * 
  */
 public class ProtoSimiliarityRule implements ISentenceRule {
+
+	static Log4JLogger l = new Log4JLogger("ProtoSimiliarityRule");
 	
-	static {
+	static {		
 		WS4JConfiguration.getInstance().setLeskNormalize(false);
 		WS4JConfiguration.getInstance().setMFS(false);
 		WS4JConfiguration.getInstance().setTrace(true);
@@ -50,6 +53,7 @@ public class ProtoSimiliarityRule implements ISentenceRule {
 
 	@Override
 	public boolean apply(CoreMap Sentence) throws IvanException {
+		
 		RelatednessCalculator comparer = new Lesk(db); // new Lin(db); //new Path(db); // 
 		
 		SemanticGraph deps = Sentence
