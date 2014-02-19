@@ -110,7 +110,7 @@ public class ProtoSimiliarityRule implements ISentenceRule {
 		String[] parts = StringUtils.split(wordnetword, "#");
 		String lemma = parts[0];
 		POS mypos = POS.valueOf(parts[1]);
-		int index = Integer.parseInt(parts[2]) + 1;
+		int index = Integer.parseInt(parts[2]) - 1;
 		Synset synset = WordNetUtil.wordToSynsets(lemma, mypos).get(index);
 		String synstring = synset.getSynset();
 		return new Concept(synstring, mypos, lemma, synset.getSrc());
