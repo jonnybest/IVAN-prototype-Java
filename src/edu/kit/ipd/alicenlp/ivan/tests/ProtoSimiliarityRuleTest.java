@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.logging.log4j.Logger;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.hamcrest.core.Is.is;
@@ -48,20 +49,24 @@ public class ProtoSimiliarityRuleTest {
 	/** set the settings.
 	 * 
 	 */
-	@Before
-	public void prepare(){
+	@BeforeClass
+	public static void prepare(){
 		WS4JConfiguration.getInstance().setTrace(true); // some kind of debug messages 
 		WS4JConfiguration.getInstance().setMFS(false); // some kind of shortcut? maybe "use most frequent sense"
 		WS4JConfiguration.getInstance().setStem(false);	// turns of the internal stemmer. our words are already lemmas
 		WS4JConfiguration.getInstance().setLeskNormalize(false); // lesk normalization seems to be broken.
 
 		System.out.println("dbg: " +l.isDebugEnabled());
+		System.out.println("trc: " +l.isTraceEnabled());
+		System.out.println("ifo: " +l.isInfoEnabled());
+		
 		l.debug("hi");
+		l.trace("hellp");
+		l.info("if");
 	}
 	
 	@Test
 	public final void test() throws IvanException {
-		l.trace("hellp");
 		
 		ProtoSimiliarityRule rule = new ProtoSimiliarityRule();
 		CoreMap sent = TestUtilities.annotateSingleBasics("A dog is running away.");
