@@ -739,14 +739,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		
 		return myQuickfixesForThisError;
 	}
-//	
-//    @org.jdesktop.application.Action
-//    public void email() {
-//    	System.out.println("Email sent!");
-//    } 
-//     
-//    @org.jdesktop.application.Action 
-//    public void delete() { } 
 
 	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
 	 * Problems are not added, if the user previously ignored them.
