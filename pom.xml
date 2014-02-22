@@ -87,6 +87,11 @@
 			<artifactId>swingx</artifactId>
 			<version>1.6.1</version>
 		</dependency>
+		<dependency>
+			<groupId>com.aliasi</groupId>
+			<artifactId>lingpipe</artifactId>
+			<version>4.0.1</version>
+		</dependency>
 	</dependencies>
 	<url>http://svn.ipd.kit.edu/trac/AliceNLP/</url>
 	<parent>
@@ -96,6 +101,10 @@
 	</parent>
 	<groupId>edu.kit.ipd.aliceNlp</groupId>
 	<repositories>
+	<repository>
+  		<id>clojars.org</id>
+  		<url>http://clojars.org/repo</url>
+	</repository>
 		<repository>
 			<id>ipdNexus</id>
 			<name>Recaa Repository</name>
