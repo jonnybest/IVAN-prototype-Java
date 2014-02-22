@@ -119,7 +119,7 @@ public class SwingWindow {
 	protected boolean isSpellingOkay;
 	private List<RuleMatch> spellingErrors = new ArrayList<>();
 	private long lastAttemptedCheck;
-
+	
 	/**
 	 * Launch the application.
 	 * 
@@ -330,7 +330,6 @@ public class SwingWindow {
 		// this spinner tells the user that analysis is currently running
 		busyLabel = new JXBusyLabel();
 		menuBar.add(busyLabel);
-//		busyLabel.setVisible(false);
 		busyLabel.setHorizontalAlignment(SwingConstants.TRAILING);
 
 		/*
@@ -344,21 +343,8 @@ public class SwingWindow {
 		// add our controls to the visible world
 		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
 
-		// create some mock content
-		//		containerTaskPanel.createCategory("effect", "Sentences without any effect.");
-		//		containerTaskPanel.createProblem("effect", "I think there is a man in my bathroom.", 13,22);
-		//		
-		//		containerTaskPanel.createCategory("location", "These sentences contain incomplete descriptions. In this case, the location is missing.");
-		//		containerTaskPanel.createProblem("location", "There is a cat looking north.", 25, 31, new String[] {"the cat"});
-		//		
-		//		containerTaskPanel.createCategory("direction", "Entities without a declared direction.");
-		//		containerTaskPanel.createProblem("direction", "There is a boy and a girl.", 51,76, new String[]{"boy", "girl"});
-		//		
 		containerTaskPanel.createCategory("meta", null);
 		containerTaskPanel.createProblem("meta", null, 0, 0);
-
-		System.out.println(containerTaskPanel);
-		System.out.println();
 
 		// the emitter and the TaskPane have something to work on, so set up the linguistics stuff
 		setupFeedback();
@@ -592,7 +578,7 @@ public class SwingWindow {
 		} catch (Exception e) {
 			System.err.println("The caller tried to process this text and caused an exception.");
 			e.printStackTrace();
-		}
+	}
 	}
 
 	/**
@@ -775,7 +761,7 @@ public class SwingWindow {
 			SemanticGraph depgraph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 			if (depgraph.getRoots().isEmpty()) {
 				continue;
-			}
+}
 			/***
 			 * Requirement 2: Classify sentence into Setup descriptions and
 			 * non-setup descriptions

@@ -189,22 +189,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				// TODO: make sure this actually refers to a state; not a
 				// changing
 				// state
-				List<Pointer> pointers = mcs.getPointers(PointerType.HYPERNYM);
-				if (pointers.size() > 0) {
-					printHypernymfeedback(word, pointers);
-					// System.out.print("Hypernym lexname: ");
-					// System.out.println(pointers.get(0).getTargetSynset().getLexFileName());
-				}
 				return Classification.SetupDescription;
 			} else if (senses.size() > 1 && senses.get(1).getLexFileNum() == 42) {
-				System.out.println("Second synset:");
-				List<Pointer> pointers = senses.get(1).getPointers(
-						PointerType.HYPERNYM);
-				if (pointers.size() > 0) {
-					printHypernymfeedback(word, pointers);
-					// System.out.print("Hypernym lexname: ");
-					// System.out.println(pointers.get(0).getTargetSynset().getLexFileName());
-				}
 				return Classification.SetupDescription;
 			} else if (lexnum == 36) // verb.creation
 			{
@@ -234,19 +220,6 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		}
 
 		return defaultclass;
-	}
-
-	/**
-	 * @param word
-	 * @param pointers
-	 */
-	private static void printHypernymfeedback(String word,
-			List<Pointer> pointers) {
-		System.out.println("To "
-				+ word
-				+ " is one way to "
-				+ pointers.get(0).getTargetSynset().getWords().get(0)
-						.getLemma() + ".");
 	}
 
 	/**
