@@ -110,7 +110,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		// does this sentence container an error?
 		ErrorRule checkError = new ErrorRule();
 		if (checkError.apply(sentence)) {
-			System.out.println("bad sentence found");
+			System.out.println("bad sentence found"); //$NON-NLS-1$
 			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
 					checkError.getErrorMessage());
 			return Classification.ErrorDescription;
@@ -124,7 +124,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		EventRule checkevent = new EventRule();
 		// yes!
 		if (checkevent.apply(sentence)) {
-			System.out.println("Event found");
+			System.out.println("Event found"); //$NON-NLS-1$
 			// since we only support one classification, return the
 			// classification instantly
 			return Classification.EventDescription;
@@ -134,7 +134,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		TimeRule checkTime = new TimeRule();
 		// yes!
 		if (checkTime.apply(sentence)) {
-			System.out.print("Time reference found");
+			System.out.print("Time reference found"); //$NON-NLS-1$
 			return Classification.TimeDescription;
 		}
 
@@ -147,12 +147,12 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		// event
 		// short classification fix for broken sentences (wrong copula)
 		// hint1: root is no verb
-		if (!BaseRule.isPOSFamily(root, "VB")) {
+		if (!BaseRule.isPOSFamily(root, Constants.getString("StaticDynamicClassifier.PosTagVerbFamily"))) { //$NON-NLS-1$
 			// hint 2: there is only one verb
 			List<CoreLabel> verbs1 = new ArrayList<CoreLabel>();
 			List<CoreLabel> labels = sentence.get(TokensAnnotation.class);
 			for (CoreLabel word1 : labels) {
-				if (BaseRule.isPOSFamily(word1, "VB")) {
+				if (BaseRule.isPOSFamily(word1, Constants.getString("StaticDynamicClassifier.PosTagVerbFamily"))) { //$NON-NLS-1$
 					verbs1.add(word1);
 				}
 			}
@@ -162,7 +162,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				// hint 3: the only verb is "to be"
 				IndexWord wnetlemma = dictionary
 						.lookupIndexWord(POS.VERB, word);
-				IndexWord tobe = dictionary.getIndexWord(POS.VERB, "be");
+				IndexWord tobe = dictionary.getIndexWord(POS.VERB, Constants.getString("StaticDynamicClassifier.WordBe")); //$NON-NLS-1$
 				if (tobe.equals(wnetlemma)) {
 					// ex: "Henry, Liv and Paddy are dogs."
 					return Classification.SetupDescription;
@@ -189,22 +189,8 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				// TODO: make sure this actually refers to a state; not a
 				// changing
 				// state
-				List<Pointer> pointers = mcs.getPointers(PointerType.HYPERNYM);
-				if (pointers.size() > 0) {
-					printHypernymfeedback(word, pointers);
-					// System.out.print("Hypernym lexname: ");
-					// System.out.println(pointers.get(0).getTargetSynset().getLexFileName());
-				}
 				return Classification.SetupDescription;
 			} else if (senses.size() > 1 && senses.get(1).getLexFileNum() == 42) {
-				System.out.println("Second synset:");
-				List<Pointer> pointers = senses.get(1).getPointers(
-						PointerType.HYPERNYM);
-				if (pointers.size() > 0) {
-					printHypernymfeedback(word, pointers);
-					// System.out.print("Hypernym lexname: ");
-					// System.out.println(pointers.get(0).getTargetSynset().getLexFileName());
-				}
 				return Classification.SetupDescription;
 			} else if (lexnum == 36) // verb.creation
 			{
@@ -219,34 +205,21 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				}
 			}
 		} else {
-			log(Redwood.ERR, "WordNET did not recognise this verb.");
+			log(Redwood.ERR, "WordNET did not recognise this verb."); //$NON-NLS-1$
 			Span errorspan = new Span(
 					root.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class),
 					root.get(CoreAnnotations.CharacterOffsetEndAnnotation.class));
 			IvanErrorMessage err = new IvanErrorMessage(
 					IvanErrorType.WORDNET,
 					errorspan,
-					"The word '"
+					"The word '" //$NON-NLS-1$
 							+ word
-							+ "' is not properly recognised and may cause problems.");
+							+ "' is not properly recognised and may cause problems."); //$NON-NLS-1$
 			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class, err);
 			return Classification.ErrorDescription;
 		}
 
 		return defaultclass;
-	}
-
-	/**
-	 * @param word
-	 * @param pointers
-	 */
-	private static void printHypernymfeedback(String word,
-			List<Pointer> pointers) {
-		System.out.println("To "
-				+ word
-				+ " is one way to "
-				+ pointers.get(0).getTargetSynset().getWords().get(0)
-						.getLemma() + ".");
 	}
 
 	/**
@@ -308,7 +281,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			String particle = null;
 			particle = StaticDynamicClassifier.getParticle(word, graph).word();
 			// System.err.println(particle);
-			String combinedword = lemma + " " + particle;
+			String combinedword = lemma + " " + particle; //$NON-NLS-1$
 			if (hasWordNetEntry(combinedword)) {
 				lemma = combinedword;
 			}
@@ -316,7 +289,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			String prepmod = null;
 			prepmod = StaticDynamicClassifier.getPrepMod(word, graph).word();
 			// System.err.println(prepmod);
-			String combinedword = lemma + " " + prepmod;
+			String combinedword = lemma + " " + prepmod; //$NON-NLS-1$
 			if (hasWordNetEntry(combinedword)) {
 				lemma = combinedword;
 			}
@@ -326,12 +299,12 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			direObj = BaseRule.getDirectObject(word, graph);
 			CoreLabel det = BaseRule.getDeterminer(direObj, graph);
 			if (det != null) {
-				dirobstr = det.word() + " " + direObj.word();
+				dirobstr = det.word() + " " + direObj.word(); //$NON-NLS-1$
 			} else {
 				dirobstr = direObj.word();
 			}
 			// System.err.println(direObj);
-			String combinedword = lemma + " " + dirobstr;
+			String combinedword = lemma + " " + dirobstr; //$NON-NLS-1$
 			if (hasWordNetEntry(combinedword)) {
 				lemma = combinedword;
 			}
@@ -356,7 +329,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 	 */
 	protected void setupWordNet() {
 		// set up properties file
-		String propsFile = "file_properties.xml";
+		String propsFile = Constants.getString("WordnetPropertiesFilePath"); //$NON-NLS-1$
 		FileInputStream properties = null;
 		try {
 			properties = new FileInputStream(propsFile);
@@ -416,15 +389,15 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				// check for initial state consistency
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
-				log(Redwood.ERR, "Error while classifying sentences.", e);
+				log(Redwood.ERR, "Error while classifying sentences.", e); //$NON-NLS-1$
 			} catch (NullPointerException | java.lang.AssertionError e) {
-				log(Redwood.ERR, "Error while classifying sentences.", e);
+				log(Redwood.ERR, "Error while classifying sentences.", e); //$NON-NLS-1$
 				Span range = Span.fromValues(
 						sentence.get(CharacterOffsetBeginAnnotation.class),
 						sentence.get(CharacterOffsetEndAnnotation.class));
 				IvanErrorMessage error = new IvanErrorMessage(
 						IvanErrorType.UNKNOWN, range,
-						"Processing this sentence caused an exception.");
+						"Processing this sentence caused an exception."); //$NON-NLS-1$
 
 				sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
 						error);
@@ -567,7 +540,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		if (graph.hasChildWithReln(word, reln)) {
 			String pos = graph.getChildWithReln(word, reln).get(
 					PartOfSpeechAnnotation.class);
-			if (pos.equalsIgnoreCase("NN")) {
+			if (pos.equalsIgnoreCase(Constants.getString("StaticDynamicClassifier.PosTagNounFamily"))) { //$NON-NLS-1$
 				return true;
 			}
 		}
@@ -631,15 +604,15 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			// alternativ: wsj-bidirectional
 			try {
 				props.put(
-						"pos.model",
-						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+						"pos.model", //$NON-NLS-1$
+						Constants.getString("StaticDynamicClassifier.CorenlpModelPath")); //$NON-NLS-1$
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			props.put("customAnnotatorClass.decl",
-					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			props.put(Constants.getString("StaticDynamicClassifier.CorenlpIvanDeclarationAnalyzerKey"), //$NON-NLS-1$
+					Constants.getString("StaticDynamicClassifier.CorenlpIvanDeclarationAnalyzerClass")); //$NON-NLS-1$
 			// konfiguriere pipeline
-			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+			props.put("annotators", Constants.getString("StaticDynamicClassifier.CorenlpPipelineConfiguration")); //$NON-NLS-1$ //$NON-NLS-2$
 			pipeline = new StanfordCoreNLP(props);
 		}
 
