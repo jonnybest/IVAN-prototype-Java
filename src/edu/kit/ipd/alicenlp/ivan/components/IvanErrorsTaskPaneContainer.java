@@ -627,21 +627,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		IvanErrorsTaskPaneContainer tpc = this;
 		JXTaskPane tsk = mypanes.get(error.Category);
 		
-		// createTaskPaneDemo()
-		// "System" GROUP 
-		
-        tsk.setName(error.Quickfix); 
+		tsk.setName(error.Quickfix); 
         tpc.add(tsk); 
         
-        // bind()
         ApplicationActionMap map = Application.getInstance().getContext().getActionMap(tsk); 
 
-	    //this is just an annotation, not something you can run:
-//      Action IvanAction = new Action(){
-
-        
-        //String name = error.Category;
-        
         List<javax.swing.Action> myQuickfixesForThisError = createAvailableQuickfixes(error);
         
         for (Action act : myQuickfixesForThisError) {
