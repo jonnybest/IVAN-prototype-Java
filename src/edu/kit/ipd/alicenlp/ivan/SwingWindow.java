@@ -1,18 +1,22 @@
 package edu.kit.ipd.alicenlp.ivan;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.ScrollPane;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,9 +33,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -114,6 +120,7 @@ public class SwingWindow {
 	private JMenuBar menuBar;
 	protected boolean isSpellingOkay;
 	private List<RuleMatch> spellingErrors = new ArrayList<>();
+	private JScrollPane errorScrollPane;
 	
 	/**
 	 * Launch the application.
@@ -156,7 +163,9 @@ public class SwingWindow {
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 980, 670);
 		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frmvanInput.setLayout(new GridBagLayout());
+		
+		JPanel container = new JPanel(new GridBagLayout());
+		frmvanInput.setContentPane(container);
 
 		/**
 		 * Initialize the contents of the frame, the EDITOR
@@ -167,7 +176,6 @@ public class SwingWindow {
 
 		txtEditor.setText(DEFAULT_TEXT);
 
-		frmvanInput.getContentPane().add(txtEditor, GridBagConstraints.BOTH);
 
 		/**
 		 * Here is where I build the EMITTER panel
@@ -177,7 +185,7 @@ public class SwingWindow {
 		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
 		emitterTextPane.setEditable(false);
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);
-		frmvanInput.getContentPane().add(emitterScrollPane, BorderLayout.SOUTH);
+		
 
 		/*
 		 * Here is where I build the MENU
@@ -211,8 +219,6 @@ public class SwingWindow {
 
 		filemenu.add(actionLoad);
 		menuBar.add(filemenu);
-
-		frmvanInput.getContentPane().add(menuBar, BorderLayout.NORTH);
 
 		// this is an action for saving the file (no checking)
 		final Action saveAction = new SwingAction() {
@@ -350,11 +356,6 @@ public class SwingWindow {
 		 */
 		// creating the actual taskpanel
 		containerTaskPanel = new IvanErrorsTaskPaneContainer(txtEditor);
-		// create us a scroll thing
-		// wrap our panel into the scrollthing
-		JScrollPane sp = new JScrollPane(containerTaskPanel);
-		// add our controls to the visible world
-		frmvanInput.getContentPane().add(sp, BorderLayout.EAST);
 
 		containerTaskPanel.createCategory("meta", null);
 		containerTaskPanel.createProblem("meta", null, 0, 0);
@@ -370,6 +371,68 @@ public class SwingWindow {
 		}
 		
 		delayedInit();
+		
+		/** 
+		 * LAYOUTS
+		 */
+		
+		// the menu bar is on top, stretches all the way right
+		GridBagConstraints mblc = new GridBagConstraints();
+		// top left
+		mblc.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
+		mblc.gridx = 0; 
+		mblc.gridy = 0;
+		// manage width
+		mblc.gridwidth = 2; // stretch
+		mblc.fill = GridBagConstraints.HORIZONTAL; // fill all x-space
+		mblc.weightx = 0.5; // a weight > 0 allows for resizing
+		//add
+		frmvanInput.getContentPane().add(menuBar, mblc);
+
+		// the text field is under the menu on the left and shares a row with the errors panel/scroll pane
+		GridBagConstraints tc = new GridBagConstraints();
+		// top left
+		tc.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
+		tc.gridx = 0; // col left
+		tc.gridy = 1; // row center
+		// manage stretching
+		tc.weightx = 0.5; // resizable
+		tc.weighty = 0.5; // resizable
+		tc.fill = GridBagConstraints.BOTH;
+		// add
+		frmvanInput.getContentPane().add(txtEditor, tc);
+		
+		errorScrollPane = new JScrollPane(containerTaskPanel);
+		// prevent indefinate shrinking
+		errorScrollPane.setMinimumSize(new Dimension(200, 127));
+		
+		GridBagConstraints splayco = new GridBagConstraints();
+		// middle, right
+		splayco.anchor = GridBagConstraints.FIRST_LINE_END;
+		splayco.gridx = 1; // right row
+		splayco.gridy = 1; // center column
+		// stretch to fill
+		splayco.weightx = 0.5; // resizable
+		splayco.weighty = 0.5; // resizable
+		splayco.fill = GridBagConstraints.BOTH;
+		// add our controls to the visible world
+		frmvanInput.getContentPane().add(errorScrollPane, splayco);
+		
+		// the emitter panel has the bottom row to itself
+		GridBagConstraints etpc = new GridBagConstraints();
+		// bottom left
+		etpc.anchor = GridBagConstraints.LAST_LINE_START;
+		etpc.gridx = 0; // col left
+		etpc.gridy = 2; // row bottom
+		// stretch width
+		etpc.weightx = 0.5;
+		etpc.gridwidth = 2;
+		// manage height:
+		etpc.weighty = 0.1;
+		etpc.fill = GridBagConstraints.BOTH;
+		// add
+		frmvanInput.getContentPane().add(emitterScrollPane, etpc);
+		
 	}
 
 	/** This method initializes the pipeline and the spell checker
@@ -623,6 +686,7 @@ public class SwingWindow {
 	 * @throws Exception
 	 */
 	private void processText(String text) {
+		tell("ps: " + this.containerTaskPanel.getPreferredSize());
 
 		final IvanPipeline task = new IvanPipeline(text);
 		task.addPropertyChangeListener(new PropertyChangeListener() {
@@ -660,6 +724,7 @@ public class SwingWindow {
 //					tell(emitterwriter.toString());
 					
 					busyLabel.setBusy(false);
+					tell(MessageFormat.format("epps: {0}\nspps: {1}", containerTaskPanel.getPreferredSize(), errorScrollPane.getPreferredSize()));
 				}
 			}
 		});
