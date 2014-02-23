@@ -2,6 +2,7 @@ package edu.kit.ipd.alicenlp.ivan;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
@@ -375,63 +376,64 @@ public class SwingWindow {
 		/** 
 		 * LAYOUTS
 		 */
+		final Container contentPane = frmvanInput.getContentPane();
 		
 		// the menu bar is on top, stretches all the way right
-		GridBagConstraints mblc = new GridBagConstraints();
+		GridBagConstraints menuBarLayout = new GridBagConstraints();
 		// top left
-		mblc.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
-		mblc.gridx = 0; 
-		mblc.gridy = 0;
+		menuBarLayout.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
+		menuBarLayout.gridx = 0; 
+		menuBarLayout.gridy = 0;
 		// manage width
-		mblc.gridwidth = 2; // stretch
-		mblc.fill = GridBagConstraints.HORIZONTAL; // fill all x-space
-		mblc.weightx = 0.5; // a weight > 0 allows for resizing
+		menuBarLayout.gridwidth = 2; // stretch
+		menuBarLayout.fill = GridBagConstraints.HORIZONTAL; // fill all x-space
+		menuBarLayout.weightx = 0.5; // a weight > 0 allows for resizing
 		//add
-		frmvanInput.getContentPane().add(menuBar, mblc);
+		contentPane.add(menuBar, menuBarLayout);
 
 		// the text field is under the menu on the left and shares a row with the errors panel/scroll pane
-		GridBagConstraints tc = new GridBagConstraints();
+		GridBagConstraints textfieldLayout = new GridBagConstraints();
 		// top left
-		tc.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
-		tc.gridx = 0; // col left
-		tc.gridy = 1; // row center
+		textfieldLayout.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
+		textfieldLayout.gridx = 0; // col left
+		textfieldLayout.gridy = 1; // row center
 		// manage stretching
-		tc.weightx = 0.5; // resizable
-		tc.weighty = 0.5; // resizable
-		tc.fill = GridBagConstraints.BOTH;
+		textfieldLayout.weightx = 0.5; // resizable
+		textfieldLayout.weighty = 0.5; // resizable
+		textfieldLayout.fill = GridBagConstraints.BOTH;
 		// add
-		frmvanInput.getContentPane().add(txtEditor, tc);
+		contentPane.add(txtEditor, textfieldLayout);
 		
 		errorScrollPane = new JScrollPane(containerTaskPanel);
 		// prevent indefinate shrinking
 		errorScrollPane.setMinimumSize(new Dimension(200, 127));
 		
-		GridBagConstraints splayco = new GridBagConstraints();
+		GridBagConstraints scrollpanelLayout = new GridBagConstraints();
 		// middle, right
-		splayco.anchor = GridBagConstraints.FIRST_LINE_END;
-		splayco.gridx = 1; // right row
-		splayco.gridy = 1; // center column
+		scrollpanelLayout.anchor = GridBagConstraints.FIRST_LINE_END;
+		scrollpanelLayout.gridx = 1; // right row
+		scrollpanelLayout.gridy = 1; // center column
 		// stretch to fill
-		splayco.weightx = 0.5; // resizable
-		splayco.weighty = 0.5; // resizable
-		splayco.fill = GridBagConstraints.BOTH;
+		scrollpanelLayout.weightx = 0.5; // resizable
+		scrollpanelLayout.weighty = 0.5; // resizable
+		scrollpanelLayout.fill = GridBagConstraints.BOTH;
 		// add our controls to the visible world
-		frmvanInput.getContentPane().add(errorScrollPane, splayco);
+		contentPane.add(errorScrollPane, scrollpanelLayout);
 		
 		// the emitter panel has the bottom row to itself
-		GridBagConstraints etpc = new GridBagConstraints();
+		GridBagConstraints emitterpanelLayout = new GridBagConstraints();
 		// bottom left
-		etpc.anchor = GridBagConstraints.LAST_LINE_START;
-		etpc.gridx = 0; // col left
-		etpc.gridy = 2; // row bottom
+		emitterpanelLayout.anchor = GridBagConstraints.LAST_LINE_START;
+		emitterpanelLayout.gridx = 0; // col left
+		emitterpanelLayout.gridy = 2; // row bottom
 		// stretch width
-		etpc.weightx = 0.5;
-		etpc.gridwidth = 2;
+		emitterpanelLayout.weightx = 0.5;
+		emitterpanelLayout.gridwidth = 2;
 		// manage height:
-		etpc.weighty = 0.1;
-		etpc.fill = GridBagConstraints.BOTH;
+		emitterpanelLayout.weighty = 0.1;
+		emitterpanelLayout.fill = GridBagConstraints.BOTH;
 		// add
-		frmvanInput.getContentPane().add(emitterScrollPane, etpc);
+		contentPane.add(emitterScrollPane, emitterpanelLayout);
 		
 	}
 
