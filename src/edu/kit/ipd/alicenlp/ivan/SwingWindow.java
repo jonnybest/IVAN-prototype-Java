@@ -688,7 +688,6 @@ public class SwingWindow {
 	 * @throws Exception
 	 */
 	private void processText(String text) {
-		tell("ps: " + this.containerTaskPanel.getPreferredSize());
 
 		final IvanPipeline task = new IvanPipeline(text);
 		task.addPropertyChangeListener(new PropertyChangeListener() {
@@ -726,7 +725,6 @@ public class SwingWindow {
 //					tell(emitterwriter.toString());
 					
 					busyLabel.setBusy(false);
-					tell(MessageFormat.format("epps: {0}\nspps: {1}", containerTaskPanel.getPreferredSize(), errorScrollPane.getPreferredSize()));
 				}
 			}
 		});
