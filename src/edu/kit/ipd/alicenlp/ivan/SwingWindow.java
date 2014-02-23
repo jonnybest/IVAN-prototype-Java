@@ -159,8 +159,9 @@ public class SwingWindow {
 				SwingWindow.class.getResource("/edu/kit/ipd/alicenlp/ivan/resources/ivan2.png")));
 		frmvanInput.setLocale(Locale.ENGLISH);
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
-		frmvanInput.setBounds(100, 100, 612, 511);
+		frmvanInput.setBounds(100, 100, 980, 670);
 		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
 
 		/**
 		 * Initialize the contents of the frame, the EDITOR
