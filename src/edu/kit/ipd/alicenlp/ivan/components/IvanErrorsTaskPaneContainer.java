@@ -8,6 +8,7 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
+import edu.stanford.nlp.io.EncodingPrintWriter.err;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -210,7 +212,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			JXTaskPane panel = mypanes.get(error.Category);
 			// get the actions configured for this panel
 			ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
-			// FIXME change behaviour of saving to iterate panel.getContentPane().getComponents() and only remove pertaining components OR retaining all non-action components by default or something like that 
+			// FIXME change behaviour of saving to iterate panel.getContentPane().getComponents() and 
+			// only remove pertaining components OR retaining all non-action components by default or something like that
 			List<Action> keepme = new LinkedList<Action>();
 			for (Object key : map.keys()) {
 				Action otherQuickfix = map.get(key);
@@ -519,6 +522,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 */
 	private Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	private Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
+	private Collection<Error> gen0 = new HashSet<>();
 	
 
 	/** Create a new component. This component displays errors and user action. It can also modify text in a text component. 
@@ -879,5 +883,17 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				txtEditor.moveCaretPosition(dotspoint + markThisPart.length());
 			}				
 		}
+	}
+
+	/** 
+	 * Removes categories and "problems" which have not been updated recently.
+	 * More precisely, it maintains a list of generations and removes all display things which 
+	 * are not a member of the recent generation.
+	 */
+	public void purge() {
+		for (Error error : gen0) {
+			// TODO: remove an error
+		}
+		gen0.clear();
 	}
 }

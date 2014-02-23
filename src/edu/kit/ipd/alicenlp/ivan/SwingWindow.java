@@ -768,6 +768,7 @@ public class SwingWindow {
 				String category = createCategory(documenterror.getType());
 				this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
 			}
+			this.containerTaskPanel.purge();
 		}
 		if (errors != null)
 			PrettyLogger.log("Document wide errors", errors);
