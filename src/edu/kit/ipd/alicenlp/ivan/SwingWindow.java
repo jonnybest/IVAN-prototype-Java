@@ -4,10 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -49,14 +49,10 @@ import org.jdesktop.application.Application;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.languagetool.rules.RuleMatch;
 
-import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
-import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
-import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
-import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
@@ -118,7 +114,6 @@ public class SwingWindow {
 	private JMenuBar menuBar;
 	protected boolean isSpellingOkay;
 	private List<RuleMatch> spellingErrors = new ArrayList<>();
-	private long lastAttemptedCheck;
 	
 	/**
 	 * Launch the application.
@@ -161,7 +156,7 @@ public class SwingWindow {
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 980, 670);
 		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+		frmvanInput.setLayout(new GridBagLayout());
 
 		/**
 		 * Initialize the contents of the frame, the EDITOR
@@ -172,7 +167,7 @@ public class SwingWindow {
 
 		txtEditor.setText(DEFAULT_TEXT);
 
-		frmvanInput.getContentPane().add(txtEditor, BorderLayout.CENTER);
+		frmvanInput.getContentPane().add(txtEditor, GridBagConstraints.BOTH);
 
 		/**
 		 * Here is where I build the EMITTER panel
@@ -222,7 +217,12 @@ public class SwingWindow {
 		// this is an action for saving the file (no checking)
 		final Action saveAction = new SwingAction() {
 			public void actionPerformed(ActionEvent arg0) {
-				save(txtEditor);
+				try {
+					save(txtEditor);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 		};
 		saveAction.putValue(Action.NAME, "Save"); // set the name
@@ -238,7 +238,13 @@ public class SwingWindow {
 				// delete the current document name so the save file dialog will pop up
 				currentFileName = null;
 				// save things
-				boolean saved = save(txtEditor);
+				boolean saved = false;
+				try {
+					saved = save(txtEditor);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 				// if the save was not successful, restore the old document name
 				if (!saved) {
 					currentFileName = tmpfilename;
@@ -302,7 +308,13 @@ public class SwingWindow {
 
 		final Action saveCheckAction = new SwingAction() {
 			public void actionPerformed(ActionEvent arg0) {
-				boolean saved = save(txtEditor);
+				boolean saved = false;
+				try {
+					saved = save(txtEditor);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				if (!saved) {
 					return;
 				}
@@ -406,8 +418,9 @@ public class SwingWindow {
 	 * @param editor
 	 *            the component which contains the text
 	 * @return
+	 * @throws IOException 
 	 */
-	protected boolean save(TextEditorPane editor) {
+	protected boolean save(TextEditorPane editor) throws IOException {
 		File outputfile = null;
 		if (this.currentFileName == null) {
 			JFileChooser jfchooser = new JFileChooser();
@@ -447,17 +460,21 @@ public class SwingWindow {
 
 	/**
 	 * This method performs a commit to the local git repository
+	 * @throws IOException 
 	 */
-	private void commit(String file) {
+	private void commit(String file) throws IOException {
 		String branch = file2ref(file);
 		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.TRACKINGPATH;
-		FileWriter out;
+		FileWriter out = null;
 		try {
 			out = new FileWriter(basepath + DOCUMENT_TXT);
 			out.write(txtEditor.getText());
-			out.close();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		finally {
+			if(out != null)
+				out.close();
 		}
 		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
 	}
@@ -827,6 +844,7 @@ public class SwingWindow {
 		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 	}
 
+	@SuppressWarnings("unused")
 	private void tell(String output) {
 		this.emitterTextPane.setText(output);
 	}
@@ -859,6 +877,7 @@ public class SwingWindow {
 
 	/**
 	 * Invoke the spell checker
+	 * @param text input document
 	 */
 	public void checkSpelling(String text){
 		//				List<RuleMatch> matches = langTool.check("A sentence " +
@@ -910,7 +929,7 @@ public class SwingWindow {
 		}
 	}
 		
-	public void markSpelling() {
+	void markSpelling() {
 		for (RuleMatch match : spellingErrors) {
 			System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
 					+ match.getMessage());
