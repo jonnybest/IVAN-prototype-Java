@@ -393,7 +393,7 @@ public class SwingWindow {
 
 		// the text field is under the menu on the left and shares a row with the errors panel/scroll pane
 		GridBagConstraints textfieldLayout = new GridBagConstraints();
-		// top left
+		// middle left
 		textfieldLayout.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
 		textfieldLayout.gridx = 0; // col left
 		textfieldLayout.gridy = 1; // row center
