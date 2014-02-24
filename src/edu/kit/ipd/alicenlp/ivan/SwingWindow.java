@@ -7,17 +7,13 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.ScrollPane;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -38,7 +34,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
-import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -82,6 +77,14 @@ import edu.stanford.nlp.util.logging.Redwood;
  */
 public class SwingWindow {
 
+	private static final String ERROR_MISSING_A_DIRECTION = "These entities are missing a direction. Where or what do they face?";
+	private static final String ERROR_ENTITIES_ARE_MISSING_A_LOCATION = "These entities are missing a location. Where do they stand in the scene?";
+	private static final String ERROR_STYLE = "This error means that something in the text does not fit well.";
+	private static final String ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY = "This error means that the analyzer tried to process this sentence and could not proceed, because a word is missing in our dictionary. It would be best, if you could come up with a different word here.";
+	private static final String ERROR_ENTITIES_SHARE_A_SYNONYM = "This error means that two distinct entities share a synonym. Try giving names to the characters and things to resolve this issue.";
+	private static final String ERROR_UNUSUAL_STRUCTURE = "IVAN could not properly analyze this sentence, because of it's unusual structure. Maybe try a shorter sentence instead?";
+	private static final String ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
+
 	protected static final String PROPERTIES_ANNOTATORS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier";
 	protected static final String DEFAULT_TEXT = "The ground is covered with grass, the sky is blue. \n"
 			+ "In the background on the left hand side there is a PalmTree. \n"
@@ -95,6 +98,8 @@ public class SwingWindow {
 			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
 			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
+	private final static int LABEL_LENGTH = 50;
+	
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
@@ -122,7 +127,7 @@ public class SwingWindow {
 	protected boolean isSpellingOkay;
 	private List<RuleMatch> spellingErrors = new ArrayList<>();
 	private JScrollPane errorScrollPane;
-	
+
 	/**
 	 * Launch the application.
 	 * 
@@ -164,7 +169,7 @@ public class SwingWindow {
 		frmvanInput.setTitle("¶van – Input & Verify AliceNLP");
 		frmvanInput.setBounds(100, 100, 980, 670);
 		frmvanInput.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		JPanel container = new JPanel(new GridBagLayout());
 		frmvanInput.setContentPane(container);
 
@@ -172,7 +177,7 @@ public class SwingWindow {
 		 * Initialize the contents of the frame, the EDITOR
 		 */
 		txtEditor = new TextEditorPane();
-		//		txtEditor.setDisplayLineNumbers(true);
+		// txtEditor.setDisplayLineNumbers(true);
 		// txtEditor.setDocument(doc);
 
 		txtEditor.setText(DEFAULT_TEXT);
@@ -183,10 +188,10 @@ public class SwingWindow {
 		 */
 		emitterTextPane = new JTextPane();
 		emitterTextPane.setText("Hello World!");
-		//emitterTextPane.setPreferredSize(new Dimension(10, 40));
+		// emitterTextPane.setPreferredSize(new Dimension(10, 40));
 		emitterTextPane.setEditable(false);
 		JScrollPane emitterScrollPane = new JScrollPane(emitterTextPane);
-		
+
 
 		/*
 		 * Here is where I build the MENU
@@ -280,7 +285,7 @@ public class SwingWindow {
 		final Action undoAction = /* undoAction */new SwingAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//txtEditor.doCommand("undo", this);
+				// txtEditor.doCommand("undo", this);
 				txtEditor.undoLastAction();
 			}
 		};
@@ -291,7 +296,7 @@ public class SwingWindow {
 		final Action redoAction = /* redoAction */new SwingAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//txtEditor.doCommand("redo", this);
+				// txtEditor.doCommand("redo", this);
 				txtEditor.redoLastAction();
 			}
 		};
@@ -370,25 +375,25 @@ public class SwingWindow {
 		} catch (IOException | GitAPIException e1) {
 			e1.printStackTrace();
 		}
-		
+
 		delayedInit();
-		
-		/** 
+
+		/**
 		 * LAYOUTS
 		 */
 		final Container contentPane = frmvanInput.getContentPane();
-		
+
 		// the menu bar is on top, stretches all the way right
 		GridBagConstraints menuBarLayout = new GridBagConstraints();
 		// top left
 		menuBarLayout.anchor = GridBagConstraints.FIRST_LINE_START; // push to the top left
-		menuBarLayout.gridx = 0; 
+		menuBarLayout.gridx = 0;
 		menuBarLayout.gridy = 0;
 		// manage width
 		menuBarLayout.gridwidth = 2; // stretch
 		menuBarLayout.fill = GridBagConstraints.HORIZONTAL; // fill all x-space
 		menuBarLayout.weightx = 0.5; // a weight > 0 allows for resizing
-		//add
+		// add
 		contentPane.add(menuBar, menuBarLayout);
 
 		// the text field is under the menu on the left and shares a row with the errors panel/scroll pane
@@ -403,11 +408,11 @@ public class SwingWindow {
 		textfieldLayout.fill = GridBagConstraints.BOTH;
 		// add
 		contentPane.add(txtEditor, textfieldLayout);
-		
+
 		errorScrollPane = new JScrollPane(containerTaskPanel);
 		// prevent indefinate shrinking
 		errorScrollPane.setMinimumSize(new Dimension(200, 127));
-		
+
 		GridBagConstraints scrollpanelLayout = new GridBagConstraints();
 		// middle, right
 		scrollpanelLayout.anchor = GridBagConstraints.FIRST_LINE_END;
@@ -419,7 +424,7 @@ public class SwingWindow {
 		scrollpanelLayout.fill = GridBagConstraints.BOTH;
 		// add our controls to the visible world
 		contentPane.add(errorScrollPane, scrollpanelLayout);
-		
+
 		// the emitter panel has the bottom row to itself
 		GridBagConstraints emitterpanelLayout = new GridBagConstraints();
 		// bottom left
@@ -434,7 +439,7 @@ public class SwingWindow {
 		emitterpanelLayout.fill = GridBagConstraints.BOTH;
 		// add
 		contentPane.add(emitterScrollPane, emitterpanelLayout);
-		
+
 	}
 
 	/** This method initializes the pipeline and the spell checker
@@ -452,7 +457,7 @@ public class SwingWindow {
 				return null;
 			}
 		};
-		task.addPropertyChangeListener(new PropertyChangeListener() {			
+		task.addPropertyChangeListener(new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
@@ -460,7 +465,7 @@ public class SwingWindow {
 				}
 			}
 		});
-		
+
 		task.execute();
 		new SwingWorker<Object, Object>()
 		{
@@ -473,7 +478,7 @@ public class SwingWindow {
 				return null;
 			}
 		}.execute();
-		
+
 		busyLabel.setBusy(true);
 	}
 
@@ -483,7 +488,7 @@ public class SwingWindow {
 	 * @param editor
 	 *            the component which contains the text
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected boolean save(TextEditorPane editor) throws IOException {
 		File outputfile = null;
@@ -525,7 +530,8 @@ public class SwingWindow {
 
 	/**
 	 * This method performs a commit to the local git repository
-	 * @throws IOException 
+	 * 
+	 * @throws IOException
 	 */
 	private void commit(String file) throws IOException {
 		String branch = file2ref(file);
@@ -538,7 +544,7 @@ public class SwingWindow {
 			e.printStackTrace();
 		}
 		finally {
-			if(out != null)
+			if (out != null)
 				out.close();
 		}
 		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
@@ -573,7 +579,7 @@ public class SwingWindow {
 	 */
 
 	public static String file2ref(String file) {
-		String ofile = file, // "old file" 
+		String ofile = file, // "old file"
 		nfile = file; // "new file"
 		do {
 			ofile = nfile; // "new" is the new "old"
@@ -590,14 +596,14 @@ public class SwingWindow {
 			if (f[i] < 41 || f[i] > 176) {
 				f[i] = 'o';
 			}
-			//			System.out.println(Arrays.toString(f));
+			// System.out.println(Arrays.toString(f));
 		}
 
 		// space, tilde ~, caret ^, colon :, question-mark ?, asterisk *, or open bracket [ anywhere. 
 		nfile = Arrays.toString(f).replace("[", "").replace("]", "") // not a violation, but it's produced by Arrays.toString
 				.replace(", ", "") // also a byproduct of the array print
 				.replace(" ", "o").replace("^", "o").replace(":", "o").replace("?", "o").replace("*", "o").replace(".lock", "ooooo") // 6. They cannot end with the sequence .lock. 
-				.replace("@{", "oo") // 7. They cannot contain a sequence @{. 
+				.replace("@{", "oo") // 7. They cannot contain a sequence @{.
 		;
 		return nfile;
 	}
@@ -661,7 +667,7 @@ public class SwingWindow {
 		} catch (Exception e) {
 			System.err.println("The caller tried to process this text and caused an exception.");
 			e.printStackTrace();
-	}
+		}
 	}
 
 	/**
@@ -722,23 +728,23 @@ public class SwingWindow {
 					// retrieve recognition results
 //					DiscourseModel entitiesState = doc.get(IvanEntitiesAnnotation.class);
 //					RecognitionStatePrinter emitterwriter = new RecognitionStatePrinter(entitiesState);
-//					tell(emitterwriter.toString());
-					
+					// tell(emitterwriter.toString());
+
 					busyLabel.setBusy(false);
 				}
 			}
 		});
 
 		task.execute();
-		//this.busyLabel.setVisible(true);
+		// this.busyLabel.setVisible(true);
 		this.busyLabel.setBusy(true);
 
 		// prepare the text with our pipeline
-		//		Annotation doc = task.get();
+		// Annotation doc = task.get();
 
 		final IvanSpellchecker spellchecker = new IvanSpellchecker(text);
 		spellchecker.addPropertyChangeListener(new PropertyChangeListener() {
-			
+
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
@@ -748,7 +754,7 @@ public class SwingWindow {
 					} catch (InterruptedException | ExecutionException e) {
 						e.printStackTrace();
 					}
-				}				
+				}
 			}
 		});
 	}
@@ -786,38 +792,35 @@ public class SwingWindow {
 		String defaultcategory = "misc";
 		String category;
 		String description = "";
+		String html = "<html>";
 
 		switch (type) {
 		case COREFERENCE:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_AMBIGOUS;
-			description = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
+			description = html + ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY;
 			break;
 		case GRAPH:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_GRAMMAR;
-			description = "IVAN could not properly analyze this sentence, because of it's unusual structure. "
-					+ "Maybe try a shorter sentence instead?";
+			description = html + ERROR_UNUSUAL_STRUCTURE;
 			break;
 		case SYNONYMS:
 			category = "names";
-			description = "This error means that two distinct entities share a synonym. "
-					+ "Try giving names to the characters and things to resolve this issue.";
+			description = html + ERROR_ENTITIES_SHARE_A_SYNONYM;
 			break;
 		case WORDNET:
 			category = "dictionary";
-			description = "This error means that the analyzer tried to process this sentence and could not proceed, "
-					+ "because a word is missing in our dictionary. It would be best, if you could come up with a different "
-					+ "word here.";
+			description = html + ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY;
 		case STYLE:
 			category = "style";
-			description = "This error means that something in the text does not fit well.";
+			description = html + ERROR_STYLE;
 			break;
 		case DIRECTION:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_DIRECTION;
-			description = "These entities are missing a location. Where do they stand in the scene?";
+			description = html + ERROR_MISSING_A_DIRECTION;
 			break;
 		case LOCATION:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_LOCATION;
-			description = "These entities are missing a direction. Where or what do they face?";
+			description = html + ERROR_ENTITIES_ARE_MISSING_A_LOCATION;
 			break;
 		default:
 			category = defaultcategory;
@@ -835,7 +838,7 @@ public class SwingWindow {
 	 */
 	public void updateTextMarkers(Annotation doc) throws BadLocationException {
 		// clear all previous markers
-//		clearStyles();
+		// clearStyles();
 
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
@@ -845,7 +848,7 @@ public class SwingWindow {
 			SemanticGraph depgraph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 			if (depgraph.getRoots().isEmpty()) {
 				continue;
-}
+			}
 			/***
 			 * Requirement 2: Classify sentence into Setup descriptions and
 			 * non-setup descriptions
@@ -945,9 +948,9 @@ public class SwingWindow {
 	 * Invoke the spell checker
 	 * @param text input document
 	 */
-	public void checkSpelling(String text){
-		//				List<RuleMatch> matches = langTool.check("A sentence " +
-		//				    "with a error in the Hitchhiker's Guide tot he Galaxy");
+	public void checkSpelling(String text) {
+		// List<RuleMatch> matches = langTool.check("A sentence " +
+		// "with a error in the Hitchhiker's Guide tot he Galaxy");
 		final IvanSpellchecker speller = new IvanSpellchecker(text);
 		speller.execute();
 
@@ -955,7 +958,7 @@ public class SwingWindow {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
-					
+
 					try {
 						spellingErrors = speller.get();
 
@@ -973,8 +976,8 @@ public class SwingWindow {
 						else {
 							clearStyles();
 							markSpelling();
-						}	
-						
+						}
+
 					} catch (InterruptedException | ExecutionException e) {
 						PrettyLogger.log(e);
 						e.printStackTrace();
@@ -994,12 +997,12 @@ public class SwingWindow {
 		public void actionPerformed(ActionEvent e) {
 		}
 	}
-		
+
 	void markSpelling() {
 		for (RuleMatch match : spellingErrors) {
 			System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
 					+ match.getMessage());
-			System.out.println("Rule: "+ match.getRule().getId());
+			System.out.println("Rule: " + match.getRule().getId());
 
 			try {
 				markSpellingError(match.getFromPos(), match.getToPos());

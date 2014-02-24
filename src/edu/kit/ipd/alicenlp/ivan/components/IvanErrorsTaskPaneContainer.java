@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.JLabel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
@@ -589,8 +590,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
 		if(description != null){
-			JXLabel lbl = new JXLabel(description);
-			lbl.setLineWrap(true);
+			JLabel lbl = new JLabel(description);
+			//lbl.setLineWrap(false);
 		
 			lbl.setFont(errorInfoFont);
 			pane.add(lbl);
