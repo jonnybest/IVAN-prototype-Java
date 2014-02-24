@@ -98,7 +98,6 @@ public class SwingWindow {
 			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
 			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
-	private final static int LABEL_LENGTH = 50;
 	
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
@@ -792,35 +791,34 @@ public class SwingWindow {
 		String defaultcategory = "misc";
 		String category;
 		String description = "";
-		String html = "<html>";
 
 		switch (type) {
 		case COREFERENCE:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_AMBIGOUS;
-			description = html + ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY;
+			description = ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY;
 			break;
 		case GRAPH:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_GRAMMAR;
-			description = html + ERROR_UNUSUAL_STRUCTURE;
+			description = ERROR_UNUSUAL_STRUCTURE;
 			break;
 		case SYNONYMS:
 			category = "names";
-			description = html + ERROR_ENTITIES_SHARE_A_SYNONYM;
+			description = ERROR_ENTITIES_SHARE_A_SYNONYM;
 			break;
 		case WORDNET:
 			category = "dictionary";
-			description = html + ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY;
+			description = ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY;
 		case STYLE:
 			category = "style";
-			description = html + ERROR_STYLE;
+			description = ERROR_STYLE;
 			break;
 		case DIRECTION:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_DIRECTION;
-			description = html + ERROR_MISSING_A_DIRECTION;
+			description = ERROR_MISSING_A_DIRECTION;
 			break;
 		case LOCATION:
 			category = IvanErrorsTaskPaneContainer.CATEGORY_LOCATION;
-			description = html + ERROR_ENTITIES_ARE_MISSING_A_LOCATION;
+			description = ERROR_ENTITIES_ARE_MISSING_A_LOCATION;
 			break;
 		default:
 			category = defaultcategory;

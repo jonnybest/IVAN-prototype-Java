@@ -590,9 +590,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
 		if(description != null){
-			JLabel lbl = new JLabel(description);
-			//lbl.setLineWrap(false);
-		
+			description = "<html>" + description; // enables word wrap
+			JLabel lbl = new JLabel(description);		
 			lbl.setFont(errorInfoFont);
 			pane.add(lbl);
 		}
