@@ -32,8 +32,6 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
-import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
-import edu.stanford.nlp.io.EncodingPrintWriter.err;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -50,11 +48,17 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	/** This constant contains the headline for meta problems.
 	 */
 	private static final String CATEGORY_META = "meta";
+	/** The label of a category headline */
 	public static final String CATEGORY_DIRECTION = "direction";
+	/** The label of a category headline */
 	public static final String CATEGORY_LOCATION = "location";
+	/** The label of a category headline */
 	public static final String CATEGORY_EFFECT = "effect";
+	/** The label of a category headline */
 	public static final String CATEGORY_GRAMMAR = "grammar";
+	/** The label of a category headline */
 	public static final String CATEGORY_STYLE = "style";
+	/** The label of a category headline */
 	public static final String CATEGORY_AMBIGOUS = "ambigous";
 	
 	// quick fix constants (action keys)
