@@ -778,6 +778,8 @@ public class SwingWindow {
 		if (errors != null)
 			PrettyLogger.log("Document wide errors", errors);
 
+		// clear leftover errors from last run which may have been fixed by now
+		this.containerTaskPanel.purge();
 	}
 
 	/**

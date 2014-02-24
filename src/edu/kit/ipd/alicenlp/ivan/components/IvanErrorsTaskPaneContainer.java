@@ -608,6 +608,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		if(tsk != null)
 		{
 			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, null, errormsg, references);
+			// this issue is present, so prevent it from being purged
+			gen0.remove(error);
 			// has the user previously ignored this error?
 			boolean ignored = this.ignoredProblems.contains(error);
 			if(!ignored){
@@ -900,5 +902,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			error.Components.clear();
 		}
 		gen0.clear();
+		gen0.addAll(bagofProblems);
+		gen0.addAll(ignoredProblems);
 	}
 }
