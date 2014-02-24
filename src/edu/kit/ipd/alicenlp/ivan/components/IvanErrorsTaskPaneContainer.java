@@ -66,6 +66,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	private static final String QF_ERROR = "error";
 	private static final String QF_NAME = "qf-name";
 
+	
+	
 	/** This action invokes the pipeline and checks the sentence
 	 * 
 	 * @author Jonny
@@ -210,33 +212,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
-			//error = (IvanErrorInstance) getValue(QF_ERROR);
-			System.out.println("Ignoring " + error);
+			// only remove pertaining components 
+			for (Component co : error.Components) {
+				co.getParent().remove(co);
+			}
+			error.Components.clear(); // only you can prevent memory leaks :)
+			
 			// get this category panel
 			JXTaskPane panel = mypanes.get(error.Category);
-			// get the actions configured for this panel
-			ApplicationActionMap map = Application.getInstance().getContext().getActionMap(panel);
-			// FIXME change behaviour of saving to iterate panel.getContentPane().getComponents() and 
-			// only remove pertaining components OR retaining all non-action components by default or something like that
-			List<Action> keepme = new LinkedList<Action>();
-			for (Object key : map.keys()) {
-				Action otherQuickfix = map.get(key);
-				Object otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
-				if(!error.equals(otherError))
-				{
-					System.out.println("Saving this one for later.");
-					keepme.add(otherQuickfix);
-				}
-				else {
-					map.remove(key); // throw it away
-				}
-			}
-			// clean the panel of excess elements
-			panel.removeAll();
-			for (Action action : keepme) {
-				panel.add(action);
-			}
+			// update visuals
 			panel.updateUI();
 			// save this problem as "ignored" 
 			ignoredProblems.add(error);
@@ -438,8 +422,12 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		/**
 		 * This is the sentence which is cause for the error.
 		 */
-		final public String Problem;		
-
+		final public String Problem;
+		/** 
+		 * These components are the display things which belong to this error 
+		 */
+		public final LinkedList<Component> Components = new LinkedList<Component>();
+		
 		/** Creates a new specific error
 		 * 
 		 * @param category Headline for this type of error
@@ -516,6 +504,14 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		public int hashCode() {			
 			return Category.hashCode() ^ toString().intern().hashCode();
 		}
+		
+		/** Component
+		 * 
+		 * @param component
+		 */
+		public void addComponent(Component co) {
+			Components.add(co);
+		}
 	}
 
 	private Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
@@ -583,7 +579,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// does this pane already exist?
 		if(mypanes.containsKey(title))
 		{
-			// yes. nop
+			// yes. nop.
 			return;
 		}
 		
@@ -643,7 +639,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
         List<javax.swing.Action> myQuickfixesForThisError = createAvailableQuickfixes(error);
         
         for (Action act : myQuickfixesForThisError) {
-        	tsk.add(act);
+        	Component component = tsk.add(act);
+        	error.addComponent(component);
         	map.put(act.getValue(QF_NAME), act);			
 		}
         
