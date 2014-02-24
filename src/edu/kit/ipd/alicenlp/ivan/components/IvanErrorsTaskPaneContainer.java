@@ -523,7 +523,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 */
 	private Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	private Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
-	private Collection<Error> gen0 = new HashSet<>();
+	private Collection<IvanErrorInstance> gen0 = new HashSet<>();
 	
 
 	/** Create a new component. This component displays errors and user action. It can also modify text in a text component. 
@@ -892,8 +892,12 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * are not a member of the recent generation.
 	 */
 	public void purge() {
-		for (Error error : gen0) {
+		for (IvanErrorInstance error : gen0) {
 			// TODO: remove an error
+			for (Component co : error.Components) {
+				co.getParent().remove(co);
+			}
+			error.Components.clear();
 		}
 		gen0.clear();
 	}
