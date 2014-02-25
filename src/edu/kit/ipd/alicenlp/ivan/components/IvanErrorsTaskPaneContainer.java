@@ -145,42 +145,19 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
+
 			l.info("Ignoring all currently displayed errors");
-			// TODO: implement me
-			// if qf_name == "qf-ignore"
+
 			// for each panel...
-			for (Component comp : getComponents()) {
-				if(comp instanceof JXTaskPane)
-				{
-					JXTaskPane panel = (JXTaskPane) comp;
-					ApplicationActionMap map = Application.getInstance()
-							.getContext().getActionMap(panel);
-					List<Action> keepme = new LinkedList<Action>();
-					if(map.size() > 0)
-					{
-						for (Object key : map.keys()) {
-							Action otherQuickfix = map.get(key);
-							IvanErrorInstance otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
-							if (otherError == null) {
-								l.log(Level.FINE, "Saving this one for later: %1", otherQuickfix);
-								
-								keepme.add(otherQuickfix);
-							} else {
-								map.remove(key); // throw it away
-								// save this problem as "ignored" 
-								ignoredProblems.add(otherError);
-								// remove it from the problems which are currently of concern
-								bagofProblems.remove(otherError);
-							}
-						}
-						panel.removeAll();
-						for (Action action : keepme) {
-							panel.add(action);
-						}
-					}
+			ignoredProblems.addAll(bagofProblems);
+			for (IvanErrorInstance error : bagofProblems) {				
+				for (Component comp : error.Components) {
+					comp.getParent().remove(comp);
 				}
+				error.Components.clear();
 			}
+			bagofProblems.clear();
+			updateUI();
 		}
 
 		@Override
