@@ -295,13 +295,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
-			//l.info("I'm deleting this sentence.");
-			/* 1. figure out the sentence bounds (Periods, Question Marks, and Exclamation Points)
-			 *   a) search right for a sentence punctuation
-			 *   b) search left for a sentence punctuation
-			 * 2. delete everything in between left bound and right bound
-			 **/
+			// TODO: make a convention to put the whole sentence into the last bucket of the codepoints
 			CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);
 			
 			txtEditor.setCaretPosition(sentence.x);
@@ -311,51 +305,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			txtEditor.replaceSelection("");
 			// get the focus so user can start editing right away
 			txtEditor.requestFocusInWindow();
-			//l.info("This action's error is " + getValue(QF_ERROR));
-		}
-
-		private int max(List<CodePoint> codepoints) {
-			int max = Integer.MIN_VALUE;
-			for (CodePoint cp : codepoints) {
-				if(cp.x > max)
-					max = cp.x;
-			}
-			return max;
-		}
-
-		private int min(List<CodePoint> codepoints) {
-			int min = Integer.MAX_VALUE;
-			for (CodePoint cp : codepoints) {
-				if(cp.x < min)
-					min = cp.x;
-			}
-			return min;
-		}
-
-		private int findSentenceStart(List<CodePoint> codepoints) {
-			// the first hint we have is the left point of the first "codepoint"
-			int minStartingPoint = codepoints.get(0).x;
-			// now try finding the smallest known left codepoint
-			for (CodePoint cp : codepoints) {
-				minStartingPoint = Math.min(cp.x, minStartingPoint);
-			}
-			assert minStartingPoint > 0; // assertion to make sure that all the codepoints were valid (greater 0)
-			
-			// we may have to start all the way to the left
-			int lastMark = 0;
-			// search to the right for a period
-			int lastPeriod = txtEditor.getText().lastIndexOf(".", minStartingPoint);
-			lastMark = Math.max(lastMark, lastPeriod);
-			int lastEx = txtEditor.getText().lastIndexOf("!", minStartingPoint);
-			lastMark = Math.max(lastMark, lastEx);
-			int lastQues = txtEditor.getText().lastIndexOf("?", minStartingPoint);
-			lastMark = Math.max(lastMark, lastQues);
-			//int lastNL = txtEditor.getText().lastIndexOf("\n", minStartingPoint);
-			
-			// this is either a 0 or greater
-			minStartingPoint = lastMark;
-
-			return minStartingPoint;
+			l.info("This action's error is " + getValue(QF_ERROR));
 		}
 
 		@Override
