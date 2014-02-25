@@ -302,18 +302,34 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			 *   b) search left for a sentence punctuation
 			 * 2. delete everything in between left bound and right bound
 			 **/
-			int lb = findSentenceStart(error.Codepoints);
-			int rb = findInsertionPoint(error.Codepoints);
-			// select the improper sentence
-//	        		txtEditor.setSelectionStart(lb);
-//	        		txtEditor.setSelectionEnd(rb);
-			txtEditor.setCaretPosition(lb);
-			txtEditor.moveCaretPosition(rb);	        		
+			CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);
+			
+			txtEditor.setCaretPosition(sentence.x);
+			txtEditor.moveCaretPosition(sentence.y);
+			
 			// delete it. this is undoable
 			txtEditor.replaceSelection("");
 			// get the focus so user can start editing right away
 			txtEditor.requestFocusInWindow();
 			//l.info("This action's error is " + getValue(QF_ERROR));
+		}
+
+		private int max(List<CodePoint> codepoints) {
+			int max = Integer.MIN_VALUE;
+			for (CodePoint cp : codepoints) {
+				if(cp.x > max)
+					max = cp.x;
+			}
+			return max;
+		}
+
+		private int min(List<CodePoint> codepoints) {
+			int min = Integer.MAX_VALUE;
+			for (CodePoint cp : codepoints) {
+				if(cp.x < min)
+					min = cp.x;
+			}
+			return min;
 		}
 
 		private int findSentenceStart(List<CodePoint> codepoints) {
