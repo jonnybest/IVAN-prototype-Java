@@ -23,6 +23,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
+import javax.swing.plaf.basic.BasicTextUI;
+import javax.swing.plaf.basic.BasicTextUI.BasicCaret;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
@@ -220,17 +222,19 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * @author Jonny
 	 *
 	 */
-	private final class AddLocationAction extends AbstractAction {
+	private final class AddLocationAction extends Quickfix {
 		final private IvanErrorInstance myerror;
 		private List<String> stubs = new ArrayList<String>();
 
 		private AddLocationAction(String name, IvanErrorInstance error2) {
-			super(name);
+			super(name, txtEditor);
 			this.myerror = error2;
 			stubs.addAll(Arrays.asList(new String[]{
 				" is in the left front.",
 				" is in the right front.",
 				" is in the background to the left."}));
+			
+			installCaret(error2.Codepoints.get(0));
 		}
 
 		@Override
@@ -285,27 +289,30 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * @author Jonny
 	 *
 	 */
-	private final class DeleteSentenceAction extends AbstractAction {
-		private final IvanErrorInstance error;
-
+	final class DeleteSentenceAction extends Quickfix {
 		private DeleteSentenceAction(String name, IvanErrorInstance error) {
-			super(name);
-			this.error = error;
+			super(name, txtEditor);
+			// Save "position" of the offending text inside editor frame.
+			// TODO: make a convention to put the whole sentence into the last bucket of the codepoints.
+			CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);			
+			installCaret(sentence);
 		}
 
 		@Override
-		public void actionPerformed(ActionEvent e) {
-			// TODO: make a convention to put the whole sentence into the last bucket of the codepoints
-			CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);
+		public void actionPerformed(ActionEvent e) {			
 			
-			txtEditor.setCaretPosition(sentence.x);
-			txtEditor.moveCaretPosition(sentence.y);
+			// obtain positions
+			txtEditor.getCaret().setDot(this.sentence.getDot());
+			txtEditor.getCaret().moveDot(this.sentence.getMark());
 			
 			// delete it. this is undoable
 			txtEditor.replaceSelection("");
 			// get the focus so user can start editing right away
 			txtEditor.requestFocusInWindow();
 			l.info("This action's error is " + getValue(QF_ERROR));
+			
+			// this caret is now useless and can be removed
+			this.sentence.deinstall(txtEditor);
 		}
 
 		@Override
@@ -314,17 +321,19 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
-	private final class AddDirectionAction extends AbstractAction {
+	private final class AddDirectionAction extends Quickfix {
 		private List<String> stubs = new ArrayList<String>();
 		private IvanErrorInstance myerror;
 
 		private AddDirectionAction(String name, IvanErrorInstance error) {
-			super(name);
+			super(name, txtEditor);
 			myerror = error;
 			stubs.addAll(Arrays.asList(new String[]{
 					" is facing the camera.",
 					" is facing front.",
 					" is turned to the right."}));
+			
+			installCaret(error.Codepoints.get(0));
 		}
 
 		@Override
@@ -461,7 +470,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 	private Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
 	final private Font errorInfoFont = new Font("Calibri", 0, 11);
-	private JTextComponent txtEditor = null;
+	JTextComponent txtEditor = null;
 
 	/** A bag of problems which have been ignored by the user and should subsequently not be displayed any more.
 	 * 
