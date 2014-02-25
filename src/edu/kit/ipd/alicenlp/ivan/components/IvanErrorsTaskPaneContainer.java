@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -27,7 +29,6 @@ import javax.swing.text.JTextComponent;
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
-import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
@@ -45,6 +46,8 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
+	Logger l = Logger.getLogger(getClass().getName());
+	
 	// headline constants
 	/** This constant contains the headline for meta problems.
 	 */
@@ -81,7 +84,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			System.out.println("Running pipeline");
+			l.info("Running pipeline");
 			SwingWindow.processText();
 		}
 
@@ -111,7 +114,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			System.out.println("Restoring error display");
+			l.info("Restoring error display");
 			// TODO: implement RestoreAllMetaAction
 			ignoredProblems.clear();
 			SwingWindow.processText();
@@ -143,7 +146,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			System.out.println("Ignoring all currently displayed errors");
+			l.info("Ignoring all currently displayed errors");
 			// TODO: implement me
 			// if qf_name == "qf-ignore"
 			// for each panel...
@@ -160,8 +163,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 							Action otherQuickfix = map.get(key);
 							IvanErrorInstance otherError = (IvanErrorInstance) otherQuickfix.getValue(QF_ERROR);
 							if (otherError == null) {
-								System.out.print("Saving this one for later: ");
-								System.out.println(otherQuickfix);
+								l.log(Level.FINE, "Saving this one for later: %1", otherQuickfix);
 								
 								keepme.add(otherQuickfix);
 							} else {
@@ -226,8 +228,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			ignoredProblems.add(error);
 			// remove it from the problems which are currently of concern
 			bagofProblems.remove(error);
-			System.out.println("This action's error is " + getValue(QF_ERROR));
-			System.out.println(tp.toString());
+			l.info("This action's error is " + getValue(QF_ERROR));
+			l.info(tp.toString());
 		}
 
 		@Override
@@ -257,9 +259,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			System.out.println("I'm adding a location.");
+			l.info("I'm adding a location.");
 			insertSentenceStub(myerror, stubs, " is in the …. ", "in the …");
-			System.out.println("This action's error is " + getValue(QF_ERROR));
+			l.info("This action's error is " + getValue(QF_ERROR));
 		}
 
 
@@ -317,7 +319,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			//System.out.println("I'm deleting this sentence.");
+			//l.info("I'm deleting this sentence.");
 			/* 1. figure out the sentence bounds (Periods, Question Marks, and Exclamation Points)
 			 *   a) search right for a sentence punctuation
 			 *   b) search left for a sentence punctuation
@@ -334,7 +336,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			txtEditor.replaceSelection("");
 			// get the focus so user can start editing right away
 			txtEditor.requestFocusInWindow();
-			//System.out.println("This action's error is " + getValue(QF_ERROR));
+			//l.info("This action's error is " + getValue(QF_ERROR));
 		}
 
 		private int findSentenceStart(List<CodePoint> codepoints) {
@@ -385,9 +387,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			System.out.println("I'm adding a direction.");
+			l.info("I'm adding a direction.");
 			insertSentenceStub(myerror, stubs, " is facing ….", "…");
-			System.out.println("This action's error is " + getValue(QF_ERROR));
+			l.info("This action's error is " + getValue(QF_ERROR));
 		}
 
 		@Override
@@ -541,13 +543,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// TODO print something that shows which stuff is currently being displayed
 //		for(Category c : this.errors.entrySet())
 //		{
-//			System.out.println(c.Name);
+//			l.info(c.Name);
 //			for(Instance i : c)
 //			{
-//				System.out.println("\t- " + i.toString());
+//				l.info("\t- " + i.toString());
 //			}
 //		}
-//		System.out.println();#
+//		l.info();#
 		final String nl = "\n";
 		StringBuilder sb = new StringBuilder();		
 		
@@ -797,7 +799,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// in case something goes wrong
 		if(err == null)
 		{
-			System.err.println("IvanErrorType instance was not set.");
+			l.warning("IvanErrorType instance was not set.");
 			return super.toString();
 		}
 		
@@ -894,6 +896,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * are not a member of the recent generation.
 	 */
 	public void purge() {
+		
 		for (IvanErrorInstance error : gen0) {
 			// TODO: remove an error
 			for (Component co : error.Components) {

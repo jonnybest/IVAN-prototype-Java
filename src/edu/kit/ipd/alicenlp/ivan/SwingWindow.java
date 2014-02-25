@@ -19,6 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.FileHandler;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -132,8 +135,21 @@ public class SwingWindow {
 	 * 
 	 * @param args
 	 *            not currently used
+	 * @throws IOException 
+	 * @throws SecurityException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	{
+		Handler fh;
+		try {
+			fh = new FileHandler("ivan.log");
+			fh.setFormatter(new java.util.logging.SimpleFormatter());
+			Logger.getLogger("").addHandler(fh);
+		} catch (SecurityException | IOException e1) {
+			e1.printStackTrace();
+			System.err.println("Warning: Failed to initialize java.util.logging. Logging is disabled.");
+		}
+		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -461,6 +477,10 @@ public class SwingWindow {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
 					busyLabel.setBusy(false);
+					System.out.println("Pipeline is ready.");
+				}
+				else {
+					busyLabel.setBusy(true);
 				}
 			}
 		});
