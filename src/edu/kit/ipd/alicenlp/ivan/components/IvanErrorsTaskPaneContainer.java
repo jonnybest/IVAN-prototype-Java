@@ -615,8 +615,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// has the user previously ignored this error?
 			boolean ignored = this.ignoredProblems.contains(error);
 			if(!ignored){
-				// is this error already listed?
-				if(!this.bagofProblems.add(error))
+				if(!CATEGORY_META.equals(category) // if this is a meta error, do not attempt to add it
+						&& !this.bagofProblems.add(error)) // is this error already listed? 
 				{
 					return false;
 				}
@@ -897,7 +897,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 */
 	public void purge() {
 		l.info("purging");
-		l.log(Level.FINE, "Generation 0, all problems, and ignored problems: ", new int[]{gen0.size(), bagofProblems.size(), ignoredProblems.size()});
+		l.log(Level.FINE, String.format("Generation 0: %d, all problems %d, and ignored problems %d ", gen0.size(), bagofProblems.size(), ignoredProblems.size()));
 		for (IvanErrorInstance error : gen0) {
 			// TODO: remove an error
 			for (Component co : error.Components) {

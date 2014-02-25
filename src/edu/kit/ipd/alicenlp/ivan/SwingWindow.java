@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -101,7 +102,7 @@ public class SwingWindow {
 			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
 	
-	private static Logger log = Logger.getLogger("edu.kit.ipd.alicenlp.ivan");
+	private static Logger log = Logger.getLogger(SwingWindow.class.getName());
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
@@ -141,29 +142,20 @@ public class SwingWindow {
 	public static void main(String[] args) 
 	{
 		try {
-			Handler[] handlers = log.getHandlers();
-			handlers[0].setLevel(Level.WARNING);
+			Logger global = Logger.getLogger("");
+			
+			global.getHandlers();
 			
 			Handler fh = new FileHandler("ivan.log");
 			fh.setFormatter(new java.util.logging.SimpleFormatter());		
 			fh.setLevel(Level.CONFIG);
-			log.addHandler(fh);
+			global.addHandler(fh);
+			
 		} catch (SecurityException | IOException e1) {
 			e1.printStackTrace();
 			System.err.println("Warning: Failed to initialize java.util.logging. Logging is disabled.");
 		}
-		
-		log.log(Level.SEVERE, "test");
-		log.severe("test");
-		log.log(Level.WARNING, "test");
-		log.warning("test");
-		log.log(Level.INFO, "test");
-		log.info("test");
-		log.log(Level.FINE, "test");
-		log.fine("test");
-		log.log(Level.FINER, "test");
-		log.finer("test");
-		
+
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
@@ -734,7 +726,8 @@ public class SwingWindow {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
-
+					log.info("done");
+					
 					Annotation doc;
 					try {
 						doc = task.get();
@@ -807,13 +800,12 @@ public class SwingWindow {
 				String category = createCategory(documenterror.getType());
 				this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
 			}
+			
+			// clear leftover errors from last run which may have been fixed by now
 			this.containerTaskPanel.purge();
 		}
 		if (errors != null)
-			log.log(Level.INFO, "Document wide errors", errors);
-
-		// clear leftover errors from last run which may have been fixed by now
-		this.containerTaskPanel.purge();
+			log.log(Level.INFO, "Document wide errors: " + errors);
 	}
 
 	/**
