@@ -46,7 +46,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
-	Logger l = Logger.getLogger(getClass().getSimpleName());
+	Logger l = Logger.getLogger("IvanErrorsTaskPaneContainer");
 	
 	// headline constants
 	/** This constant contains the headline for meta problems.

@@ -101,7 +101,7 @@ public class SwingWindow {
 			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
 	
-	private static Logger log = Logger.getLogger("");
+	private static Logger log = Logger.getLogger("edu.kit.ipd.alicenlp.ivan");
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
