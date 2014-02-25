@@ -46,7 +46,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
-	Logger l = Logger.getLogger(getClass().getName());
+	Logger l = Logger.getLogger(getClass().getSimpleName());
 	
 	// headline constants
 	/** This constant contains the headline for meta problems.
@@ -896,11 +896,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * are not a member of the recent generation.
 	 */
 	public void purge() {
-		
+		l.info("purging");
+		l.log(Level.FINE, "Generation 0, all problems, and ignored problems: ", new int[]{gen0.size(), bagofProblems.size(), ignoredProblems.size()});
 		for (IvanErrorInstance error : gen0) {
 			// TODO: remove an error
 			for (Component co : error.Components) {
 				co.getParent().remove(co);
+				l.fine("Component removed from " + error.Category);
 			}
 			error.Components.clear();
 		}

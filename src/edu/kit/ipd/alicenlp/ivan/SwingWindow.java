@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
@@ -68,8 +69,6 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.logging.PrettyLogger;
-import edu.stanford.nlp.util.logging.Redwood;
 
 /**
  * This is the main class if IVAN. It creates the user interface and manages all
@@ -102,6 +101,7 @@ public class SwingWindow {
 			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
 	private static final String DOCUMENT_TXT = "document.txt";
 	
+	private static Logger log = Logger.getLogger("");
 	private static SwingWindow instance;
 	private org.joda.time.DateTime stopwatch;
 	private JFrame frmvanInput;
@@ -140,15 +140,29 @@ public class SwingWindow {
 	 */
 	public static void main(String[] args) 
 	{
-		Handler fh;
 		try {
-			fh = new FileHandler("ivan.log");
-			fh.setFormatter(new java.util.logging.SimpleFormatter());
-			Logger.getLogger("").addHandler(fh);
+			Handler[] handlers = log.getHandlers();
+			handlers[0].setLevel(Level.WARNING);
+			
+			Handler fh = new FileHandler("ivan.log");
+			fh.setFormatter(new java.util.logging.SimpleFormatter());		
+			fh.setLevel(Level.CONFIG);
+			log.addHandler(fh);
 		} catch (SecurityException | IOException e1) {
 			e1.printStackTrace();
 			System.err.println("Warning: Failed to initialize java.util.logging. Logging is disabled.");
 		}
+		
+		log.log(Level.SEVERE, "test");
+		log.severe("test");
+		log.log(Level.WARNING, "test");
+		log.warning("test");
+		log.log(Level.INFO, "test");
+		log.info("test");
+		log.log(Level.FINE, "test");
+		log.fine("test");
+		log.log(Level.FINER, "test");
+		log.finer("test");
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -477,7 +491,7 @@ public class SwingWindow {
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
 					busyLabel.setBusy(false);
-					System.out.println("Pipeline is ready.");
+					log.info("Pipeline is ready.");
 				}
 				else {
 					busyLabel.setBusy(true);
@@ -615,7 +629,7 @@ public class SwingWindow {
 			if (f[i] < 41 || f[i] > 176) {
 				f[i] = 'o';
 			}
-			// System.out.println(Arrays.toString(f));
+			// log.info(Arrays.toString(f));
 		}
 
 		// space, tilde ~, caret ^, colon :, question-mark ?, asterisk *, or open bracket [ anywhere. 
@@ -642,7 +656,7 @@ public class SwingWindow {
 		} catch (IOException e) {
 			// catch block in case load fails
 			e.printStackTrace();
-			System.out.println("SwingWindow.load()");
+			log.info("SwingWindow.load()");
 		}
 	}
 
@@ -725,7 +739,7 @@ public class SwingWindow {
 					try {
 						doc = task.get();
 					} catch (InterruptedException | ExecutionException e1) {
-						PrettyLogger.log(e1);
+						log.warning(e1.toString());
 						e1.printStackTrace();
 						return;
 					}
@@ -735,10 +749,10 @@ public class SwingWindow {
 						updateTextMarkers(doc);
 
 					} catch (IvanException e) {
-						PrettyLogger.log(e);
+						log.warning(e.toString());
 						e.printStackTrace();
 					} catch (BadLocationException e) {
-						PrettyLogger.log(e);
+						log.warning(e.toString());
 						e.printStackTrace();
 					}
 					/**
@@ -796,7 +810,7 @@ public class SwingWindow {
 			this.containerTaskPanel.purge();
 		}
 		if (errors != null)
-			PrettyLogger.log("Document wide errors", errors);
+			log.log(Level.INFO, "Document wide errors", errors);
 
 		// clear leftover errors from last run which may have been fixed by now
 		this.containerTaskPanel.purge();
@@ -890,7 +904,7 @@ public class SwingWindow {
 				break;
 			case ErrorDescription:
 				IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
-				Redwood.log("Error in text found: " + err + "; sentence: " + sentence.toString());
+				log.info("Error in text found: " + err + "; sentence: " + sentence.toString());
 				String category = createCategory(err.getType());
 				this.containerTaskPanel.createProblem(category, err.getMessage(), new CodePoint(err.getSpan()));
 				markIvanError(err.getSpan().start(), err.getSpan().end());
@@ -940,7 +954,7 @@ public class SwingWindow {
 
 	private void clearStyles() {
 		txtEditor.getHighlighter().removeAllHighlights();
-		System.out.println("SwingWindow.clearStyles()");
+		log.info("SwingWindow.clearStyles()");
 	}
 
 	private void markText(int beginPosition, int endPosition, Color color) {
@@ -950,7 +964,7 @@ public class SwingWindow {
 			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 		} catch (BadLocationException e) {
 			e.printStackTrace();
-			System.out.println("SwingWindow.markText()");
+			log.info("SwingWindow.markText()");
 		}
 	}
 
@@ -999,7 +1013,7 @@ public class SwingWindow {
 						}
 
 					} catch (InterruptedException | ExecutionException e) {
-						PrettyLogger.log(e);
+						log.warning(e.toString());
 						e.printStackTrace();
 					}
 				}
@@ -1020,9 +1034,9 @@ public class SwingWindow {
 
 	void markSpelling() {
 		for (RuleMatch match : spellingErrors) {
-			System.out.println("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
+			log.info("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
 					+ match.getMessage());
-			System.out.println("Rule: " + match.getRule().getId());
+			log.info("Rule: " + match.getRule().getId());
 
 			try {
 				markSpellingError(match.getFromPos(), match.getToPos());
