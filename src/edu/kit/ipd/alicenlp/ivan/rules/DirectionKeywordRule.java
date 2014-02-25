@@ -6,7 +6,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -31,7 +33,7 @@ import edu.stanford.nlp.util.CoreMap;
  * 
  */
 public class DirectionKeywordRule implements ISentenceRule {
-
+	private static Logger log = Logger.getLogger(DirectionKeywordRule.class.toString());
 	/**
 	 * This list of keywords signals that the subject's direction is being
 	 * described.
@@ -273,7 +275,7 @@ public class DirectionKeywordRule implements ISentenceRule {
 			// search the next level for larger bounds
 			// assume that everything in between the bounds belongs to the sub-graph of the startingWord
 			for (SemanticGraphEdge edge : outiter) {
-	//			System.out.println("out:" + edge.toString());
+	//			log.info("out:" + edge.toString());
 				start = Math.min(start, edge.getGovernor().beginPosition() - offset);
 				start = Math.min(start, edge.getDependent().beginPosition() - offset);
 				end = Math.max(end, edge.getGovernor().endPosition() - offset);
@@ -281,8 +283,8 @@ public class DirectionKeywordRule implements ISentenceRule {
 			}
 	
 			// FIXME: bounds are wrong if the input has more than one sentence.
-			//System.out.println(graph);
-			System.out.println(sentence.get(TextAnnotation.class).substring(start, end));
+			//log.info(graph);
+			log.info(sentence.get(TextAnnotation.class).substring(start, end));
 			return sentence.get(TextAnnotation.class).substring(start, end);
 		}
 

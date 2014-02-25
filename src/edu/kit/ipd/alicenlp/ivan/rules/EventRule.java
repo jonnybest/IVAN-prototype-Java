@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
@@ -30,6 +31,7 @@ import edu.stanford.nlp.util.CoreMap;
  * 
  */
 public class EventRule implements ISentenceRule {
+	private static Logger log = Logger.getLogger(EventRule.class.toString());
 
 	private static Dictionary dictionary;
 	private static Set<Synset> allowedSenses = new ArraySet<Synset>();
@@ -110,7 +112,7 @@ public class EventRule implements ISentenceRule {
 					// likelihood-based check. everything less likely than .8 is
 					// skipped.
 					if (!LikelihoodRule.apply(threshold, wnw, sense)) {
-						System.out.println("Skipping (" + sense);
+						log.info("Skipping (" + sense);
 						continue;
 					}
 					// TODO: implement sanitity check with sentence frame.

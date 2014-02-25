@@ -3,6 +3,8 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import java.util.logging.Logger;
+
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -16,6 +18,7 @@ import edu.stanford.nlp.util.CoreMap;
 public class SentenceFrameRule implements ISentenceRule 
 {
 	private String[] frames;
+	protected Logger log = Logger.getLogger(getClass().getName());
 	/**
 	 * 
 	 */
@@ -84,7 +87,7 @@ public class SentenceFrameRule implements ISentenceRule
 			
 			@Override
 			public Tree transformTree(Tree t) {
-				System.out.println(t);
+				log.info(t.toString());
 				return t;
 			}
 		});

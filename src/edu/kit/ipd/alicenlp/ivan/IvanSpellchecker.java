@@ -6,6 +6,7 @@ package edu.kit.ipd.alicenlp.ivan;
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.SwingWorker;
 import javax.xml.parsers.ParserConfigurationException;
@@ -15,15 +16,10 @@ import org.languagetool.JLanguageTool.ParagraphHandling;
 import org.languagetool.Language;
 import org.languagetool.MultiThreadedJLanguageTool;
 import org.languagetool.language.AmericanEnglish;
-import org.languagetool.rules.CommaWhitespaceRule;
 import org.languagetool.rules.Rule;
 import org.languagetool.rules.RuleMatch;
-import org.languagetool.rules.WordRepeatBeginningRule;
 import org.languagetool.rules.patterns.PatternRule;
-import org.omg.CORBA.Environment;
 import org.xml.sax.SAXException;
-
-import edu.stanford.nlp.parser.lexparser.GermanUnknownWordModel;
 
 /**
  * @author Jonny
@@ -33,6 +29,8 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 	String text;
 
 	private static JLanguageTool langTool;
+
+	private static Logger log = Logger.getLogger(IvanSpellchecker.class.toString());
 	
 	/** Every event needs to know which text to check
 	 * 
@@ -60,7 +58,9 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 */
-	private static synchronized List<RuleMatch> check(String text) throws IOException, ParserConfigurationException, SAXException {		JLanguageTool languageTool = null;
+	private static synchronized List<RuleMatch> check(String text)
+			throws IOException, ParserConfigurationException, SAXException {
+		JLanguageTool languageTool = null;
 		
 		prepare();
 		
@@ -82,7 +82,7 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 			languageTool.disableRule("ENGLISH_WORD_REPEAT_BEGINNING_RULE");
 			
 			// load my custom rule set
-			System.out.println(JLanguageTool.getDataBroker().getResourceDir());
+			log.info(JLanguageTool.getDataBroker().getResourceDir());
 			URL grammarrules = ClassLoader.getSystemResource("edu/kit/ipd/alicenlp/ivan/resources/grammar.xml");
 			List<PatternRule> loadPatternRules = languageTool.loadPatternRules(grammarrules.getPath());
 			for (PatternRule patternRule : loadPatternRules) {

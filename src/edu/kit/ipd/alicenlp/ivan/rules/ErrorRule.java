@@ -7,10 +7,10 @@ import static edu.stanford.nlp.trees.EnglishGrammaticalRelations.CONJUNCT;
 import static edu.stanford.nlp.trees.EnglishGrammaticalRelations.COPULA;
 import static edu.stanford.nlp.trees.EnglishGrammaticalRelations.PREDICATE;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
@@ -32,15 +32,14 @@ import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.LabeledScoredTreeNode;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
-import edu.stanford.nlp.util.ArrayCoreMap;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.IntPair;
 
 /**
  * @author Jonny
  * 
  */
 public class ErrorRule implements ISentenceRule, IErrorRule {
+	private static Logger log = Logger.getLogger(ErrorRule.class.toString());
 
 	IvanErrorMessage msg;
 
@@ -55,7 +54,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 	public boolean apply(CoreMap sentence) {
 		// check for a graph
 		if (applyNeedsGraph(sentence)) {
-			System.out.println("ErrorRule.apply(): No graph in '"
+			log.info("ErrorRule.apply(): No graph in '"
 					+ sentence.toString());
 			return true;
 		}

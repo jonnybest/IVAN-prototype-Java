@@ -3,6 +3,8 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import java.util.logging.Logger;
+
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.Synset;
@@ -15,6 +17,8 @@ import net.sf.extjwnl.data.Word;
  * 
  */
 public class LikelihoodRule {
+	protected static Logger log = Logger.getLogger("edu.kit.ipd.alicenlp.ivan.rules.LikelihoodRule");
+	
 	/**
 	 * Checks whether a given word is at least <code>threshold</code>-likely to
 	 * mean <code>meaning</code>.
@@ -67,7 +71,7 @@ public class LikelihoodRule {
 		if (total == 0)
 			System.err.println("division by zero!");
 		double prior = occurrences / total;
-		System.out.println(word.getLemma() + " is " + prior
+		log.info(word.getLemma() + " is " + prior
 				+ " likely to mean \'" + meaning.getGloss() + " \'");
 		return prior;
 	}

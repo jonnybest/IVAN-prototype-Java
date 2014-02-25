@@ -4,18 +4,15 @@
 package edu.kit.ipd.alicenlp.ivan.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
-import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.stanford.nlp.util.Pair;
-import edu.stanford.nlp.util.logging.PrettyLogger;
-import edu.stanford.nlp.util.logging.Redwood;
 
 /**
  * This class manages a set of names and EntityInfos
@@ -24,6 +21,8 @@ import edu.stanford.nlp.util.logging.Redwood;
  * 
  */
 public class DiscourseModel extends HashSet<EntityInfo> {
+	private static Logger log = Logger.getLogger(DiscourseModel.class.toString());
+
 	/**
 	 * something to make the warning go away
 	 * 
@@ -183,7 +182,7 @@ public class DiscourseModel extends HashSet<EntityInfo> {
 				// simply append
 				elist = aliases.get(e.getEntity());
 				elist.add(e);
-				System.out.println("Yet another " + e.getEntity()
+				log.info("Yet another " + e.getEntity()
 						+ " added. This one now knows " + elist.size() + " "
 						+ e.getEntity() + "s.");
 			} else {

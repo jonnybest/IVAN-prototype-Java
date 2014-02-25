@@ -1,7 +1,5 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
-import static edu.stanford.nlp.util.logging.Redwood.log;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -9,18 +7,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.data.IndexWord;
 import net.sf.extjwnl.data.POS;
-import net.sf.extjwnl.data.Pointer;
-import net.sf.extjwnl.data.PointerType;
 import net.sf.extjwnl.data.Synset;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
-import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
@@ -32,14 +30,12 @@ import edu.kit.ipd.alicenlp.ivan.rules.FirstMentionRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.DocIDAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.IDAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -53,7 +49,6 @@ import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectG
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.logging.Redwood;
 
 /**
  * This class decides whether a sentence pertains to the initial state of the
@@ -67,6 +62,7 @@ import edu.stanford.nlp.util.logging.Redwood;
 public class StaticDynamicClassifier extends IvanAnalyzer {
 	static private StaticDynamicClassifier myinstance = null;
 	private Dictionary dictionary;
+	private Logger log = Logger.getLogger("StaticDynamicClassifier");
 	/**
 	 * this classifier's own private pipeline. in the user didn't bother to go
 	 * through the proper interface.
@@ -110,7 +106,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		// does this sentence container an error?
 		ErrorRule checkError = new ErrorRule();
 		if (checkError.apply(sentence)) {
-			System.out.println("bad sentence found");
+			log .info("bad sentence found");
 			sentence.set(IvanAnnotations.ErrorMessageAnnotation.class,
 					checkError.getErrorMessage());
 			return Classification.ErrorDescription;
@@ -124,7 +120,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		EventRule checkevent = new EventRule();
 		// yes!
 		if (checkevent.apply(sentence)) {
-			System.out.println("Event found");
+			log.info("Event found");
 			// since we only support one classification, return the
 			// classification instantly
 			return Classification.EventDescription;
@@ -173,7 +169,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		// normal classification rules follow:
 		SemanticGraph graph = sentence
 				.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		// System.out.println(graph.toString());
+		// log.info(graph.toString());
 		String word = expandVerb(root, graph);
 		// classify by grammatical construction
 		// classify by lexical file num
@@ -205,7 +201,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				}
 			}
 		} else {
-			log(Redwood.ERR, "WordNET did not recognise this verb.");
+			log.warning( "WordNET did not recognise this verb.");
 			Span errorspan = new Span(
 					root.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class),
 					root.get(CoreAnnotations.CharacterOffsetEndAnnotation.class));
@@ -372,7 +368,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 			// pre-tag the sentences based on state data
 			rule.apply(annotation, true);
 		} catch (IvanException e1) {
-			log(e1);
+			log.severe(e1.toString());
 			e1.printStackTrace();
 		}
 		// annotate each sentence separately
@@ -389,9 +385,9 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				// check for initial state consistency
 			} catch (JWNLException e) {
 				// no classification for this sentence then :(
-				log(Redwood.ERR, "Error while classifying sentences.", e);
+				log.warning( "Error while classifying sentences."+ e);
 			} catch (NullPointerException | java.lang.AssertionError e) {
-				log(Redwood.ERR, "Error while classifying sentences.", e);
+				log.warning( "Error while classifying sentences."+ e);
 				Span range = Span.fromValues(
 						sentence.get(CharacterOffsetBeginAnnotation.class),
 						sentence.get(CharacterOffsetEndAnnotation.class));
@@ -428,7 +424,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 				}
 			}
 		} catch (JWNLException e) {
-			log(Redwood.ERR, e);
+			log.warning( e.toString());
 			e.printStackTrace();
 		}
 	}

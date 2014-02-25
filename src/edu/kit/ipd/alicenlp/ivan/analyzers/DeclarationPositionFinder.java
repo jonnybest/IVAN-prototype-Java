@@ -1,7 +1,5 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
-import static edu.stanford.nlp.util.logging.Redwood.log;
-
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -11,39 +9,34 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.lang.model.type.ErrorType;
-
-import com.jcraft.jsch.Logger;
+import java.util.logging.Logger;
 
 import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.IvanInvalidMappingException;
-import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
-import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.kit.ipd.alicenlp.ivan.rules.AliasHearstRule;
 import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectionKeywordRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntityPurgeRule;
-import edu.kit.ipd.alicenlp.ivan.rules.IDocumentRule;
 import edu.kit.ipd.alicenlp.ivan.rules.PrepositionalRule;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.AnnotationSerializer;
 import edu.stanford.nlp.pipeline.Annotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -51,7 +44,6 @@ import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcess
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.logging.Redwood;
 
 /**
  * This analyzer finds Declarations, Locations and Direction in sentences. It
@@ -71,6 +63,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	static private DeclarationPositionFinder myinstance = null;
 	private Dictionary mydictionary;
 	private StanfordCoreNLP mypipeline = null;
+	private static Logger log = Logger.getLogger("DeclarationPositionFinder");
 
 	/**
 	 * The default constructor for creating a new instance.
@@ -108,7 +101,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 
 		// run all Annotators on this text
 		mypipeline.annotate(document);
-		System.out.println("{annotation is now done}"); //$NON-NLS-1$
+		log.info("{annotation is now done}"); //$NON-NLS-1$
 		return document;
 	}
 
@@ -303,8 +296,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			}
 		}
 		// the search string is not present in the given sentence
-		log(Redwood.WARN,
-				"the search string is not present in the given sentence");
+		log.info("the search string is not present in the given sentence");
 		return null;
 	}
 
@@ -320,8 +312,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			}
 		}
 		// the search string is not present in the given sentence
-		log(Redwood.WARN,
-				"the search string is not present in the given sentence");
+		log.info("the search string is not present in the given sentence");
 		return null;
 	}
 
@@ -441,13 +432,13 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			// already is the subject
 			if (!head.equals(graph.getFirstRoot())) {
 				head = graph.getFirstRoot();
-				log(Redwood.DBG, "Name recognition selected head: " + head);
+				log.info("Name recognition selected head: " + head);
 			} else {
 				// if not, try the direct objects instead
 				head = graph.getChildWithReln(head,
 						EnglishGrammaticalRelations.DIRECT_OBJECT);
 
-				log(Redwood.DBG,
+				log.info(
 						"Name recognition is falling back on direct object: "
 								+ head);
 			}
@@ -473,14 +464,14 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 		// resolve personal pronouns
 		for (IndexedWord n : namesIW) {
 			if (n.tag().equals("PRP")) {
-				log(Redwood.DBG, "Name is a preposition.");
+				log.info( "Name is a preposition.");
 				// this part doesn't even work:
 				// CoreferenceResolver cresolver =
 				// CoreferenceResolver.getInstance();
 				// n.setValue(cresolver.resolve(n)); // this is probably a bad
 				// idea
 			} else {
-				// log(Redwood.DBG, "Name is not a preposition.");
+				// log.info( "Name is not a preposition.");
 			}
 		}
 		return names;
@@ -584,7 +575,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			}
 		} catch (IvanInvalidMappingException e) {
 			e.printStackTrace();
-			log(Redwood.ERR, e);
+			log.severe(e.toString());
 		}
 
 		for (CoreMap sentence : annotation.get(SentencesAnnotation.class)) {
@@ -635,10 +626,10 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 					continue;
 				}
 			} catch (JWNLException e1) {
-				log("Should not be reachable.");
+				log.warning("Should not be reachable.");
 			} catch (IvanInvalidMappingException e) {
 				e.printStackTrace();
-				log(Redwood.ERR, e);
+				log.severe(e.toString());
 			}
 
 			// TODO: do stuff
@@ -648,7 +639,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			try {
 				learnDeclarations(sentence);
 			} catch (IvanException e) {
-				log(Redwood.ERR, e);
+				log.severe(e.toString());
 			}
 		}
 
@@ -656,7 +647,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 		EntityPurgeRule epr = new EntityPurgeRule();
 		boolean purged = epr.apply(getCurrentState());
 		if (purged) {
-			log("Useless singletons have been purged: "
+			log.info("Useless singletons have been purged: "
 					+ Arrays.toString(epr.getResults()));
 			// add errors: incomplete entity description
 			List<IvanErrorMessage> errors = annotation
