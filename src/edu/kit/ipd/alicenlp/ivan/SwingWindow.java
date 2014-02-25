@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutionException;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.FileHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -33,6 +32,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -41,6 +41,8 @@ import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -130,6 +132,7 @@ public class SwingWindow {
 	protected boolean isSpellingOkay;
 	private List<RuleMatch> spellingErrors = new ArrayList<>();
 	private JScrollPane errorScrollPane;
+	private JLabel coords;
 
 	/**
 	 * Launch the application.
@@ -369,10 +372,27 @@ public class SwingWindow {
 
 		btnSaveCheck.addActionListener(saveCheckAction);
 
+		// set up a caretlister to update coordinates
+		txtEditor.addCaretListener(new CaretListener() {			
+			@Override
+			public void caretUpdate(CaretEvent e) {
+				if(e.getDot() == e.getMark()){					
+					coords.setText(String.format("[%d]", e.getMark()));
+				}
+				else {
+					coords.setText(String.format("[%d,%d]", e.getMark(), e.getDot()));
+				}
+			}
+		});
+		
 		// this glue pushes the spinner to the right
 		horizontalGlue = Box.createHorizontalGlue();
 		menuBar.add(horizontalGlue);
 
+		coords = new JLabel("[…]");
+		menuBar.add(coords);
+		menuBar.add(Box.createHorizontalStrut(6));
+		
 		// this spinner tells the user that analysis is currently running
 		busyLabel = new JXBusyLabel();
 		menuBar.add(busyLabel);
