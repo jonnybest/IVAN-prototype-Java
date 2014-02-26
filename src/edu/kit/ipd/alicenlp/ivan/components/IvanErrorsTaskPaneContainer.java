@@ -26,6 +26,8 @@ import javax.swing.JLabel;
 import javax.swing.plaf.basic.BasicTextUI;
 import javax.swing.plaf.basic.BasicTextUI.BasicCaret;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
@@ -48,7 +50,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
-	Logger l = Logger.getLogger("IvanErrorsTaskPaneContainer");
+	Logger log = Logger.getLogger("IvanErrorsTaskPaneContainer");
 	
 	// headline constants
 	/** This constant contains the headline for meta problems.
@@ -86,7 +88,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			l.info("Running pipeline");
+			log.info("Running pipeline");
 			SwingWindow.processText();
 		}
 
@@ -116,7 +118,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			l.info("Restoring error display");
+			log.info("Restoring error display");
 			// TODO: implement RestoreAllMetaAction
 			ignoredProblems.clear();
 			SwingWindow.processText();
@@ -148,7 +150,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 
-			l.info("Ignoring all currently displayed errors");
+			log.info("Ignoring all currently displayed errors");
 
 			// for each panel...
 			ignoredProblems.addAll(bagofProblems);
@@ -180,35 +182,35 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * @author Jonny
 	 *
 	 */
-	private final class IgnoreProblemAction extends AbstractAction {
-		private final IvanErrorInstance error;
+	private final class IgnoreProblemAction extends Quickfix {
+
 		private final IvanErrorsTaskPaneContainer tp;
 
 		private IgnoreProblemAction(String name, IvanErrorInstance error,
 				IvanErrorsTaskPaneContainer tp) {
-			super(name);
-			this.error = error;
+			super(name, txtEditor);
+			this.Error = error;
 			this.tp = tp;
 		}
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			// only remove pertaining components 
-			for (Component co : error.Components) {
+			for (Component co : Error.Components) {
 				co.getParent().remove(co);
 			}
-			error.Components.clear(); // only you can prevent memory leaks :)
+			Error.Components.clear(); // only you can prevent memory leaks :)
 			
 			// get this category panel
-			JXTaskPane panel = mypanes.get(error.Category);
+			JXTaskPane panel = mypanes.get(Error.Category);
 			// update visuals
 			panel.updateUI();
 			// save this problem as "ignored" 
-			ignoredProblems.add(error);
+			ignoredProblems.add(Error);
 			// remove it from the problems which are currently of concern
-			bagofProblems.remove(error);
-			l.info("This action's error is " + getValue(QF_ERROR));
-			l.info(tp.toString());
+			bagofProblems.remove(Error);
+			log.info("This action's error is " + getValue(QF_ERROR));
+			log.info(tp.toString());
 		}
 
 		@Override
@@ -240,9 +242,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			l.info("I'm adding a location.");
+			log.info("I'm adding a location.");
 			insertSentenceStub(myerror, stubs, " is in the …. ", "in the …");
-			l.info("This action's error is " + getValue(QF_ERROR));
+			log.info("This action's error is " + getValue(QF_ERROR));
 		}
 
 
@@ -313,15 +315,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			txtEditor.replaceSelection("");
 			// get the focus so user can start editing right away
 			txtEditor.requestFocusInWindow();
-			l.info("This action's error is " + getValue(QF_ERROR));
+			log.info("This action's error is " + getValue(QF_ERROR));
 			
-			// this caret is now useless and can be removed
-			this.sentence.deinstall(txtEditor);
-			
-			// assume this issue to be fixed and remove this error's components
-			for (Component co : Error.Components) {
-				co.getParent().remove(co);
-			}
+			removeError(Error);
 		}
 
 		@Override
@@ -331,12 +327,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	}
 
 	private final class AddDirectionAction extends Quickfix {
-		private List<String> stubs = new ArrayList<String>();
-		private IvanErrorInstance myerror;
+		private List<String> stubs = new ArrayList<String>();		
 
 		private AddDirectionAction(String name, IvanErrorInstance error) {
 			super(name, txtEditor);
-			myerror = error;
+			Error = error;
 			stubs.addAll(Arrays.asList(new String[]{
 					" is facing the camera.",
 					" is facing front.",
@@ -348,9 +343,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		@Override
 		public void actionPerformed(ActionEvent e) {
 			//String name = (String) getValue(SHORT_DESCRIPTION);
-			l.info("I'm adding a direction.");
-			insertSentenceStub(myerror, stubs, " is facing ….", "…");
-			l.info("This action's error is " + getValue(QF_ERROR));
+			log.info("I'm adding a direction.");
+			insertSentenceStub(Error, stubs, " is facing ….", "…");
+			log.info("This action's error is " + getValue(QF_ERROR));
 		}
 
 		@Override
@@ -390,6 +385,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		 * These components are the display things which belong to this error 
 		 */
 		public final LinkedList<Component> Components = new LinkedList<Component>();
+		/**
+		 * This caret selects all the text for this issue.  
+		 */
+		public Caret StandardCaret;
 		
 		/** Creates a new specific error
 		 * 
@@ -427,18 +426,31 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		public boolean equals(Object obj) {
 			if (obj instanceof IvanErrorInstance)
 			{
-				IvanErrorInstance otherError = (IvanErrorInstance) obj;
-				if(Category.equals(otherError.Category)
-						&& Problem.equals(otherError.Problem)
-						&& Codepoints.size() == otherError.Codepoints.size())
-				{
-					for (CodePoint cp : Codepoints) {
-						if(!otherError.Codepoints.contains(cp))
-						{
-							return false;
+				if (StandardCaret == null) {
+					// if the caret is null, this error has not been displayed to the user (yet)
+					IvanErrorInstance otherError = (IvanErrorInstance) obj;
+					if (Category.equals(otherError.Category)
+							&& Problem.equals(otherError.Problem)
+							&& Codepoints.size() == otherError.Codepoints
+									.size()) {
+						for (CodePoint cp : Codepoints) {
+							if (!otherError.Codepoints.contains(cp)) {
+								return false;
+							}
 						}
+						return true;
 					}
-					return true;
+				}
+				else {
+					// if the caret is present, this error has been displayed to the user and bounds may have changed since.
+					// compare last bounds only
+					IvanErrorInstance otherError = (IvanErrorInstance) obj;
+					if (Category.equals(otherError.Category)
+							&& Problem.equals(otherError.Problem)){
+						CodePoint oErrlastCodepoint = otherError.Codepoints.get(otherError.Codepoints.size()-1);
+						CodePoint tErrCp = new CodePoint(StandardCaret.getDot(), StandardCaret.getMark());
+						return tErrCp.equals(oErrlastCodepoint);
+					}
 				}
 			}
 			return false;
@@ -582,6 +594,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 					return false;
 				}
 				// add another quick fix for this category
+				error.StandardCaret = installCaret(error);
 				createQuickfixes(error);
 				return true;
 			}
@@ -590,6 +603,22 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		else {
 			return false;
 		}
+	}
+	
+	private Caret installCaret(IvanErrorInstance Error) {
+		CodePoint codep = Error.Codepoints.get(Error.Codepoints.size()-1);
+		return installCaret(codep);
+	}
+	
+	private Caret installCaret(CodePoint codep) {
+		// The caret will track the positions across the users' editings. 
+		DefaultCaret place = new DefaultCaret();
+		place.install(txtEditor);
+		place.setVisible(false);
+		place.setDot(codep.x);
+		place.moveDot(codep.y);
+		log.info("Installed Caret for " + codep);
+		return place;
 	}
 	
 	private void createQuickfixes(final IvanErrorInstance error) {
@@ -760,7 +789,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// in case something goes wrong
 		if(err == null)
 		{
-			l.warning("IvanErrorType instance was not set.");
+			log.warning("IvanErrorType instance was not set.");
 			return super.toString();
 		}
 		
@@ -857,13 +886,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * are not a member of the recent generation.
 	 */
 	public void purge() {
-		l.info("purging");
-		l.log(Level.FINE, String.format("Generation 0: %d, all problems %d, and ignored problems %d ", gen0.size(), bagofProblems.size(), ignoredProblems.size()));
+		log.info("purging");
+		log.log(Level.FINE, String.format("Generation 0: %d, all problems %d, and ignored problems %d ", gen0.size(), bagofProblems.size(), ignoredProblems.size()));
 		for (IvanErrorInstance error : gen0) {
 			// TODO: remove an error
 			for (Component co : error.Components) {
 				co.getParent().remove(co);
-				l.fine("Component removed from " + error.Category);
+				log.fine("Component removed from " + error.Category);
 			}
 			error.Components.clear();
 		}
