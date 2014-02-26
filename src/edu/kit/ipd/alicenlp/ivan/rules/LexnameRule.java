@@ -33,7 +33,9 @@ public class LexnameRule implements ISentenceRule {
 	private Classification result;
 
 	public LexnameRule() {
-		// TODO Auto-generated constructor stub
+		// prepare setup
+		if(dictionary == null)
+			setupWordNet();
 	}
 
 	@Override
