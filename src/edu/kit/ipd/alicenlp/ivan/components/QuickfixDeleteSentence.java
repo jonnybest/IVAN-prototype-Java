@@ -9,7 +9,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
  * @author Jonny
  *
  */
-final class QuickfixDeleteSentence extends Quickfix {
+final class QuickfixDeleteSentence extends AbstractQuickfix {
 	/**
 	 * 
 	 */

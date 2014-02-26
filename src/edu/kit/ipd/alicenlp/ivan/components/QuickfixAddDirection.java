@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-final class QuickfixAddDirection extends Quickfix {
+final class QuickfixAddDirection extends AbstractQuickfix {
 	/**
 	 * 
 	 */

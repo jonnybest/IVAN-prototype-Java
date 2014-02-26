@@ -15,7 +15,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
  * @author Jonny
  *
  */
-public abstract class Quickfix extends AbstractAction {
+public abstract class AbstractQuickfix extends AbstractAction {
 
 	protected IvanErrorInstance Error;
 	protected Caret sentence;
@@ -27,7 +27,7 @@ public abstract class Quickfix extends AbstractAction {
 	 * @param name
 	 * @param txtEditor 
 	 */
-	public Quickfix(String name, JTextComponent txtEditor) {
+	public AbstractQuickfix(String name, JTextComponent txtEditor) {
 		super(name);
 		this.txtEditor = txtEditor;
 	}

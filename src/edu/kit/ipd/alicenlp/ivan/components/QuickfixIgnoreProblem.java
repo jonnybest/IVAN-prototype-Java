@@ -10,7 +10,7 @@ import org.jdesktop.swingx.JXTaskPane;
  * @author Jonny
  *
  */
-final class QuickfixIgnoreProblem extends Quickfix {
+final class QuickfixIgnoreProblem extends AbstractQuickfix {
 
 	/**
 	 * 

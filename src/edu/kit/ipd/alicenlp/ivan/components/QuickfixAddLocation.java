@@ -10,7 +10,7 @@ import java.util.List;
  * @author Jonny
  *
  */
-final class QuickfixAddLocation extends Quickfix {
+final class QuickfixAddLocation extends AbstractQuickfix {
 	/**
 	 * 
 	 */
