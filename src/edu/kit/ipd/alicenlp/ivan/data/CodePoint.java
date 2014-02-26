@@ -63,6 +63,11 @@ public class CodePoint extends IntPair
 	public int hashCode() {
 		return this.elems()[0] * 67 + this.elems()[1];
 	}
+	
+	@Override
+	public boolean equals(Object iO) {
+		return super.equals(iO);
+	}
 
 	/** Create a code point from a span
 	 * @param span
