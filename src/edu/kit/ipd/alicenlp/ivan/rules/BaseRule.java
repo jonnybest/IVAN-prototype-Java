@@ -17,6 +17,9 @@ import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcess
 import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
+import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -25,7 +28,112 @@ import edu.stanford.nlp.util.CoreMap;
  *
  */
 public abstract class BaseRule {
-	
+
+	/**
+	 * This method decides whether a given <code>verb</code> has a passive
+	 * subject or a passive auxiliary.
+	 * 
+	 * @param verb
+	 * @param graph
+	 * @return
+	 */
+	static boolean isPassive(IndexedWord verb, SemanticGraph graph) {
+		// Examples:
+		// "Dole was defeated by Clinton" nsubjpass(defeated, Dole)
+		GrammaticalRelation nsubjpass = GrammaticalRelation
+				.getRelation(NominalPassiveSubjectGRAnnotation.class);
+		// "That she lied was suspected by everyone" csubjpass(suspected, lied)
+		GrammaticalRelation csubjpass = GrammaticalRelation
+				.getRelation(ClausalPassiveSubjectGRAnnotation.class);
+		// "Kennedy was killed" auxpass(killed, was)
+		GrammaticalRelation auxrel = GrammaticalRelation
+				.getRelation(EnglishGrammaticalRelations.AuxPassiveGRAnnotation.class);
+		Boolean passive = false;
+		passive = passive || graph.hasChildWithReln(verb, nsubjpass);
+		passive = passive || graph.hasChildWithReln(verb, csubjpass);
+		passive = passive || graph.hasChildWithReln(verb, auxrel);
+		return passive;
+	}
+
+	/**
+	 * Finds any prepositions relating to {@code word}. Requires a non-collapsed
+	 * graph.
+	 * 
+	 * @param word
+	 *            The word which is being modified
+	 * @param graph
+	 *            A basic graph (non-collapsed)
+	 * @return
+	 */
+	static CoreLabel getPrepMod(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		return graph.getChildWithReln(word, reln);
+	}
+
+	static boolean hasPrepMod(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PrepositionalModifierGRAnnotation.class);
+		return graph.hasChildWithReln(word, reln);
+	}
+
+	static Boolean hasParticle(IndexedWord word, SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
+		return graph.hasChildWithReln(word, reln);
+	}
+
+	/**
+	 * Decides whether this word has a direct object.
+	 * 
+	 * @param word
+	 *            the word to analyse
+	 * @param graph
+	 *            the sentence to which this word belongs
+	 * @return TRUE, if a direct object is present for this verb
+	 */
+	static boolean hasDirectObjectNP(IndexedWord word,
+			SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.DirectObjectGRAnnotation.class);
+		if (graph.hasChildWithReln(word, reln)) {
+			String pos = graph.getChildWithReln(word, reln).get(
+					PartOfSpeechAnnotation.class);
+			if (pos.equalsIgnoreCase("NN")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns any particle this <code>verb</code> may have
+	 * 
+	 * @param verb
+	 * @param graph
+	 * @return
+	 */
+	static IndexedWord getParticle(final IndexedWord verb,
+			final SemanticGraph graph) {
+		GrammaticalRelation reln = edu.stanford.nlp.trees.GrammaticalRelation
+				.getRelation(edu.stanford.nlp.trees.EnglishGrammaticalRelations.PhrasalVerbParticleGRAnnotation.class);
+		return graph.getChildWithReln(verb, reln);
+	}
+
+	/**
+	 * This method decides whether a given <code>word</code> has an agent. Ex:
+	 * "The man has been killed by the police"
+	 * 
+	 * @param word
+	 * @param graph
+	 * @return
+	 */
+	static boolean hasAgent(IndexedWord word, SemanticGraph graph) {
+		// implement a check for agent(root, nounphrase)
+		GrammaticalRelation agentrel = GrammaticalRelation
+				.getRelation(AgentGRAnnotation.class);
+		return graph.hasChildWithReln(word, agentrel);
+	}
 
 	/** The <code>word</code> has a tag with prefix <code>tag</code>.
 	 * Ex. "drives/VBZ" is a member of pos-family "VB" 
