@@ -34,7 +34,7 @@ final class QuickfixAddLocation extends AbstractQuickfix {
 	public void actionPerformed(ActionEvent e) {
 		//String name = (String) getValue(SHORT_DESCRIPTION);
 		log.info("I'm adding a location.");
-		this.ivanErrorsTaskPaneContainer.insertSentenceStub(myerror, stubs, " is in the …. ", "in the …");
+		insertSentenceStub(myerror, stubs, " is in the …. ", "in the …");
 		log.info("This action's error is " + getValue(IvanErrorsTaskPaneContainer.QF_ERROR));
 	}
 
