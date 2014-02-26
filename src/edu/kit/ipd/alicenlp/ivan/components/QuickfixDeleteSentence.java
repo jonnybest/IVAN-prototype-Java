@@ -9,7 +9,7 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
  * @author Jonny
  *
  */
-final class DeleteSentenceAction extends Quickfix {
+final class QuickfixDeleteSentence extends Quickfix {
 	/**
 	 * 
 	 */
@@ -17,7 +17,7 @@ final class DeleteSentenceAction extends Quickfix {
 	// the underlying issue for this quick fix
 	private IvanErrorInstance Error;
 
-	DeleteSentenceAction(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
+	QuickfixDeleteSentence(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
 		super(name, ivanErrorsTaskPaneContainer.txtEditor);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 		// Save "position" of the offending text inside editor frame.

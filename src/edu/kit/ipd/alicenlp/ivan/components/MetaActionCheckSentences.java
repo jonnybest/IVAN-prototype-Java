@@ -12,10 +12,10 @@ import edu.kit.ipd.alicenlp.ivan.SwingWindow;
  * @author Jonny
  *
  */
-final class CheckSentencesMetaAction extends AbstractAction {
+final class MetaActionCheckSentences extends AbstractAction {
 	Logger log = Logger.getLogger(getClass().getName());
 	
-	CheckSentencesMetaAction(String name) {
+	MetaActionCheckSentences(String name) {
 		super(name);
 	}
 

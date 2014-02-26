@@ -10,7 +10,7 @@ import org.jdesktop.swingx.JXTaskPane;
  * @author Jonny
  *
  */
-final class IgnoreProblemAction extends Quickfix {
+final class QuickfixIgnoreProblem extends Quickfix {
 
 	/**
 	 * 
@@ -18,7 +18,7 @@ final class IgnoreProblemAction extends Quickfix {
 	private final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
 	private final IvanErrorsTaskPaneContainer tp;
 
-	IgnoreProblemAction(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error,
+	QuickfixIgnoreProblem(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error,
 			IvanErrorsTaskPaneContainer tp) {
 		super(name, ivanErrorsTaskPaneContainer.txtEditor);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;

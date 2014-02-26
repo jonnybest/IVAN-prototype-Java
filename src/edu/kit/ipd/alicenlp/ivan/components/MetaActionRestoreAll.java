@@ -11,13 +11,13 @@ import edu.kit.ipd.alicenlp.ivan.SwingWindow;
  * @author Jonny
  *
  */
-final class RestoreAllMetaAction extends AbstractAction {
+final class MetaActionRestoreAll extends AbstractAction {
 	/**
 	 * 
 	 */
 	private final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
 
-	RestoreAllMetaAction(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name) {
+	MetaActionRestoreAll(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name) {
 		super(name);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 	}

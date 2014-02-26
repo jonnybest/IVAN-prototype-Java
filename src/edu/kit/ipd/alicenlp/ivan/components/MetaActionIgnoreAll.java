@@ -10,13 +10,13 @@ import javax.swing.AbstractAction;
  * @author Jonny
  *
  */
-final class IgnoreAllMetaAction extends AbstractAction {
+final class MetaActionIgnoreAll extends AbstractAction {
 	/**
 	 * 
 	 */
 	private final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
 
-	IgnoreAllMetaAction(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name) {
+	MetaActionIgnoreAll(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name) {
 		super(name);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 	}

@@ -269,7 +269,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				|| error.Category.equals(CATEGORY_STYLE)) // for sentences without effect only
 		{
 			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new DeleteSentenceAction(this, displayDescription, error);
+	        javax.swing.Action myAction = new QuickfixDeleteSentence(this, displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -282,7 +282,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{
 			String[] references = error.Reference;
 			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new AddLocationAction(this, displayDescription, error);
+	        javax.swing.Action myAction = new QuickfixAddLocation(this, displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -294,7 +294,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{ 
 			String[] references = error.Reference;
 			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new AddDirectionAction(this, displayDescription, error);
+	        javax.swing.Action myAction = new QuickfixAddDirection(this, displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -311,7 +311,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// the description to display
 	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
 	        
-	        javax.swing.Action myAction = new IgnoreProblemAction(this, displayDescription, error, tp);
+	        javax.swing.Action myAction = new QuickfixIgnoreProblem(this, displayDescription, error, tp);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -323,7 +323,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Ignore all current problems";	        
-		        javax.swing.Action myAction = new IgnoreAllMetaAction(this, displayDescription);
+		        javax.swing.Action myAction = new MetaActionIgnoreAll(this, displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-ignore-all");
 				myQuickfixesForThisError.add(myAction);
@@ -332,7 +332,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Restore ignored problems";	        
-		        javax.swing.Action myAction = new RestoreAllMetaAction(this, displayDescription);
+		        javax.swing.Action myAction = new MetaActionRestoreAll(this, displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-reset-ignore");
 				myQuickfixesForThisError.add(myAction);
@@ -341,7 +341,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Check all sentences";	        
-		        javax.swing.Action myAction = new CheckSentencesMetaAction(displayDescription);
+		        javax.swing.Action myAction = new MetaActionCheckSentences(displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-check");
 				myQuickfixesForThisError.add(myAction);
