@@ -8,7 +8,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
-import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer.IvanErrorInstance;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 
 /** Template class for installing caret tracking

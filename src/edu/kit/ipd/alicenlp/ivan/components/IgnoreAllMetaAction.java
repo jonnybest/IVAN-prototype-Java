@@ -5,8 +5,6 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
-import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer.IvanErrorInstance;
-
 /** This action ignores all currently displayed problems and clears the panel 
  * 
  * @author Jonny

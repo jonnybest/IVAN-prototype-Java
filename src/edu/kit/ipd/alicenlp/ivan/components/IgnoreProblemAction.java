@@ -5,8 +5,6 @@ import java.awt.event.ActionEvent;
 
 import org.jdesktop.swingx.JXTaskPane;
 
-import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer.IvanErrorInstance;
-
 /** This action ignores a single problem
  * 
  * @author Jonny

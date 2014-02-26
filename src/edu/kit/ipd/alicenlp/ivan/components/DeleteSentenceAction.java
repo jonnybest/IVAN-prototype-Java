@@ -2,7 +2,6 @@ package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.event.ActionEvent;
 
-import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer.IvanErrorInstance;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 
 /** This action implements a quick fix: it deletes the offending sentence
