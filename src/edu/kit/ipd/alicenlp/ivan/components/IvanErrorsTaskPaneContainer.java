@@ -290,12 +290,16 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 *
 	 */
 	final class DeleteSentenceAction extends Quickfix {
+		// the underlying issue for this quick fix
+		private IvanErrorInstance Error;
+
 		private DeleteSentenceAction(String name, IvanErrorInstance error) {
 			super(name, txtEditor);
 			// Save "position" of the offending text inside editor frame.
 			// TODO: make a convention to put the whole sentence into the last bucket of the codepoints.
 			CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);			
 			installCaret(sentence);
+			this.Error = error;
 		}
 
 		@Override
@@ -313,6 +317,11 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			
 			// this caret is now useless and can be removed
 			this.sentence.deinstall(txtEditor);
+			
+			// assume this issue to be fixed and remove this error's components
+			for (Component co : Error.Components) {
+				co.getParent().remove(co);
+			}
 		}
 
 		@Override

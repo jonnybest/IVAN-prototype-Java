@@ -1,5 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
+import java.util.logging.Logger;
+
 import javax.swing.AbstractAction;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -16,6 +18,7 @@ public abstract class Quickfix extends AbstractAction {
 
 	protected Caret sentence;
 	private JTextComponent txtEditor;
+	final Logger log = Logger.getLogger(getClass().getName());
 
 	/** This action implements an abstract quick fix.
 	 * 
@@ -37,6 +40,7 @@ public abstract class Quickfix extends AbstractAction {
 		this.sentence.setVisible(false);
 		this.sentence.setDot(sentence.x);
 		this.sentence.moveDot(sentence.y);
+		log.info("Installed Caret for " + sentence);
 	}
 
 }
