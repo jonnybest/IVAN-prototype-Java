@@ -18,6 +18,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import net.sf.extjwnl.JWNLException;
 
@@ -32,6 +33,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.OriginalTextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.CoreMap;
 
 /** Tests the sentence type classifier
@@ -44,6 +46,7 @@ public class HardClassificationTest {
 	static List<CoreMap> negativeslist = new ArrayList<CoreMap>();
 	private static String inputlocs;
 	private static String inputdirs;
+	private static StanfordCoreNLP pipeline;
 
 	/**
 	 * @throws java.lang.Exception
@@ -64,7 +67,7 @@ public class HardClassificationTest {
 	@Test
 	public void classifyFilesSetupTest() {
 		// get instance
-		StaticDynamicClassifier proto = StaticDynamicClassifier.getInstance();
+		StaticDynamicClassifier proto = new StaticDynamicClassifier();
 
 		// annotate corpus examples
 		annotateSentence(inputlocs, setuplist);
@@ -73,7 +76,8 @@ public class HardClassificationTest {
 			
 			Classification result = null;
 			try {
-				result = proto.classifySentence(sentence.get(CoreAnnotations.TextAnnotation.class));
+				result = proto.classifySentenceAnnotation(HardClassificationTest.annotateDeclarations(sentence.get(CoreAnnotations.TextAnnotation.class)).get(
+				SentencesAnnotation.class).get(0));
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
@@ -90,7 +94,8 @@ public class HardClassificationTest {
 		for (CoreMap sentence : negativeslist) {
 			Classification result = null;
 			try {
-				result = proto.classifySentence(sentence.get(OriginalTextAnnotation.class));
+				result = proto.classifySentenceAnnotation(HardClassificationTest.annotateDeclarations(sentence.get(OriginalTextAnnotation.class)).get(
+				SentencesAnnotation.class).get(0));
 			} catch (JWNLException e) {
 				fail("Classifying \"" + sentence + "\" caused an exception.");
 			}
@@ -408,5 +413,37 @@ public class HardClassificationTest {
 		assertThat("passes sentence classified wrong",
 				sentence4.get(SentenceClassificationAnnotation.class),
 				not(is(Classification.ErrorDescription)));
+	}
+
+	/**
+	 * This is just a private convenience method for annotating plain text.
+	 * 
+	 * @param text
+	 * @return
+	 */
+	public static Annotation annotateDeclarations(String text) {
+		Annotation doc = new Annotation(text);
+	
+		if (pipeline == null) {
+			// creates a StanfordCoreNLP object, with POS tagging,
+			// lemmatization, NER, parsing, and coreference resolution
+			Properties props = new Properties();
+			// alternativ: wsj-bidirectional
+			try {
+				props.put(
+						"pos.model",
+						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			props.put("customAnnotatorClass.decl",
+					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
+			// konfiguriere pipeline
+			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
+			pipeline = new StanfordCoreNLP(props);
+		}
+	
+		pipeline.annotate(doc);
+		return doc;
 	}
 }

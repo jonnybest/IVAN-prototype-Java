@@ -1,7 +1,5 @@
 package edu.kit.ipd.alicenlp.ivan.analyzers;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -10,10 +8,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import net.sf.extjwnl.JWNLException;
-import net.sf.extjwnl.data.IndexWord;
-import net.sf.extjwnl.data.POS;
-import net.sf.extjwnl.data.Synset;
-import net.sf.extjwnl.dictionary.Dictionary;
 import edu.kit.ipd.alicenlp.ivan.IvanException;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
@@ -21,7 +15,6 @@ import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
-import edu.kit.ipd.alicenlp.ivan.rules.BaseRule;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectSpeechRule;
 import edu.kit.ipd.alicenlp.ivan.rules.EntitiesSynonymsErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.ErrorRule;
@@ -31,24 +24,12 @@ import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
 import edu.kit.ipd.alicenlp.ivan.rules.LexnameRule;
 import edu.kit.ipd.alicenlp.ivan.rules.TimeRule;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.Annotator;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.AgentGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.ClausalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.EnglishGrammaticalRelations.NominalPassiveSubjectGRAnnotation;
-import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.CoreMap;
 
 /**
@@ -61,17 +42,10 @@ import edu.stanford.nlp.util.CoreMap;
  * 
  */
 public class StaticDynamicClassifier extends IvanAnalyzer {
-	static private StaticDynamicClassifier myinstance = null;
-	private Dictionary dictionary;
 	private Logger log = Logger.getLogger("StaticDynamicClassifier");
-	/**
-	 * this classifier's own private pipeline. in the user didn't bother to go
-	 * through the proper interface.
-	 */
-	private static StanfordCoreNLP pipeline;
 
 	/**
-	 * This is the main method for classificatin. It classifies a single
+	 * This is the main method for classification. It classifies a single
 	 * sentence. It may perform better, if the Annotations from
 	 * DeclarationPositionFinder are present.
 	 * 
@@ -79,7 +53,7 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 	 * @return
 	 * @throws JWNLException
 	 */
-	private Classification classifySentenceAnnotation(CoreMap sentence)
+	public Classification classifySentenceAnnotation(CoreMap sentence)
 			throws JWNLException {
 
 		// before we really get started, we check for errors
@@ -144,53 +118,20 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 	}
 
 	/**
-	 * This is a simple default constructor which sets up wordnet.
-	 * 
-	 */
-	private StaticDynamicClassifier() {
-		// this creates a wordnet dictionary
-
-		if (myinstance == null) {
-			myinstance = this;
-		}
-	}
-
-	/**
 	 * This is the constructor for the Stanford Pipeline Interface
 	 * 
 	 * @param name
 	 * @param properties
 	 */
 	public StaticDynamicClassifier(String name, Properties properties) {
-
-
 		// do not assign any instace, because I fear multiple annotators may be
 		// interfering with each other if the references escape pipeline context
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#setDictionary(net.sf.extjwnl
-	 * .dictionary.Dictionary)
-	 */
-
-	public void setDictionary(Dictionary dictionary) {
-		this.dictionary = dictionary;
-	}
-
-
 	/**
-	 * The classifier is a singleton.
-	 * 
-	 * @return
+	 * This is the simple constructor for a standalone classifier
 	 */
-	public static StaticDynamicClassifier getInstance() {
-		if (myinstance == null) {
-			StaticDynamicClassifier.myinstance = new StaticDynamicClassifier();
-		}
-		return myinstance;
+	public StaticDynamicClassifier() {
 	}
 
 	@Override
@@ -263,9 +204,14 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		}
 	}
 
+	/** This method performs document-wide rule checking
+	 * 
+	 * @param annotation
+	 * @throws JWNLException
+	 */
 	private static void classifyDocument(Annotation annotation)
 			throws JWNLException {
-		// TODO: implement document-wide error checking
+		// document-wide error checking
 		List<IvanErrorMessage> errors = annotation
 				.get(DocumentErrorAnnotation.class);
 		if (errors == null)
@@ -298,50 +244,5 @@ public class StaticDynamicClassifier extends IvanAnalyzer {
 		myreqs.addAll(TOKENIZE_SSPLIT_POS_LEMMA);
 		// myreqs.add(PARSE_REQUIREMENT);
 		return myreqs;
-	}
-
-
-	/**
-	 * Classify an unprocessed text.
-	 * 
-	 * @param text
-	 * @return
-	 * @throws JWNLException
-	 */
-	public Classification classifySentence(String text) throws JWNLException {
-		return classifySentenceAnnotation(annotateDeclarations(text).get(
-				SentencesAnnotation.class).get(0));
-	}
-
-	/**
-	 * This is just a private convenience method for annotating plain text.
-	 * 
-	 * @param text
-	 * @return
-	 */
-	private static Annotation annotateDeclarations(String text) {
-		Annotation doc = new Annotation(text);
-
-		if (pipeline == null) {
-			// creates a StanfordCoreNLP object, with POS tagging,
-			// lemmatization, NER, parsing, and coreference resolution
-			Properties props = new Properties();
-			// alternativ: wsj-bidirectional
-			try {
-				props.put(
-						"pos.model",
-						"edu/stanford/nlp/models/pos-tagger/wsj-bidirectional/wsj-0-18-bidirectional-distsim.tagger");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			props.put("customAnnotatorClass.decl",
-					"edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder");
-			// konfiguriere pipeline
-			props.put("annotators", "tokenize, ssplit, pos, lemma, parse, decl"); //$NON-NLS-1$ //$NON-NLS-2$
-			pipeline = new StanfordCoreNLP(props);
-		}
-
-		pipeline.annotate(doc);
-		return doc;
 	}
 }
