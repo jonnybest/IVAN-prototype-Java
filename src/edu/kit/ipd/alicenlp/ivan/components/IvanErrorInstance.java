@@ -3,6 +3,7 @@ package edu.kit.ipd.alicenlp.ivan.components;
 import java.awt.Component;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.swing.text.Caret;
 
@@ -14,7 +15,8 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
  *
  */
 public class IvanErrorInstance {
-
+	Logger log = Logger.getLogger(getClass().getName());
+	
 	/**
 	 * Related text from the document (like an offending preposition)
 	 */
