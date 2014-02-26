@@ -19,19 +19,19 @@ import edu.stanford.nlp.util.Pair;
  * @author Jonny
  *
  */
-public class RecognitionStatePrinter {
+public class IvanDiscourseModelPrinter {
 
 	char separator = ' ';
 	//char separator = '\n';
 	
 	private DiscourseModel declarations;
 
-	public RecognitionStatePrinter()
+	public IvanDiscourseModelPrinter()
 	{
 		// default is alright
 	}
 	
-	public RecognitionStatePrinter(DiscourseModel entitiesState) {
+	public IvanDiscourseModelPrinter(DiscourseModel entitiesState) {
 		declarations = entitiesState;
 	}
 

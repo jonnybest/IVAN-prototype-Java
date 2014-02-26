@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
-import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
+import edu.kit.ipd.alicenlp.ivan.components.IvanDiscourseModelPrinter;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -16,7 +16,7 @@ import edu.stanford.nlp.pipeline.Annotation;
  * @author Jonny
  *
  */
-public class RecognitionStateTest extends RecognitionStatePrinter {
+public class RecognitionStateTest extends IvanDiscourseModelPrinter {
 
 	/** creates a RecognitionStatePrinter 
 	 * 
