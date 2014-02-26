@@ -5,7 +5,6 @@ package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,7 +18,6 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
@@ -36,7 +34,6 @@ import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
-import edu.kit.ipd.alicenlp.ivan.SwingWindow;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
@@ -70,189 +67,10 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	public static final String CATEGORY_AMBIGOUS = "ambigous";
 	
 	// quick fix constants (action keys)
-	private static final String QF_ERROR = "error";
-	private static final String QF_NAME = "qf-name";
+	static final String QF_ERROR = "error";
+	static final String QF_NAME = "qf-name";
 
 	
-	
-	/** This action invokes the pipeline and checks the sentence
-	 * 
-	 * @author Jonny
-	 *
-	 */
-	private final class CheckSentencesMetaAction extends AbstractAction {
-		private CheckSentencesMetaAction(String name) {
-			super(name);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
-			log.info("Running pipeline");
-			SwingWindow.processText();
-		}
-
-		@Override
-		public String toString() {
-			String qf_shorthand = (String) getValue(QF_NAME);
-			
-			StringBuilder outstr = new StringBuilder();
-			
-			//outstr.append("\t");	    			
-			outstr.append(qf_shorthand);
-			
-			return outstr.toString();
-		}
-	}
-
-	/** This action restores all previously ignored problems
-	 * 
-	 * @author Jonny
-	 *
-	 */
-	private final class RestoreAllMetaAction extends AbstractAction {
-		private RestoreAllMetaAction(String name) {
-			super(name);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
-			log.info("Restoring error display");
-			// TODO: implement RestoreAllMetaAction
-			ignoredProblems.clear();
-			SwingWindow.processText();
-		}
-
-		@Override
-		public String toString() {
-			String qf_shorthand = (String) getValue(QF_NAME);
-			
-			StringBuilder outstr = new StringBuilder();
-			
-			//outstr.append("\t");	    			
-			outstr.append(qf_shorthand);
-			
-			return outstr.toString();
-		}
-	}
-
-	/** This action ignores all currently displayed problems and clears the panel 
-	 * 
-	 * @author Jonny
-	 *
-	 */
-	private final class IgnoreAllMetaAction extends AbstractAction {
-		private IgnoreAllMetaAction(String name) {
-			super(name);
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-
-			log.info("Ignoring all currently displayed errors");
-
-			// for each panel...
-			ignoredProblems.addAll(bagofProblems);
-			for (IvanErrorInstance error : bagofProblems) {				
-				for (Component comp : error.Components) {
-					comp.getParent().remove(comp);
-				}
-				error.Components.clear();
-			}
-			bagofProblems.clear();
-			updateUI();
-		}
-
-		@Override
-		public String toString() {
-			String qf_shorthand = (String) getValue(QF_NAME);
-			
-			StringBuilder outstr = new StringBuilder();
-			
-			//outstr.append("\t");	    			
-			outstr.append(qf_shorthand);
-			
-			return outstr.toString();
-		}
-	}
-
-	/** This action ignores a single problem
-	 * 
-	 * @author Jonny
-	 *
-	 */
-	private final class IgnoreProblemAction extends Quickfix {
-
-		private final IvanErrorsTaskPaneContainer tp;
-
-		private IgnoreProblemAction(String name, IvanErrorInstance error,
-				IvanErrorsTaskPaneContainer tp) {
-			super(name, txtEditor);
-			this.Error = error;
-			this.tp = tp;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// only remove pertaining components 
-			for (Component co : Error.Components) {
-				co.getParent().remove(co);
-			}
-			Error.Components.clear(); // only you can prevent memory leaks :)
-			
-			// get this category panel
-			JXTaskPane panel = mypanes.get(Error.Category);
-			// update visuals
-			panel.updateUI();
-			// save this problem as "ignored" 
-			ignoredProblems.add(Error);
-			// remove it from the problems which are currently of concern
-			bagofProblems.remove(Error);
-			log.info("This action's error is " + getValue(QF_ERROR));
-			log.info(tp.toString());
-		}
-
-		@Override
-		public String toString() {
-			return qfActionPrinter(this);
-		}
-	}
-
-	/** This action implements a quick fix: it adds a location
-	 * 
-	 * @author Jonny
-	 *
-	 */
-	private final class AddLocationAction extends Quickfix {
-		final private IvanErrorInstance myerror;
-		private List<String> stubs = new ArrayList<String>();
-
-		private AddLocationAction(String name, IvanErrorInstance error2) {
-			super(name, txtEditor);
-			this.myerror = error2;
-			stubs.addAll(Arrays.asList(new String[]{
-				" is in the left front.",
-				" is in the right front.",
-				" is in the background to the left."}));
-			
-			installCaret(error2.Codepoints.get(0));
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
-			log.info("I'm adding a location.");
-			insertSentenceStub(myerror, stubs, " is in the …. ", "in the …");
-			log.info("This action's error is " + getValue(QF_ERROR));
-		}
-
-
-		@Override
-		public String toString() {
-			return qfActionPrinter(this);
-		}
-	}
 	
 	/** Finds the position where a new sentence can be inserted.
 	 * More precisely it returns the character index after the next sentence termination mark. 
@@ -284,74 +102,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			lastMark = Math.min(lastExc, lastMark) + 1;
 		// returns either the earliest mark or EOF if no mark is present
 		return lastMark;
-	}
-
-	/** This action implements a quick fix: it deletes the offending sentence
-	 * 
-	 * @author Jonny
-	 *
-	 */
-	final class DeleteSentenceAction extends Quickfix {
-		// the underlying issue for this quick fix
-		private IvanErrorInstance Error;
-
-		private DeleteSentenceAction(String name, IvanErrorInstance error) {
-			super(name, txtEditor);
-			// Save "position" of the offending text inside editor frame.
-			// TODO: make a convention to put the whole sentence into the last bucket of the codepoints.
-			CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);			
-			installCaret(sentence);
-			this.Error = error;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {			
-			
-			// obtain positions
-			txtEditor.getCaret().setDot(this.sentence.getDot());
-			txtEditor.getCaret().moveDot(this.sentence.getMark());
-			
-			// delete it. this is undoable
-			txtEditor.replaceSelection("");
-			// get the focus so user can start editing right away
-			txtEditor.requestFocusInWindow();
-			log.info("This action's error is " + getValue(QF_ERROR));
-			
-			removeError(Error);
-		}
-
-		@Override
-		public String toString() {
-			return qfActionPrinter(this);
-		}
-	}
-
-	private final class AddDirectionAction extends Quickfix {
-		private List<String> stubs = new ArrayList<String>();		
-
-		private AddDirectionAction(String name, IvanErrorInstance error) {
-			super(name, txtEditor);
-			Error = error;
-			stubs.addAll(Arrays.asList(new String[]{
-					" is facing the camera.",
-					" is facing front.",
-					" is turned to the right."}));
-			
-			installCaret(error.Codepoints.get(0));
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			//String name = (String) getValue(SHORT_DESCRIPTION);
-			log.info("I'm adding a direction.");
-			insertSentenceStub(Error, stubs, " is facing ….", "…");
-			log.info("This action's error is " + getValue(QF_ERROR));
-		}
-
-		@Override
-		public String toString() {
-			return qfActionPrinter(this);
-		}
 	}
 
 	/** This is the error representation for the Errors Task Pane
@@ -489,15 +239,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 
-	private Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
+	Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
 	final private Font errorInfoFont = new Font("Calibri", 0, 11);
 	JTextComponent txtEditor = null;
 
 	/** A bag of problems which have been ignored by the user and should subsequently not be displayed any more.
 	 * 
 	 */
-	private Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
-	private Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
+	Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
+	Set<IvanErrorInstance>  bagofProblems = new HashSet<IvanErrorsTaskPaneContainer.IvanErrorInstance>();
 	private Collection<IvanErrorInstance> gen0 = new HashSet<>();
 	
 
@@ -657,7 +407,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				|| error.Category.equals(CATEGORY_STYLE)) // for sentences without effect only
 		{
 			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new DeleteSentenceAction(displayDescription, error);
+	        javax.swing.Action myAction = new DeleteSentenceAction(this, displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -670,7 +420,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{
 			String[] references = error.Reference;
 			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new AddLocationAction(displayDescription, error);
+	        javax.swing.Action myAction = new AddLocationAction(this, displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -682,7 +432,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		{ 
 			String[] references = error.Reference;
 			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new AddDirectionAction(displayDescription, error);
+	        javax.swing.Action myAction = new AddDirectionAction(this, displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			
@@ -699,7 +449,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// the description to display
 	        String displayDescription = "Ignore problem in " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
 	        
-	        javax.swing.Action myAction = new IgnoreProblemAction(displayDescription, error, tp);
+	        javax.swing.Action myAction = new IgnoreProblemAction(this, displayDescription, error, tp);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -711,7 +461,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Ignore all current problems";	        
-		        javax.swing.Action myAction = new IgnoreAllMetaAction(displayDescription);
+		        javax.swing.Action myAction = new IgnoreAllMetaAction(this, displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-ignore-all");
 				myQuickfixesForThisError.add(myAction);
@@ -720,7 +470,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			{
 				// the description to display
 		        String displayDescription = "Restore ignored problems";	        
-		        javax.swing.Action myAction = new RestoreAllMetaAction(displayDescription);
+		        javax.swing.Action myAction = new RestoreAllMetaAction(this, displayDescription);
 				// set the shorthand notation for this qf
 				myAction.putValue(QF_NAME, "mf-reset-ignore");
 				myQuickfixesForThisError.add(myAction);
@@ -823,7 +573,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * @param markThisPart 
 	 * 
 	 */
-	private void insertSentenceStub(IvanErrorInstance myerror, List<String> stubs, String defaultStub, String markThisPart) {
+	void insertSentenceStub(IvanErrorInstance myerror, List<String> stubs, String defaultStub, String markThisPart) {
 		String[] unlocatedNames = myerror.Reference;
 		/* Create location sentences.
 		 * 1. find the insertion point. The insertion point is somewhere to the right of the last cue.
