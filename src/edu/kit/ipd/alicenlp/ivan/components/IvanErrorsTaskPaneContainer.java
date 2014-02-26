@@ -20,8 +20,6 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
-import javax.swing.plaf.basic.BasicTextUI;
-import javax.swing.plaf.basic.BasicTextUI.BasicCaret;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;

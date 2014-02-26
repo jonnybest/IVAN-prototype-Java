@@ -4,7 +4,6 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static edu.kit.ipd.alicenlp.ivan.tests.TestUtilities.annotateClassifications;
-import static edu.stanford.nlp.util.logging.Redwood.log;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertNotNull;
@@ -29,20 +28,11 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.*;
-import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
-import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
-import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.OriginalTextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.SpanAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.logging.Redwood;
 
 /** Tests the sentence type classifier
  * @author Jonny

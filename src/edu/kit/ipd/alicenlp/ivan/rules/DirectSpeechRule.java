@@ -5,11 +5,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import net.sf.extjwnl.JWNLException;
 import edu.stanford.nlp.ling.CoreAnnotations.SpeakerAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.util.CoreMap;
 

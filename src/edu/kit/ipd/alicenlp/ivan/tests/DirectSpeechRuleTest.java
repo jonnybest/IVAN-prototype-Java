@@ -1,18 +1,12 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.junit.Assert.*;
-import net.sf.extjwnl.JWNLException;
-
 import org.junit.Test;
 
-import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
-import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.rules.DirectSpeechRule;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.CoreMap;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.*;
 
 
 public class DirectSpeechRuleTest {

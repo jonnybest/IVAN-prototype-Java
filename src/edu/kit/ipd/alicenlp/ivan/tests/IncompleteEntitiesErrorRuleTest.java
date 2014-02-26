@@ -10,10 +10,8 @@ import net.sf.extjwnl.JWNLException;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
-import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.DocumentErrorAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
-import edu.kit.ipd.alicenlp.ivan.rules.AliasByCorefRule;
 import edu.kit.ipd.alicenlp.ivan.rules.IncompleteEntitiesErrorRule;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;

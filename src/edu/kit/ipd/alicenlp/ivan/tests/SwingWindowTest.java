@@ -9,10 +9,6 @@ import static org.junit.Assert.assertThat;
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.SwingWindow;
-import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefAnnotation;
-import edu.stanford.nlp.ling.CoreAnnotation;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.util.TypesafeMap.Key;
 
 /** Tests the Main window
  * 

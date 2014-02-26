@@ -1,19 +1,15 @@
 package edu.kit.ipd.alicenlp.ivan.tests;
 
 import static org.hamcrest.core.Is.*;
-import static org.hamcrest.core.IsCollectionContaining.*;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import edu.kit.ipd.alicenlp.ivan.IvanException;
-import edu.kit.ipd.alicenlp.ivan.analyzers.DeclarationPositionFinder;
 import edu.kit.ipd.alicenlp.ivan.components.RecognitionStatePrinter;
 import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
-import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.util.CoreMap;
 
 /** This class tests the emitter. It also tests the internal conditions.
  * 
