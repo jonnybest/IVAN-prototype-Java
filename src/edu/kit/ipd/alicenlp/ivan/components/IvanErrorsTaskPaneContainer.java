@@ -44,6 +44,8 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 @SuppressWarnings("serial")
 public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
+	private static final String CHECK_ALL_SENTENCES = "Check all sentences";
+
 	Logger log = Logger.getLogger("IvanErrorsTaskPaneContainer");
 	
 	// headline constants
@@ -118,6 +120,47 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 */
 	public IvanErrorsTaskPaneContainer(JTextComponent editor) {
 		txtEditor = editor;
+		
+
+		/** Create META actions */
+		IvanErrorsTaskPaneContainer tpc = this;
+		
+		JXTaskPane tsk = createCategory(CATEGORY_META, "Click '" + CHECK_ALL_SENTENCES + "' to begin or hit Ctrl+S.");
+		
+		tsk.setName(CATEGORY_META); 
+        tpc.add(tsk); 
+        
+        ApplicationActionMap map = Application.getInstance().getContext().getActionMap(tsk); 
+        
+		/* IGNORE ALL */
+		{
+			// the description to display
+	        String displayDescription = "Ignore all current problems";	        
+	        javax.swing.Action myAction = new MetaActionIgnoreAll(this, displayDescription);
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "mf-ignore-all");
+			tsk.add(myAction);
+	        map.put(myAction.getValue(QF_NAME), myAction);	
+		}
+		/* RESET IGNORED */
+		{
+			// the description to display
+	        String displayDescription = "Restore ignored problems";	        
+	        javax.swing.Action myAction = new MetaActionRestoreAll(this, displayDescription);
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "mf-reset-ignore");
+			tsk.add(myAction);
+	        map.put(myAction.getValue(QF_NAME), myAction);	
+		}
+		/* CHECK all sentences */
+		{
+			javax.swing.Action myAction = new MetaActionCheckSentences(CHECK_ALL_SENTENCES);
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, "mf-check");
+			tsk.add(myAction);
+	        map.put(myAction.getValue(QF_NAME), myAction);	
+		}
+	
 	}
 	
 	/** This method allows printing all the currently displayed errors and warnings in a readable, diff-able manner 
@@ -161,24 +204,26 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 * 
 	 * @param title
 	 * @param description
+	 * @return 
 	 */
-	public void createCategory(String title, String description) {
+	public JXTaskPane createCategory(String title, String description) {
 		// does this pane already exist?
 		if(mypanes.containsKey(title))
 		{
 			// yes. nop.
-			return;
+			return mypanes.get(title);
 		}
 		
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
 		if(description != null){
-			description = "<html>" + description; // enables word wrap
+//			description = "<html>" + description; // enables word wrap
 			JLabel lbl = new JLabel(description);		
 			lbl.setFont(errorInfoFont);
 			pane.add(lbl);
 		}
 		mypanes.put(title, pane);
+		return pane;
 	}
 
 	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
@@ -206,7 +251,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 					return false;
 				}
 				// add another quick fix for this category
-				error.StandardCaret = installCaret(error);
+				if(!CATEGORY_META.equals(category)){
+					error.StandardCaret = installCaret(error);
+				}
 				createQuickfixes(error);
 				return true;
 			}
@@ -318,35 +365,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			myAction.putValue(QF_NAME, "qf-ignore");
 			myQuickfixesForThisError.add(myAction);
 		}
-		else { /** Create META actions */
-			/* IGNORE ALL */
-			{
-				// the description to display
-		        String displayDescription = "Ignore all current problems";	        
-		        javax.swing.Action myAction = new MetaActionIgnoreAll(this, displayDescription);
-				// set the shorthand notation for this qf
-				myAction.putValue(QF_NAME, "mf-ignore-all");
-				myQuickfixesForThisError.add(myAction);
-			}
-			/* RESET IGNORED */
-			{
-				// the description to display
-		        String displayDescription = "Restore ignored problems";	        
-		        javax.swing.Action myAction = new MetaActionRestoreAll(this, displayDescription);
-				// set the shorthand notation for this qf
-				myAction.putValue(QF_NAME, "mf-reset-ignore");
-				myQuickfixesForThisError.add(myAction);
-			}
-			/* CHECK all sentences */
-			{
-				// the description to display
-		        String displayDescription = "Check all sentences";	        
-		        javax.swing.Action myAction = new MetaActionCheckSentences(displayDescription);
-				// set the shorthand notation for this qf
-				myAction.putValue(QF_NAME, "mf-check");
-				myQuickfixesForThisError.add(myAction);
-			}
-		}
+		else {}
 		
 		return myQuickfixesForThisError;
 	}
