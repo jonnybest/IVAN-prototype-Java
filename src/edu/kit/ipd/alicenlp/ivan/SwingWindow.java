@@ -452,7 +452,7 @@ public class SwingWindow {
 
 		errorScrollPane = new JScrollPane(containerTaskPanel);
 		// prevent indefinate shrinking
-		errorScrollPane.setMinimumSize(new Dimension(200, 127));
+		errorScrollPane.setMinimumSize(new Dimension(222, 127));
 
 		GridBagConstraints scrollpanelLayout = new GridBagConstraints();
 		// middle, right
@@ -730,7 +730,7 @@ public class SwingWindow {
 		File what = new File(documentpath);
 		what.createNewFile();
 
-		GitManager.safeInit();
+//		GitManager.safeInit();
 	}
 
 	/** Runs a text analysis and manages user visible feedback

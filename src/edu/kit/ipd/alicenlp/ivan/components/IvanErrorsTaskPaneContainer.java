@@ -4,7 +4,12 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,10 +28,12 @@ import javax.swing.JLabel;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.View;
 
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
+import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
@@ -71,7 +78,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	
 	
 	Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
-	final private Font errorInfoFont = new Font("Calibri", 0, 11);
+	final private static Font errorInfoFont = new Font("Calibri", 0, 11);
 	JTextComponent txtEditor = null;
 
 	/** A bag of problems which have been ignored by the user and should subsequently not be displayed any more.
@@ -185,8 +192,28 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		pane.setTitle(title);
 		if(description != null){
 //			description = "<html>" + description; // enables word wrap
-			JLabel lbl = new JLabel(description);		
+			final JXLabel lbl = new JXLabel(description);
 			lbl.setFont(errorInfoFont);
+			lbl.setLineWrap(true);
+			lbl.addComponentListener(new ComponentListener() {
+				
+				@Override
+				public void componentShown(ComponentEvent arg0) {}
+				
+				@Override
+				public void componentResized(ComponentEvent arg0) {
+					log.info("resiz");
+					lbl.setPreferredSize(getPreferredSize(lbl.getText(), true, 220));
+				}
+				
+				@Override
+				public void componentMoved(ComponentEvent arg0) {
+					lbl.setPreferredSize(getPreferredSize(lbl.getText(), true, 220));					
+				}
+				
+				@Override
+				public void componentHidden(ComponentEvent arg0) {}
+			});
 			pane.add(lbl);
 		}
 		mypanes.put(title, pane);
@@ -436,4 +463,31 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		gen0.addAll(bagofProblems);
 		gen0.addAll(ignoredProblems);
 	}
+	
+	private static final JXLabel resizer = new JXLabel();
+	 
+    /**Returns the preferred size to set a component at in order to render
+     * an html string.  You can specify the size of one dimension.
+     * @param html 
+     * @param width 
+     * @param prefSize 
+     * @return */
+    public static java.awt.Dimension getPreferredSize(String html,
+                                                      boolean width, int prefSize) {
+ 
+        resizer.setText(html);
+        resizer.setLineWrap(true);
+        resizer.setFont(errorInfoFont);
+ 
+        View view = (View) resizer.getClientProperty(
+                javax.swing.plaf.basic.BasicHTML.propertyKey);
+ 
+        view.setSize(width?prefSize:0,width?0:prefSize);
+ 
+        float w = view.getPreferredSpan(View.X_AXIS);
+        float h = view.getPreferredSpan(View.Y_AXIS);
+ 
+        return new java.awt.Dimension((int) Math.ceil(w),
+                (int) Math.ceil(h));
+    }
 }
