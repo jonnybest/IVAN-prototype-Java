@@ -98,6 +98,7 @@ public class IvanErrorInstance {
 				}
 			}
 			else {
+				log.fine("Caret exists");
 				// if the caret is present, this error has been displayed to the user and bounds may have changed since.
 				// compare last bounds only
 				IvanErrorInstance otherError = (IvanErrorInstance) obj;
@@ -105,6 +106,8 @@ public class IvanErrorInstance {
 						&& Problem.equals(otherError.Problem)){
 					CodePoint oErrlastCodepoint = otherError.Codepoints.get(otherError.Codepoints.size()-1);
 					CodePoint tErrCp = new CodePoint(StandardCaret.getDot(), StandardCaret.getMark());
+					if(tErrCp.equals(oErrlastCodepoint))
+						log.info("code points not equal");
 					return tErrCp.equals(oErrlastCodepoint);
 				}
 			}
