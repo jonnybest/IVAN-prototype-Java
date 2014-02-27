@@ -94,7 +94,7 @@ public class GitManager {
 		try {
 			if (git == null)
 				git = getGit();
-
+			
 			// try and create a branch for this file
 			CheckoutCommand co = git.checkout();
 			co.setName(branch);
@@ -217,14 +217,14 @@ public class GitManager {
 		try {
 			myGit.status().call();
 		} catch (NullPointerException e) {
-
+			// there is no git!
 			myGit = Git.init().setDirectory(new File(TRACKINGPATH))
 					.setBare(false).call();
-
-			if (!myGit.status().call().isClean()) {
-				myGit.commit().setAll(true)
-						.setMessage(COMMITED_DANGLING_CHANGES).call();
-			}
+		}
+		if (!myGit.status().call().isClean()) {
+			myGit.add().addFilepattern(DOCUMENT_TXT).call();
+			myGit.commit().setAll(true)
+			.setMessage(COMMITED_DANGLING_CHANGES).call();
 		}
 		checkout("master", myGit);
 
