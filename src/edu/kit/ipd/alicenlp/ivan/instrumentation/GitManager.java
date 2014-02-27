@@ -26,10 +26,18 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 public class GitManager {
+	private static final String COMMITED_DANGLING_CHANGES = "commited dangling changes";
 	private static final String DOCUMENT_TXT = "document.txt";
+	/**
+	 * The path to the folder which should contain the tracking
+	 */
 	final public static String TRACKINGPATH = "tracking/";
 	private static Git myGit; 
 	
+	/** Commit to the current repository
+	 * @param branch
+	 * @return
+	 */
 	public static boolean commit(String branch)
 	{
 		if (branch.isEmpty()) {
@@ -128,7 +136,10 @@ public class GitManager {
 		return git;
 	}
 
-	public static void tag(String tagname) {
+	/** Tag the current repository at the HEAD
+	 * @param tagname
+	 */
+	public static void tag(final String tagname) {
 		Git git = null;
 		try {
 			git = getGit();
@@ -186,16 +197,23 @@ public class GitManager {
 		}		
 	}
 
+	/** Attempt to initialize a repository if there is none 
+	 * 
+	 * @throws GitAPIException
+	 * @throws IOException
+	 */
 	public static void safeInit() throws GitAPIException, IOException {
 		if(myGit != null)
 			return;
 		
+		myGit.status().call();
+				
 		myGit = Git.init().setDirectory(new File(TRACKINGPATH))
 		.setBare(false).call();
 		
 		if(!myGit.status().call().isClean())
 		{
-			myGit.commit().setAll(true).setMessage("commited dangling changes").call();
+			myGit.commit().setAll(true).setMessage(COMMITED_DANGLING_CHANGES).call();
 		}
 		checkout("master", myGit);
 		

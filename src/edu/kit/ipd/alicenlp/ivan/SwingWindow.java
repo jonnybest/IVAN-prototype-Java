@@ -730,7 +730,7 @@ public class SwingWindow {
 		File what = new File(documentpath);
 		what.createNewFile();
 
-//		GitManager.safeInit();
+		GitManager.safeInit();
 	}
 
 	/** Runs a text analysis and manages user visible feedback
