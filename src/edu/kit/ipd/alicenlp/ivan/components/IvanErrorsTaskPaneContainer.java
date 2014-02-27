@@ -4,12 +4,7 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,12 +24,10 @@ import javax.swing.JLabel;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.View;
 
 import org.apache.commons.lang.StringUtils;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
-import org.jdesktop.swingx.JXLabel;
 import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
@@ -79,6 +73,8 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	
 	Map<String, JXTaskPane> mypanes = new TreeMap<String, JXTaskPane>();
 	final private static Font errorInfoFont = new Font("Calibri", 0, 11);
+
+	private static final int MAXIMUM_LABEL_LENGTH = 40;
 	JTextComponent txtEditor = null;
 
 	/** A bag of problems which have been ignored by the user and should subsequently not be displayed any more.
@@ -191,33 +187,48 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		JXTaskPane pane = new JXTaskPane();
 		pane.setTitle(title);
 		if(description != null){
-//			description = "<html>" + description; // enables word wrap
-			final JXLabel lbl = new JXLabel(description);
-			lbl.setFont(errorInfoFont);
-			lbl.setLineWrap(true);
-			lbl.addComponentListener(new ComponentListener() {
-				
-				@Override
-				public void componentShown(ComponentEvent arg0) {}
-				
-				@Override
-				public void componentResized(ComponentEvent arg0) {
-					log.info("resiz");
-					lbl.setPreferredSize(getPreferredSize(lbl.getText(), true, 220));
-				}
-				
-				@Override
-				public void componentMoved(ComponentEvent arg0) {
-					lbl.setPreferredSize(getPreferredSize(lbl.getText(), true, 220));					
-				}
-				
-				@Override
-				public void componentHidden(ComponentEvent arg0) {}
-			});
-			pane.add(lbl);
+			String[] lines = splitDescription(description, MAXIMUM_LABEL_LENGTH);
+			for (String l : lines) {
+				JLabel lbl = (JLabel) pane.add(new JLabel(l));
+				lbl.setFont(errorInfoFont);
+			}
 		}
 		mypanes.put(title, pane);
 		return pane;
+	}
+
+	/** a simple splitter function from http://stackoverflow.com/a/14160155/651720
+	 * 
+	 * @param input
+	 * @param maxCharInLine
+	 * @return
+	 */
+	private static String[] splitDescription(String input,
+			int maxCharInLine) 
+	{
+	    StringTokenizer tok = new StringTokenizer(input, " ");
+	    StringBuilder output = new StringBuilder(input.length());
+	    int lineLen = 0;
+	    while (tok.hasMoreTokens()) {
+	        String word = tok.nextToken();
+
+	        while(word.length() > maxCharInLine){
+	            output.append(word.substring(0, maxCharInLine-lineLen) + "\n");
+	            word = word.substring(maxCharInLine-lineLen);
+	            lineLen = 0;
+	        }
+
+	        if (lineLen + word.length() > maxCharInLine) {
+	            output.append("\n");
+	            lineLen = 0;
+	        }
+	        output.append(word + " ");
+
+	        lineLen += word.length() + 1;
+	    }
+	    // output.split();
+	    // return output.toString();
+	    return output.toString().split("\n");
 	}
 
 	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
@@ -464,30 +475,4 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		gen0.addAll(ignoredProblems);
 	}
 	
-	private static final JXLabel resizer = new JXLabel();
-	 
-    /**Returns the preferred size to set a component at in order to render
-     * an html string.  You can specify the size of one dimension.
-     * @param html 
-     * @param width 
-     * @param prefSize 
-     * @return */
-    public static java.awt.Dimension getPreferredSize(String html,
-                                                      boolean width, int prefSize) {
- 
-        resizer.setText(html);
-        resizer.setLineWrap(true);
-        resizer.setFont(errorInfoFont);
- 
-        View view = (View) resizer.getClientProperty(
-                javax.swing.plaf.basic.BasicHTML.propertyKey);
- 
-        view.setSize(width?prefSize:0,width?0:prefSize);
- 
-        float w = view.getPreferredSpan(View.X_AXIS);
-        float h = view.getPreferredSpan(View.Y_AXIS);
- 
-        return new java.awt.Dimension((int) Math.ceil(w),
-                (int) Math.ceil(h));
-    }
 }

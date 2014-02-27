@@ -451,8 +451,9 @@ public class SwingWindow {
 		contentPane.add(txtEditor, textfieldLayout);
 
 		errorScrollPane = new JScrollPane(containerTaskPanel);
-		// prevent indefinate shrinking
+		// prevent indefinite shrinking
 		errorScrollPane.setMinimumSize(new Dimension(222, 127));
+		errorScrollPane.setMaximumSize(new Dimension(222, 3000));
 
 		GridBagConstraints scrollpanelLayout = new GridBagConstraints();
 		// middle, right
