@@ -82,14 +82,24 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class SwingWindow {
 
+	@SuppressWarnings("serial")
+	private class SwingAction extends AbstractAction {
+		public SwingAction() {
+			putValue(NAME, "SwingAction");
+			putValue(SHORT_DESCRIPTION, "Some short description");
+		}
+
+		public void actionPerformed(ActionEvent e) {
+		}
+	}
 	private static final String ERROR_MISSING_A_DIRECTION = "These entities are missing a direction. Where or what do they face?";
 	private static final String ERROR_ENTITIES_ARE_MISSING_A_LOCATION = "These entities are missing a location. Where do they stand in the scene?";
 	private static final String ERROR_STYLE = "This error means that something in the text does not fit well.";
 	private static final String ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY = "This error means that the analyzer tried to process this sentence and could not proceed, because a word is missing in our dictionary. It would be best, if you could come up with a different word here.";
 	private static final String ERROR_ENTITIES_SHARE_A_SYNONYM = "This error means that two distinct entities share a synonym. Try giving names to the characters and things to resolve this issue.";
 	private static final String ERROR_UNUSUAL_STRUCTURE = "IVAN could not properly analyze this sentence, because of it's unusual structure. Maybe try a shorter sentence instead?";
-	private static final String ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
 
+	private static final String ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
 	protected static final String PROPERTIES_ANNOTATORS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier";
 	protected static final String DEFAULT_TEXT = "The ground is covered with grass, the sky is blue. \n"
 			+ "In the background on the left hand side there is a PalmTree. \n"
@@ -102,38 +112,70 @@ public class SwingWindow {
 			+ "The Bunny hops three times to the Mailbox. \n" + "The Bunny opens the Mailbox. \n"
 			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
 			+ "The Frog hops two times to the Bunny. \n" + "The Frog disappears. A short time passes.";
-	private static final String DOCUMENT_TXT = "document.txt";
 	
+	private static final String DOCUMENT_TXT = "document.txt";
 	private static Logger log = Logger.getLogger(SwingWindow.class.getName());
 	private static SwingWindow instance;
-	private org.joda.time.DateTime stopwatch;
-	private JFrame frmvanInput;
+	private static void checkout(String file2ref) {
+		GitManager.checkout(file2ref, null);
+	}
 	/**
-	 * editor panel
+	 * Makes sure that any given name is converted into a valid ref name. git
+	 * imposes the following rules on how references are named:
+	 * 
+	 * 1. They can include slash / for hierarchical (directory) grouping, but no
+	 * slash-separated component can begin with a dot ..
+	 * 
+	 * 2. They must contain at least one /. This enforces the presence of a
+	 * category like heads/, tags/ etc. but the actual names are not restricted.
+	 * 
+	 * 3. They cannot have two consecutive dots .. anywhere.
+	 * 
+	 * 4. They cannot have ASCII control characters (i.e. bytes whose values are
+	 * lower than \040, or \177 DEL), space, tilde ~, caret ^, colon :,
+	 * question-mark ?, asterisk *, or open bracket [ anywhere.
+	 * 
+	 * 5. They cannot end with a slash / nor a dot ..
+	 * 
+	 * 6. They cannot end with the sequence .lock.
+	 * 
+	 * 7. They cannot contain a sequence @{.
+	 * 
+	 * 8. They cannot contain a \.
+	 * 
+	 * @param file
+	 * @return
 	 */
-	private TextEditorPane txtEditor;
-	/**
-	 * errors panel
-	 */
-	private IvanErrorsTaskPaneContainer containerTaskPanel;
 
-	StyleContext sc = new StyleContext();
-	protected AttributeSet DefaultStyle;
-	/**
-	 * This is the text pane for writing user output.
-	 */
-	private JTextPane emitterTextPane;
+	public static String file2ref(String file) {
+		String ofile = file, // "old file"
+		nfile = file; // "new file"
+		do {
+			ofile = nfile; // "new" is the new "old"
 
-	private JXBusyLabel busyLabel;
-	private JButton btnSaveCheck;
-	private Component horizontalGlue;
-	private String currentFileName = null;
-	private JMenuBar menuBar;
-	protected boolean isSpellingOkay;
-	private List<RuleMatch> spellingErrors = new ArrayList<>();
-	private JScrollPane errorScrollPane;
-	private JLabel coords;
+			// 3. no double dots
+			nfile = ofile.replace("..", ".");
 
+		} while (!ofile.equals(nfile));
+
+		// work with a char array
+		char[] f = nfile.toCharArray();
+		// 4. no low values
+		for (int i = 0; i < f.length; i++) {
+			if (f[i] < 41 || f[i] > 176) {
+				f[i] = 'o';
+			}
+			// log.info(Arrays.toString(f));
+		}
+
+		// space, tilde ~, caret ^, colon :, question-mark ?, asterisk *, or open bracket [ anywhere. 
+		nfile = Arrays.toString(f).replace("[", "").replace("]", "") // not a violation, but it's produced by Arrays.toString
+				.replace(", ", "") // also a byproduct of the array print
+				.replace(" ", "o").replace("^", "o").replace(":", "o").replace("?", "o").replace("*", "o").replace(".lock", "ooooo") // 6. They cannot end with the sequence .lock. 
+				.replace("@{", "oo") // 7. They cannot contain a sequence @{.
+		;
+		return nfile;
+	}
 	/**
 	 * Launch the application.
 	 * 
@@ -172,12 +214,241 @@ public class SwingWindow {
 	}
 
 	/**
+	 * This method invokes the pipeline from other components.
+	 */
+	public static void processText() {
+		try {
+			instance.processText(instance.txtEditor.getText());
+		} catch (Exception e) {
+			System.err.println("The caller tried to process this text and caused an exception.");
+			e.printStackTrace();
+		}
+	}
+	/**
+	 * This method prepares the git repository and tracking files.
+	 * 
+	 * @throws IOException
+	 * @throws GitAPIException
+	 * 
+	 */
+	private static void setupTracking() throws IOException, GitAPIException {
+		File dir = new File(GitManager.TRACKINGPATH);
+		dir.mkdir();
+
+		String documentpath = GitManager.TRACKINGPATH + DOCUMENT_TXT;
+		File what = new File(documentpath);
+		what.createNewFile();
+
+		GitManager.safeInit();
+	}
+	private static void tag(String tagname) {
+		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.tag(tagname);
+	}
+
+	private org.joda.time.DateTime stopwatch;
+	private JFrame frmvanInput;
+	/**
+	 * editor panel
+	 */
+	private TextEditorPane txtEditor;
+	/**
+	 * errors panel
+	 */
+	private IvanErrorsTaskPaneContainer containerTaskPanel;
+	StyleContext sc = new StyleContext();
+	protected AttributeSet DefaultStyle;
+	/**
+	 * This is the text pane for writing user output.
+	 */
+	private JTextPane emitterTextPane;
+	private JXBusyLabel busyLabel;
+	private JButton btnSaveCheck;
+
+	private Component horizontalGlue;
+
+	private String currentFileName = null;
+
+	private JMenuBar menuBar;
+
+	protected boolean isSpellingOkay;
+
+	private List<RuleMatch> spellingErrors = new ArrayList<>();
+
+	private JScrollPane errorScrollPane;
+
+	private JLabel coords;
+
+	/**
 	 * Create the application.
 	 */
 	public SwingWindow() {
 		instance = this;
 
 		initialize();
+	}
+
+	/**
+	 * Invoke the spell checker
+	 * @param text input document
+	 */
+	public void checkSpelling(String text) {
+		// List<RuleMatch> matches = langTool.check("A sentence " +
+		// "with a error in the Hitchhiker's Guide tot he Galaxy");
+		final IvanSpellchecker speller = new IvanSpellchecker(text);
+		speller.execute();
+
+		speller.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
+
+					try {
+						spellingErrors = speller.get();
+
+						if(spellingErrors.size() > 0)
+						{
+							isSpellingOkay = false;
+						} else {
+							isSpellingOkay = true;
+						}
+						if (isSpellingOkay) {
+							clearStyles();
+							markSpelling();
+							processText(txtEditor.getText());
+						}
+						else {
+							clearStyles();
+							markSpelling();
+						}
+
+					} catch (InterruptedException | ExecutionException e) {
+						log.warning(e.toString());
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+	}
+
+	private void clearStyles() {
+		txtEditor.getHighlighter().removeAllHighlights();
+		log.info("SwingWindow.clearStyles()");
+	}
+
+	/**
+	 * This method performs a commit to the local git repository
+	 * 
+	 * @throws IOException
+	 */
+	private void commit(String file) throws IOException {
+		String branch = file2ref(file);
+		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.TRACKINGPATH;
+		FileWriter out = null;
+		try {
+			out = new FileWriter(basepath + DOCUMENT_TXT);
+			out.write(txtEditor.getText());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		finally {
+			if (out != null)
+				out.close();
+		}
+		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
+	}
+
+	/**
+	 * A utility method for creating categories by mapping from an IvanErrorType
+	 * 
+	 * @param type
+	 * @param description
+	 * @return The category that was assigned for this error.
+	 */
+	public String createCategory(IvanErrorType type) {
+		String defaultcategory = "misc";
+		String category;
+		String description = "";
+
+		switch (type) {
+		case COREFERENCE:
+			category = IvanErrorsTaskPaneContainer.CATEGORY_AMBIGOUS;
+			description = ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY;
+			break;
+		case GRAPH:
+			category = IvanErrorsTaskPaneContainer.CATEGORY_GRAMMAR;
+			description = ERROR_UNUSUAL_STRUCTURE;
+			break;
+		case SYNONYMS:
+			category = "names";
+			description = ERROR_ENTITIES_SHARE_A_SYNONYM;
+			break;
+		case WORDNET:
+			category = "dictionary";
+			description = ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY;
+		case STYLE:
+			category = "style";
+			description = ERROR_STYLE;
+			break;
+		case DIRECTION:
+			category = IvanErrorsTaskPaneContainer.CATEGORY_DIRECTION;
+			description = ERROR_MISSING_A_DIRECTION;
+			break;
+		case LOCATION:
+			category = IvanErrorsTaskPaneContainer.CATEGORY_LOCATION;
+			description = ERROR_ENTITIES_ARE_MISSING_A_LOCATION;
+			break;
+		default:
+			category = defaultcategory;
+			description = "Other errors:";
+			break;
+		}
+
+		containerTaskPanel.createCategory(category, description);
+		return category;
+	}
+
+	/** This method initializes the pipeline and the spell checker
+	 * 
+	 */
+	private void delayedInit() {
+		final SwingWorker<Object, Object> task = new SwingWorker<Object, Object>()
+		{
+			@Override
+			protected Object doInBackground() throws Exception {
+				// delay
+				Thread.sleep(500);
+				// init spell checker
+				IvanPipeline.prepare();
+				return null;
+			}
+		};
+		task.addPropertyChangeListener(new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
+					busyLabel.setBusy(false);
+					log.info("Pipeline is ready.");
+				}
+				else {
+					busyLabel.setBusy(true);
+				}
+			}
+		});
+
+		task.execute();
+		new SwingWorker<Object, Object>()
+		{
+			@Override
+			protected Object doInBackground() throws Exception {
+				// delay
+				Thread.sleep(2000);
+				// init spell checker
+				IvanSpellchecker.prepare();
+				return null;
+			}
+		}.execute();
+
+		busyLabel.setBusy(true);
 	}
 
 	/**
@@ -484,176 +755,6 @@ public class SwingWindow {
 
 	}
 
-	/** This method initializes the pipeline and the spell checker
-	 * 
-	 */
-	private void delayedInit() {
-		final SwingWorker<Object, Object> task = new SwingWorker<Object, Object>()
-		{
-			@Override
-			protected Object doInBackground() throws Exception {
-				// delay
-				Thread.sleep(500);
-				// init spell checker
-				IvanPipeline.prepare();
-				return null;
-			}
-		};
-		task.addPropertyChangeListener(new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
-					busyLabel.setBusy(false);
-					log.info("Pipeline is ready.");
-				}
-				else {
-					busyLabel.setBusy(true);
-				}
-			}
-		});
-
-		task.execute();
-		new SwingWorker<Object, Object>()
-		{
-			@Override
-			protected Object doInBackground() throws Exception {
-				// delay
-				Thread.sleep(2000);
-				// init spell checker
-				IvanSpellchecker.prepare();
-				return null;
-			}
-		}.execute();
-
-		busyLabel.setBusy(true);
-	}
-
-	/**
-	 * Saves the current document
-	 * 
-	 * @param editor
-	 *            the component which contains the text
-	 * @return
-	 * @throws IOException
-	 */
-	protected boolean save(TextEditorPane editor) throws IOException {
-		File outputfile = null;
-		if (this.currentFileName == null) {
-			JFileChooser jfchooser = new JFileChooser();
-			jfchooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
-			int file = jfchooser.showSaveDialog(editor);
-			switch (file) {
-			case JFileChooser.APPROVE_OPTION:
-				outputfile = jfchooser.getSelectedFile();
-				this.currentFileName = outputfile.getAbsolutePath();
-				break;
-
-			default: // I can't do anything with the other options
-				return false;
-			}
-		} else {
-			outputfile = new File(currentFileName);
-		}
-		FileWriter out = null;
-		try {
-			out = new FileWriter(currentFileName);
-			out.write(editor.getText());
-		} catch (IOException e) {
-			// I have no clue what to do here
-			e.printStackTrace();
-			return false;
-		} finally {
-			try {
-				if (out != null)
-					out.close();
-			} catch (IOException e) {
-				// okay, even close() throws? That's messed up.
-			}
-		}
-		commit(outputfile.getName());
-		return true;
-	}
-
-	/**
-	 * This method performs a commit to the local git repository
-	 * 
-	 * @throws IOException
-	 */
-	private void commit(String file) throws IOException {
-		String branch = file2ref(file);
-		String basepath = edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.TRACKINGPATH;
-		FileWriter out = null;
-		try {
-			out = new FileWriter(basepath + DOCUMENT_TXT);
-			out.write(txtEditor.getText());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		finally {
-			if (out != null)
-				out.close();
-		}
-		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.commit(branch);
-	}
-
-	/**
-	 * Makes sure that any given name is converted into a valid ref name. git
-	 * imposes the following rules on how references are named:
-	 * 
-	 * 1. They can include slash / for hierarchical (directory) grouping, but no
-	 * slash-separated component can begin with a dot ..
-	 * 
-	 * 2. They must contain at least one /. This enforces the presence of a
-	 * category like heads/, tags/ etc. but the actual names are not restricted.
-	 * 
-	 * 3. They cannot have two consecutive dots .. anywhere.
-	 * 
-	 * 4. They cannot have ASCII control characters (i.e. bytes whose values are
-	 * lower than \040, or \177 DEL), space, tilde ~, caret ^, colon :,
-	 * question-mark ?, asterisk *, or open bracket [ anywhere.
-	 * 
-	 * 5. They cannot end with a slash / nor a dot ..
-	 * 
-	 * 6. They cannot end with the sequence .lock.
-	 * 
-	 * 7. They cannot contain a sequence @{.
-	 * 
-	 * 8. They cannot contain a \.
-	 * 
-	 * @param file
-	 * @return
-	 */
-
-	public static String file2ref(String file) {
-		String ofile = file, // "old file"
-		nfile = file; // "new file"
-		do {
-			ofile = nfile; // "new" is the new "old"
-
-			// 3. no double dots
-			nfile = ofile.replace("..", ".");
-
-		} while (!ofile.equals(nfile));
-
-		// work with a char array
-		char[] f = nfile.toCharArray();
-		// 4. no low values
-		for (int i = 0; i < f.length; i++) {
-			if (f[i] < 41 || f[i] > 176) {
-				f[i] = 'o';
-			}
-			// log.info(Arrays.toString(f));
-		}
-
-		// space, tilde ~, caret ^, colon :, question-mark ?, asterisk *, or open bracket [ anywhere. 
-		nfile = Arrays.toString(f).replace("[", "").replace("]", "") // not a violation, but it's produced by Arrays.toString
-				.replace(", ", "") // also a byproduct of the array print
-				.replace(" ", "o").replace("^", "o").replace(":", "o").replace("?", "o").replace("*", "o").replace(".lock", "ooooo") // 6. They cannot end with the sequence .lock. 
-				.replace("@{", "oo") // 7. They cannot contain a sequence @{.
-		;
-		return nfile;
-	}
-
 	/**
 	 * Loads a page into the editor
 	 * 
@@ -673,65 +774,45 @@ public class SwingWindow {
 		}
 	}
 
-	private static void checkout(String file2ref) {
-		GitManager.checkout(file2ref, null);
+	private void markIvanError(int beginPosition, int endPosition) throws BadLocationException {
+		// create a painter for lines
+		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
+		// paint the highlights
+		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
 	}
 
-	private static void tag(String tagname) {
-		edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager.tag(tagname);
-	}
+	void markSpelling() {
+		for (RuleMatch match : spellingErrors) {
+			log.info("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
+					+ match.getMessage());
+			log.info("Rule: " + match.getRule().getId());
 
-	/**
-	 * Reloads the page, even if it is already being displayed
-	 * 
-	 * @param editor
-	 *            destination container
-	 * @param file
-	 *            file to load
-	 */
-	public void reload(TextEditorPane editor, File file) {
-		Document doc = editor.getDocument();
-		doc.putProperty(Document.StreamDescriptionProperty, null);
-		load(editor, file);
-	}
-
-	/**
-	 * Prepares the problems list for the task pane. If I decide to do inital
-	 * stuff with the taskpane and the emitter, that code goes here as well.
-	 */
-	private void setupFeedback() {
-		// tell the errors panel where our editor is so it can apply quick fixes
-		this.containerTaskPanel.setEditor(this.txtEditor);
-	}
-
-	/**
-	 * This method invokes the pipeline from other components.
-	 */
-	public static void processText() {
-		try {
-			instance.processText(instance.txtEditor.getText());
-		} catch (Exception e) {
-			System.err.println("The caller tried to process this text and caused an exception.");
-			e.printStackTrace();
+			try {
+				markSpellingError(match.getFromPos(), match.getToPos());
+			} catch (BadLocationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			break;
 		}
 	}
 
-	/**
-	 * This method prepares the git repository and tracking files.
-	 * 
-	 * @throws IOException
-	 * @throws GitAPIException
-	 * 
-	 */
-	private static void setupTracking() throws IOException, GitAPIException {
-		File dir = new File(GitManager.TRACKINGPATH);
-		dir.mkdir();
+	private void markSpellingError(int beginPosition, int endPosition) throws BadLocationException {
+		// create a painter for lines
+		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED.brighter());
+		// paint the highlights
+		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
+	}
 
-		String documentpath = GitManager.TRACKINGPATH + DOCUMENT_TXT;
-		File what = new File(documentpath);
-		what.createNewFile();
+	private void markText(int beginPosition, int endPosition, Color color) {
 
-		GitManager.safeInit();
+		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(color);
+		try {
+			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
+		} catch (BadLocationException e) {
+			e.printStackTrace();
+			log.info("SwingWindow.markText()");
+		}
 	}
 
 	/** Runs a text analysis and manages user visible feedback
@@ -807,6 +888,90 @@ public class SwingWindow {
 	}
 
 	/**
+	 * Reloads the page, even if it is already being displayed
+	 * 
+	 * @param editor
+	 *            destination container
+	 * @param file
+	 *            file to load
+	 */
+	public void reload(TextEditorPane editor, File file) {
+		Document doc = editor.getDocument();
+		doc.putProperty(Document.StreamDescriptionProperty, null);
+		load(editor, file);
+	}
+
+	/**
+	 * Saves the current document
+	 * 
+	 * @param editor
+	 *            the component which contains the text
+	 * @return
+	 * @throws IOException
+	 */
+	protected boolean save(TextEditorPane editor) throws IOException {
+		File outputfile = null;
+		if (this.currentFileName == null) {
+			JFileChooser jfchooser = new JFileChooser();
+			jfchooser.setFileFilter(new FileNameExtensionFilter("Text file", "txt"));
+			int file = jfchooser.showSaveDialog(editor);
+			switch (file) {
+			case JFileChooser.APPROVE_OPTION:
+				outputfile = jfchooser.getSelectedFile();
+				this.currentFileName = outputfile.getAbsolutePath();
+				break;
+
+			default: // I can't do anything with the other options
+				return false;
+			}
+		} else {
+			outputfile = new File(currentFileName);
+		}
+		FileWriter out = null;
+		try {
+			out = new FileWriter(currentFileName);
+			out.write(editor.getText());
+		} catch (IOException e) {
+			// I have no clue what to do here
+			e.printStackTrace();
+			return false;
+		} finally {
+			try {
+				if (out != null)
+					out.close();
+			} catch (IOException e) {
+				// okay, even close() throws? That's messed up.
+			}
+		}
+		commit(outputfile.getName());
+		return true;
+	}
+
+	/**
+	 * Prepares the problems list for the task pane. If I decide to do inital
+	 * stuff with the taskpane and the emitter, that code goes here as well.
+	 */
+	private void setupFeedback() {
+		// tell the errors panel where our editor is so it can apply quick fixes
+		this.containerTaskPanel.setEditor(this.txtEditor);
+	}
+
+	private void startStopWatch() {
+		stopwatch = org.joda.time.DateTime.now();
+	}
+
+	private void stopAndPrintStopWatch() {
+		org.joda.time.DateTime now = org.joda.time.DateTime.now();
+		long diff = now.getMillis() - stopwatch.getMillis();
+		System.err.println("Stopwatch: " + (diff) + " ms.");
+	}
+
+	@SuppressWarnings("unused")
+	private void tell(String output) {
+		this.emitterTextPane.setText(output);
+	}
+
+	/**
 	 * @param doc
 	 * @throws IvanException
 	 */
@@ -827,56 +992,6 @@ public class SwingWindow {
 		}
 		if (errors != null)
 			log.log(Level.INFO, "Document wide errors: " + errors);
-	}
-
-	/**
-	 * A utility method for creating categories by mapping from an IvanErrorType
-	 * 
-	 * @param type
-	 * @param description
-	 * @return The category that was assigned for this error.
-	 */
-	public String createCategory(IvanErrorType type) {
-		String defaultcategory = "misc";
-		String category;
-		String description = "";
-
-		switch (type) {
-		case COREFERENCE:
-			category = IvanErrorsTaskPaneContainer.CATEGORY_AMBIGOUS;
-			description = ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY;
-			break;
-		case GRAPH:
-			category = IvanErrorsTaskPaneContainer.CATEGORY_GRAMMAR;
-			description = ERROR_UNUSUAL_STRUCTURE;
-			break;
-		case SYNONYMS:
-			category = "names";
-			description = ERROR_ENTITIES_SHARE_A_SYNONYM;
-			break;
-		case WORDNET:
-			category = "dictionary";
-			description = ERROR_WORD_IS_MISSING_IN_OUR_DICTIONARY;
-		case STYLE:
-			category = "style";
-			description = ERROR_STYLE;
-			break;
-		case DIRECTION:
-			category = IvanErrorsTaskPaneContainer.CATEGORY_DIRECTION;
-			description = ERROR_MISSING_A_DIRECTION;
-			break;
-		case LOCATION:
-			category = IvanErrorsTaskPaneContainer.CATEGORY_LOCATION;
-			description = ERROR_ENTITIES_ARE_MISSING_A_LOCATION;
-			break;
-		default:
-			category = defaultcategory;
-			description = "Other errors:";
-			break;
-		}
-
-		containerTaskPanel.createCategory(category, description);
-		return category;
 	}
 
 	/**
@@ -943,121 +1058,6 @@ public class SwingWindow {
 			for (IvanErrorMessage docer : errors) {
 				markIvanError(docer.getSpan().start(), docer.getSpan().end());
 			}
-		}
-	}
-
-	private void markIvanError(int beginPosition, int endPosition) throws BadLocationException {
-		// create a painter for lines
-		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED);
-		// paint the highlights
-		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-	}
-
-	private void markSpellingError(int beginPosition, int endPosition) throws BadLocationException {
-		// create a painter for lines
-		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(Color.RED.brighter());
-		// paint the highlights
-		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-	}
-
-	@SuppressWarnings("unused")
-	private void tell(String output) {
-		this.emitterTextPane.setText(output);
-	}
-
-	private void clearStyles() {
-		txtEditor.getHighlighter().removeAllHighlights();
-		log.info("SwingWindow.clearStyles()");
-	}
-
-	private void markText(int beginPosition, int endPosition, Color color) {
-
-		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(color);
-		try {
-			txtEditor.getHighlighter().addHighlight(beginPosition, endPosition, sqpainter);
-		} catch (BadLocationException e) {
-			e.printStackTrace();
-			log.info("SwingWindow.markText()");
-		}
-	}
-
-	private void stopAndPrintStopWatch() {
-		org.joda.time.DateTime now = org.joda.time.DateTime.now();
-		long diff = now.getMillis() - stopwatch.getMillis();
-		System.err.println("Stopwatch: " + (diff) + " ms.");
-	}
-
-	private void startStopWatch() {
-		stopwatch = org.joda.time.DateTime.now();
-	}
-
-	/**
-	 * Invoke the spell checker
-	 * @param text input document
-	 */
-	public void checkSpelling(String text) {
-		// List<RuleMatch> matches = langTool.check("A sentence " +
-		// "with a error in the Hitchhiker's Guide tot he Galaxy");
-		final IvanSpellchecker speller = new IvanSpellchecker(text);
-		speller.execute();
-
-		speller.addPropertyChangeListener(new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
-
-					try {
-						spellingErrors = speller.get();
-
-						if(spellingErrors.size() > 0)
-						{
-							isSpellingOkay = false;
-						} else {
-							isSpellingOkay = true;
-						}
-						if (isSpellingOkay) {
-							clearStyles();
-							markSpelling();
-							processText(txtEditor.getText());
-						}
-						else {
-							clearStyles();
-							markSpelling();
-						}
-
-					} catch (InterruptedException | ExecutionException e) {
-						log.warning(e.toString());
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-	}
-
-	@SuppressWarnings("serial")
-	private class SwingAction extends AbstractAction {
-		public SwingAction() {
-			putValue(NAME, "SwingAction");
-			putValue(SHORT_DESCRIPTION, "Some short description");
-		}
-
-		public void actionPerformed(ActionEvent e) {
-		}
-	}
-
-	void markSpelling() {
-		for (RuleMatch match : spellingErrors) {
-			log.info("Potential error at line " + match.getLine() + ", column " + match.getColumn() + ": "
-					+ match.getMessage());
-			log.info("Rule: " + match.getRule().getId());
-
-			try {
-				markSpellingError(match.getFromPos(), match.getToPos());
-			} catch (BadLocationException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			break;
 		}
 	}
 }
