@@ -21,9 +21,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
-import javax.swing.event.CaretListener;
-import javax.swing.text.Caret;
-import javax.swing.text.DefaultCaret;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
@@ -267,6 +265,58 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 	
+
+	/** This method inserts a new problem into the <code>bagofProblems</code>. It also retrieves appropriate quick fixes.
+	 * Problems are not added, if the user previously ignored them.
+	 * 
+	 * @param category The category under which this error should be filed.
+	 * @param pipelineError The error object retrieved from the annotations.
+	 * @param sentenceCodepoint The sentence's coordinates inside the text.
+	 * @return TRUE if the problem was inserted, otherwise FALSE.
+	 * @throws BadLocationException The given codepoints do not refer to valid coordinates inside the text.
+	 */
+	public boolean createProblem(String category, IvanErrorMessage pipelineError, CodePoint sentenceCodepoint) throws BadLocationException {
+		String errormsg = pipelineError.getMessage();
+		
+		final List<CodePoint> codepoints;
+		if(sentenceCodepoint != null)
+			// if we received any specific sentence bounds, put them in the last bucket
+			codepoints = Arrays.asList(new CodePoint(pipelineError.getSpan()), sentenceCodepoint);
+		else 
+			// if we didn't receive any specific bounds, let's try our luck instead
+			codepoints = Arrays.asList(new CodePoint(pipelineError.getSpan()));
+		
+		// the "problem zone" is the offending part of the text. like a word, or a phrase
+		int lengthOfProblemzone = pipelineError.getSpan().end()-pipelineError.getSpan().start();
+		int startOfProblemzone = pipelineError.getSpan().start();
+		String problemzone = txtEditor.getText(startOfProblemzone, lengthOfProblemzone);
+		String[] references = new String[]{problemzone};
+		
+		JXTaskPane tsk = mypanes.get(category);
+		if(tsk != null)
+		{
+			IvanErrorInstance error = new IvanErrorInstance(category, codepoints, null, errormsg, references);
+			// this issue is recent, so prevent it from being purged
+			gen0.remove(error);
+			// has the user previously ignored this error?
+			boolean ignored = this.ignoredProblems.contains(error);
+			if(!ignored){
+				if(!CATEGORY_META.equals(category) // if this is a meta error, do not attempt to add it
+						&& !this.bagofProblems.add(error)) // is this error already listed? 
+				{
+					return false;
+				}
+				createQuickfixes(error);
+				return true;
+			}
+			return false;
+		}
+		else {
+			return false;
+		}
+	
+	}
+	
 	private void createQuickfixes(final IvanErrorInstance error) {
 		IvanErrorsTaskPaneContainer tpc = this;
 		JXTaskPane tsk = mypanes.get(error.Category);
@@ -457,4 +507,5 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		gen0.addAll(bagofProblems);
 		gen0.addAll(ignoredProblems);
 	}
+
 }

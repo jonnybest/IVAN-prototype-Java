@@ -59,6 +59,7 @@ import org.jdesktop.swingx.JXBusyLabel;
 import org.languagetool.rules.RuleMatch;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
+import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
@@ -66,6 +67,8 @@ import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnno
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
 import edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetBeginAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.CharacterOffsetEndAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -974,8 +977,9 @@ public class SwingWindow {
 	/**
 	 * @param doc
 	 * @throws IvanException
+	 * @throws BadLocationException 
 	 */
-	public void updateDocumentMarkers(Annotation doc) throws IvanException {
+	public void updateDocumentMarkers(Annotation doc) throws IvanException, BadLocationException {
 
 		// fetch errors
 		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
@@ -984,7 +988,7 @@ public class SwingWindow {
 			// process document-wide errors
 			for (IvanErrorMessage documenterror : errors) {
 				String category = createCategory(documenterror.getType());
-				this.containerTaskPanel.createProblem(category, documenterror.getMessage(), new CodePoint(documenterror.getSpan()));
+				this.containerTaskPanel.createProblem(category, documenterror, null);
 			}
 			
 			// clear leftover errors from last run which may have been fixed by now
@@ -1000,7 +1004,7 @@ public class SwingWindow {
 	 */
 	public void updateSentenceMarkers(Annotation doc) throws BadLocationException {
 		// clear all previous markers
-		// clearStyles();
+		clearStyles();
 
 		// retrieve the sentences
 		List<CoreMap> listsentences = doc.get(SentencesAnnotation.class);
@@ -1022,6 +1026,13 @@ public class SwingWindow {
 			if (depgraph.isEmpty()) {
 				continue;
 			}
+			// retrieve the error message
+			IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
+			// if any error is present, show that instead of the usual cues
+			if (err != null) {
+				// make sure we show the error message
+				sentencetype = Classification.ErrorDescription;
+			}
 			// color the sentence according to classification
 			switch (sentencetype) {
 			case SetupDescription:
@@ -1031,12 +1042,17 @@ public class SwingWindow {
 				// mydeclarationfinder.findAll(root, sentence);
 				break;
 			case ErrorDescription:
-				IvanErrorMessage err = sentence.get(IvanAnnotations.ErrorMessageAnnotation.class);
 				log.info("Error in text found: " + err + "; sentence: " + sentence.toString());
+				if(err == null)
+					break;
+				// create the error category in the panel on the right hand side
 				String category = createCategory(err.getType());
-				this.containerTaskPanel.createProblem(category, err.getMessage(), new CodePoint(err.getSpan()));
+				// create an error message inside the panel on the right hand side
+				this.containerTaskPanel.createProblem(category, err, new CodePoint(sentence.get(CharacterOffsetBeginAnnotation.class),
+						sentence.get(CharacterOffsetEndAnnotation.class)));
+				// highlight the text at the error's location
 				markIvanError(err.getSpan().start(), err.getSpan().end());
-				// emit error
+								
 				break;
 			case EventDescription:
 				markText(root.beginPosition(), root.endPosition(), new Color(0xBF4889));
