@@ -113,7 +113,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		// focus is important, so the user can readily start typing after clicking
 		txtEditor.requestFocusInWindow();
 		// get insertion point
-		int insertionpoint = findInsertionPoint(carets);
+		int insertionpoint = findInsertionPoint(myerror.Codepoints);
 		// set the caret
 		txtEditor.setCaretPosition(insertionpoint);
 
@@ -158,9 +158,36 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		}
 	}
 
-	private static int findInsertionPoint(List<Caret> points) {
-		Caret p = points.get(0);
-		return p.getMark();
+	/** Finds the position where a new sentence can be inserted.
+	 * More precisely it returns the character index after the next sentence termination mark. 
+	 * @param codepoints
+	 * @return
+	 */
+	private int findInsertionPoint(List<CodePoint> codepoints) {
+		// find the last character index for this error
+		int lastcp = 0;
+		for (CodePoint po : codepoints) {
+			if(po.y > lastcp)
+				lastcp = po.y;
+		}
+		// text shortcut
+		String txt = txtEditor.getText();
+		// get the maximum index for this text
+		int maxlength = txt.length();
+		// find the index of the next Period, Question mark or exclamation mark
+		int lastPer = txt.indexOf(".", lastcp);
+		int lastQue = txt.indexOf("?", lastcp);
+		int lastExc = txt.indexOf("!", lastcp);
+		// figure out which of the three occurs the earliest
+		int lastMark = maxlength;
+		if(lastPer > 0)
+			lastMark = Math.min(lastPer, lastMark) + 1;
+		if(lastQue > 0)
+			lastMark = Math.min(lastQue, lastMark) + 1;
+		if(lastExc > 0)
+			lastMark = Math.min(lastExc, lastMark) + 1;
+		// returns either the earliest mark or EOF if no mark is present
+		return lastMark;
 	}
 
 	protected Caret getSentence(){
