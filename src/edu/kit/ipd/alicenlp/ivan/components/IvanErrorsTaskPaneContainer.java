@@ -33,6 +33,7 @@ import org.jdesktop.swingx.JXTaskPane;
 import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
+import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 
 /** This is a special JXTaskPaneContainer, which can display errors and warnings that occur in IVAN.
  * It provides an cues to the UI where to render errors (line numbers or character offsets),
@@ -266,22 +267,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		}
 	}
 	
-	private Caret installCaret(IvanErrorInstance Error) {
-		CodePoint codep = Error.Codepoints.get(Error.Codepoints.size()-1);
-		return installCaret(codep);
-	}
-	
-	private Caret installCaret(CodePoint codep) {
-		// The caret will track the positions across the users' editings. 
-		DefaultCaret place = new DefaultCaret();
-		place.install(txtEditor);
-		place.setVisible(false);
-		place.setDot(codep.x);
-		place.moveDot(codep.y);
-		log.info("Installed Caret for " + codep);
-		return place;
-	}
-	
 	private void createQuickfixes(final IvanErrorInstance error) {
 		IvanErrorsTaskPaneContainer tpc = this;
 		JXTaskPane tsk = mypanes.get(error.Category);
@@ -472,5 +457,4 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		gen0.addAll(bagofProblems);
 		gen0.addAll(ignoredProblems);
 	}
-	
 }

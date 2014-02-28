@@ -759,8 +759,8 @@ public class SwingWindow {
 					}
 
 					try {
-						updateErrorsPanel(doc);
-						updateTextMarkers(doc);
+						updateDocumentMarkers(doc);
+						updateSentenceMarkers(doc);
 
 					} catch (IvanException e) {
 						log.warning(e.toString());
@@ -810,7 +810,7 @@ public class SwingWindow {
 	 * @param doc
 	 * @throws IvanException
 	 */
-	public void updateErrorsPanel(Annotation doc) throws IvanException {
+	public void updateDocumentMarkers(Annotation doc) throws IvanException {
 
 		// fetch errors
 		List<IvanErrorMessage> errors = doc.get(IvanAnnotations.DocumentErrorAnnotation.class);
@@ -883,7 +883,7 @@ public class SwingWindow {
 	 * @param doc
 	 * @throws BadLocationException
 	 */
-	public void updateTextMarkers(Annotation doc) throws BadLocationException {
+	public void updateSentenceMarkers(Annotation doc) throws BadLocationException {
 		// clear all previous markers
 		// clearStyles();
 
