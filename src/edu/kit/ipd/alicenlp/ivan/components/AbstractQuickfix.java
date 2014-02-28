@@ -2,6 +2,7 @@ package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -24,7 +25,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 	
 	private JTextComponent txtEditor;
 	final Logger log = Logger.getLogger(getClass().getName());
-	private List<Caret> carets = new ArrayList<Caret>();
+	private List<Caret> carets = new LinkedList<Caret>();
 
 	/** This action implements an abstract quick fix.
 	 * 
@@ -71,6 +72,10 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		return place;
 	}
 
+	/** 
+	 * Removes this error from the user interface and uninstalls any carets that this quick fix had. 
+	 * @param Error The error to remove. We actually only remove its components from the GUI.
+	 */
 	protected void removeError(IvanErrorInstance Error) {
 		// this caret is now useless and can be removed
 		uninstallCarets(txtEditor);
@@ -107,7 +112,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		// focus is important, so the user can readily start typing after clicking
 		txtEditor.requestFocusInWindow();
 		// get insertion point
-		int insertionpoint = findInsertionPoint(myerror.Codepoints);
+		int insertionpoint = findInsertionPoint(carets);
 		// set the caret
 		txtEditor.setCaretPosition(insertionpoint);
 
@@ -152,36 +157,9 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		}
 	}
 
-	/** Finds the position where a new sentence can be inserted.
-	 * More precisely it returns the character index after the next sentence termination mark. 
-	 * @param codepoints
-	 * @return
-	 */
-	private int findInsertionPoint(List<CodePoint> codepoints) {
-		// find the last character index for this error
-		int lastcp = 0;
-		for (CodePoint po : codepoints) {
-			if(po.y > lastcp)
-				lastcp = po.y;
-		}
-		// text shortcut
-		String txt = txtEditor.getText();
-		// get the maximum index for this text
-		int maxlength = txt.length();
-		// find the index of the next Period, Question mark or exclamation mark
-		int lastPer = txt.indexOf(".", lastcp);
-		int lastQue = txt.indexOf("?", lastcp);
-		int lastExc = txt.indexOf("!", lastcp);
-		// figure out which of the three occurs the earliest
-		int lastMark = maxlength;
-		if(lastPer > 0)
-			lastMark = Math.min(lastPer, lastMark) + 1;
-		if(lastQue > 0)
-			lastMark = Math.min(lastQue, lastMark) + 1;
-		if(lastExc > 0)
-			lastMark = Math.min(lastExc, lastMark) + 1;
-		// returns either the earliest mark or EOF if no mark is present
-		return lastMark;
+	private static int findInsertionPoint(List<Caret> points) {
+		Caret p = points.get(0);
+		return p.getMark();
 	}
 
 	protected Caret getSentence(){

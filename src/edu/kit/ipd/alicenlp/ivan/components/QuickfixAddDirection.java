@@ -28,6 +28,7 @@ final class QuickfixAddDirection extends AbstractQuickfix {
 		log.info("I'm adding a direction.");
 		insertSentenceStub(Error, stubs, " is facing ….", "…");
 		log.info("This action's error is " + getValue(IvanErrorsTaskPaneContainer.QF_ERROR));
+		removeError(Error);
 	}
 
 	@Override
