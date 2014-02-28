@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
+import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
@@ -465,6 +466,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				log.fine("Component removed from " + error.Category);
 			}
 			error.Components.clear();
+			log.info("There are " + txtEditor.getCaretListeners().length + " caret listeners remaining.");
 		}
 		gen0.clear();
 		gen0.addAll(bagofProblems);
