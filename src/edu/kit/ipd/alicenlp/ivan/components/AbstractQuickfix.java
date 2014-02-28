@@ -67,8 +67,8 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		DefaultCaret place = new DefaultCaret();
 		place.install(txtEditor);
 		place.setVisible(false);
-		place.setDot(codep.x);
-		place.moveDot(codep.y);
+		place.setDot(codep.y);
+		place.moveDot(codep.x);
 		log.info("Installed Caret for " + codep);
 		return place;
 	}

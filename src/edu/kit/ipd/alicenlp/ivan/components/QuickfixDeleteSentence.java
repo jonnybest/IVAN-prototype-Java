@@ -23,7 +23,7 @@ final class QuickfixDeleteSentence extends AbstractQuickfix {
 		// Save "position" of the offending text inside editor frame.
 		// TODO: make a convention to put the whole sentence into the last bucket of the codepoints.
 		CodePoint sentence = error.Codepoints.get(error.Codepoints.size()-1);			
-		installCaret(sentence);
+//		installCaret(sentence);
 		this.Error = error;
 	}
 
