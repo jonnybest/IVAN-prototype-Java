@@ -19,7 +19,7 @@ final class QuickfixAddLocation extends AbstractQuickfix {
 	private List<String> stubs = new ArrayList<String>();
 
 	QuickfixAddLocation(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error2) {
-		super(name, ivanErrorsTaskPaneContainer.txtEditor);
+		super(name, error2, ivanErrorsTaskPaneContainer.txtEditor);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 		this.myerror = error2;
 		stubs.addAll(Arrays.asList(new String[]{
@@ -27,7 +27,6 @@ final class QuickfixAddLocation extends AbstractQuickfix {
 			" is in the right front.",
 			" is in the background to the left."}));
 		
-		installCaret(error2.Codepoints.get(0));
 	}
 
 	@Override

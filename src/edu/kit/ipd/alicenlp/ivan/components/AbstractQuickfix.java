@@ -1,6 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -20,37 +21,46 @@ import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 public abstract class AbstractQuickfix extends AbstractAction {
 
 	protected IvanErrorInstance Error;
-	protected Caret sentence;
+	
 	private JTextComponent txtEditor;
 	final Logger log = Logger.getLogger(getClass().getName());
+	private List<Caret> carets = new ArrayList<Caret>();
 
 	/** This action implements an abstract quick fix.
 	 * 
 	 * @param name
+	 * @param error 
 	 * @param txtEditor 
 	 */
-	public AbstractQuickfix(String name, JTextComponent txtEditor) {
+	public AbstractQuickfix(String name, IvanErrorInstance error, JTextComponent txtEditor) {
+		this(name, error, txtEditor, true);
+	}
+
+	/** Creates a new quick fix.
+	 * 
+	 * @param name The human-reable name of this quick fix 
+	 * @param error The relating error
+	 * @param txtEditor The text component where this quick fix is going to work
+	 * @param installQuickfix If TRUE, this quick fix needs to track text inside the text, which means that we install a Caret for each Codepooint. 
+	 */
+	public AbstractQuickfix(final String name, final IvanErrorInstance error,
+			final JTextComponent txtEditor, final boolean installQuickfix) {
 		super(name);
 		this.txtEditor = txtEditor;
+		this.Error = error;
+		if(installQuickfix && error.Codepoints.size() > 0)
+		{
+			for (CodePoint cp : error.Codepoints) {
+				carets.add(installCaret(cp));
+			}
+		}
 	}
 
 	/**
 	 * @param codep
 	 * @return 
 	 */
-	public Caret installCaret(CodePoint codep) {
-		// if there's already a caret present, use this
-		if(Error != null && Error.StandardCaret != null)
-		{
-			Caret car = Error.StandardCaret;
-			// codepoints and markers need to agree
-			if(codep.x == car.getDot() && codep.y == car.getMark())
-			{
-				log.info("Skipped");
-				return Error.StandardCaret;
-			}
-		}
-		
+	protected Caret installCaret(CodePoint codep) {
 		// The caret will track the positions across the users' editings. 
 		DefaultCaret place = new DefaultCaret();
 		place.install(txtEditor);
@@ -58,13 +68,12 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		place.setDot(codep.x);
 		place.moveDot(codep.y);
 		log.info("Installed Caret for " + codep);
-		this.sentence = place;
 		return place;
 	}
 
 	protected void removeError(IvanErrorInstance Error) {
 		// this caret is now useless and can be removed
-		sentence.deinstall(txtEditor);
+		uninstallCarets(txtEditor);
 		
 		// assume this issue to be fixed and remove this error's components
 		for (Component co : Error.Components) {
@@ -73,6 +82,13 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		Error.Components.clear();
 	}
 
+
+	private void uninstallCarets(JTextComponent txtEditor2) {
+		for (Caret c : carets) {
+			c.deinstall(txtEditor2);
+		}		
+		carets.clear();
+	}
 
 	/** This applies quick fixes which require insertion in the editor panel.
 	 * 
@@ -168,4 +184,9 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		return lastMark;
 	}
 
+	protected Caret getSentence(){
+		if(carets.size()==0)
+			return null;
+		return carets.get(carets.size()-1);
+	}
 }

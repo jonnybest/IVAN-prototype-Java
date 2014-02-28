@@ -18,7 +18,7 @@ final class QuickfixDeleteSentence extends AbstractQuickfix {
 	private IvanErrorInstance Error;
 
 	QuickfixDeleteSentence(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
-		super(name, ivanErrorsTaskPaneContainer.txtEditor);
+		super(name, error, ivanErrorsTaskPaneContainer.txtEditor);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 		// Save "position" of the offending text inside editor frame.
 		// TODO: make a convention to put the whole sentence into the last bucket of the codepoints.
@@ -31,8 +31,8 @@ final class QuickfixDeleteSentence extends AbstractQuickfix {
 	public void actionPerformed(ActionEvent e) {			
 		
 		// obtain positions
-		this.ivanErrorsTaskPaneContainer.txtEditor.getCaret().setDot(this.sentence.getDot());
-		this.ivanErrorsTaskPaneContainer.txtEditor.getCaret().moveDot(this.sentence.getMark());
+		this.ivanErrorsTaskPaneContainer.txtEditor.getCaret().setDot(getSentence().getDot());
+		this.ivanErrorsTaskPaneContainer.txtEditor.getCaret().moveDot(getSentence().getMark());
 		
 		// delete it. this is undoable
 		this.ivanErrorsTaskPaneContainer.txtEditor.replaceSelection("");

@@ -255,10 +255,6 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				{
 					return false;
 				}
-				// add another quick fix for this category
-				if(!CATEGORY_META.equals(category)){
-					error.StandardCaret = installCaret(error);
-				}
 				createQuickfixes(error);
 				return true;
 			}

@@ -13,15 +13,13 @@ final class QuickfixAddDirection extends AbstractQuickfix {
 	private List<String> stubs = new ArrayList<String>();		
 
 	QuickfixAddDirection(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
-		super(name, ivanErrorsTaskPaneContainer.txtEditor);
+		super(name, error, ivanErrorsTaskPaneContainer.txtEditor);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 		Error = error;
 		stubs.addAll(Arrays.asList(new String[]{
 				" is facing the camera.",
 				" is facing front.",
 				" is turned to the right."}));
-		
-		installCaret(error.Codepoints.get(0));
 	}
 
 	@Override
