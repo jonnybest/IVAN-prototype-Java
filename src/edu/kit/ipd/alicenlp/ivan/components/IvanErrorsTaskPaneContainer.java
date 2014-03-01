@@ -370,7 +370,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		IvanErrorsTaskPaneContainer tpc = this;
 		JXTaskPane tsk = mypanes.get(error.Category);
 
-		tsk.setName(error.Quickfix);
+		tsk.setName(error.Category);
 		tpc.add(tsk);
 
 		ApplicationActionMap map = Application.getInstance().getContext()

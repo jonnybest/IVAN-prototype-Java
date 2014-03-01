@@ -31,11 +31,7 @@ public class IvanErrorInstance {
 	 * The code points are the places related to this specific error instance.
 	 */
 	final public List<CodePoint> Codepoints;
-	/**
-	 * This string identifies the quick fix for this problem (like
-	 * "qf-add[boy, girl]")
-	 */
-	final public String Quickfix;
+	
 	/**
 	 * This is the sentence which is cause for the error.
 	 */
@@ -61,7 +57,7 @@ public class IvanErrorInstance {
 			final List<CodePoint> codepoints, final String qf, final String prob) {
 		Category = category;
 		Codepoints = codepoints;
-		Quickfix = qf;
+
 		Problem = prob;
 		Reference = null;
 	}
@@ -84,7 +80,7 @@ public class IvanErrorInstance {
 			String qf, String prob, String[] refs) {
 		Category = category;
 		Codepoints = codepoints;
-		Quickfix = qf;
+
 		Problem = prob;
 		Reference = refs;
 	}
@@ -97,11 +93,7 @@ public class IvanErrorInstance {
 			if (Category.equals(otherError.Category)
 					&& Problem.equals(otherError.Problem)
 					&& Codepoints.size() == otherError.Codepoints.size()) {
-				for (CodePoint cp : Codepoints) {
-					if (!otherError.Codepoints.contains(cp)) {
-						return false;
-					}
-				}
+				
 				return true;
 			}
 
@@ -112,13 +104,8 @@ public class IvanErrorInstance {
 	@Override
 	public String toString() {
 		StringBuilder outstr = new StringBuilder();
-		for (CodePoint cp : Codepoints) {
-			outstr.append(cp.x + "," + cp.y);
-			outstr.append("|");
-		}
-		outstr.deleteCharAt(outstr.length() - 1);
-		outstr.append("  ");
-		outstr.append(Quickfix);
+		CodePoint cp = Codepoints.get(0);		
+		outstr.append(String.format("%3d,%3d", cp.x, cp.y));
 
 		if (Problem != null) {
 			outstr.append("\t");
