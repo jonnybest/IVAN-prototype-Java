@@ -116,25 +116,26 @@ public class SwingWindow {
 
 	private static final String ERROR_NAME_COULD_NOT_BE_RESOLVED_TO_AN_ENTITY = "This error means that a pronoun (or maybe a name) could not be resolved to an entity.";
 	protected static final String PROPERTIES_ANNOTATORS = "tokenize, ssplit, pos, lemma, ner, parse, dcoref, declarations, sdclassifier";
-	protected static final String DEFAULT_TEXT = "The ground is covered with grass, the sky is blue. \n"
-			+ "In the background on the left hand side there is a PalmTree. \n"
-			+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
-			+ "Right to the mailbox there is a Frog facing east. \n"
-			+ "In front of the Bunny there is a Broccoli. \n"
-			+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
-			+ "The Bunny turns to face the Broccoli. \n"
-			+ "The Bunny hops three times to the Broccoli. \n"
-			+ "The Bunny eats the Broccoli. \n"
-			+ "The Bunny turns to face the Frog. \n"
-			+ "The Bunny taps his foot twice. \n"
-			+ "The Frog ribbits. The Frog turns to face northeast. \n"
-			+ "The frog hops three times to northeast. \n"
-			+ "The Bunny turns to face the Mailbox. \n"
-			+ "The Bunny hops three times to the Mailbox. \n"
-			+ "The Bunny opens the Mailbox. \n"
-			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
-			+ "The Frog hops two times to the Bunny. \n"
-			+ "The Frog disappears. A short time passes.";
+	protected static final String DEFAULT_TEXT = ""; 
+//	= "The ground is covered with grass, the sky is blue. \n"
+//			+ "In the background on the left hand side there is a PalmTree. \n"
+//			+ "In the foreground on the left hand side there is a closed Mailbox facing southeast. \n"
+//			+ "Right to the mailbox there is a Frog facing east. \n"
+//			+ "In front of the Bunny there is a Broccoli. \n"
+//			+ "In the foreground on the right hand side there is a Bunny facing southwest. \n"
+//			+ "The Bunny turns to face the Broccoli. \n"
+//			+ "The Bunny hops three times to the Broccoli. \n"
+//			+ "The Bunny eats the Broccoli. \n"
+//			+ "The Bunny turns to face the Frog. \n"
+//			+ "The Bunny taps his foot twice. \n"
+//			+ "The Frog ribbits. The Frog turns to face northeast. \n"
+//			+ "The frog hops three times to northeast. \n"
+//			+ "The Bunny turns to face the Mailbox. \n"
+//			+ "The Bunny hops three times to the Mailbox. \n"
+//			+ "The Bunny opens the Mailbox. \n"
+//			+ "The Bunny looks in the Mailbox and at the same time the Frog turns to face the Bunny. \n"
+//			+ "The Frog hops two times to the Bunny. \n"
+//			+ "The Frog disappears. A short time passes.";
 
 	private static final String DOCUMENT_TXT = "document.txt";
 	private static final String PANEL_TXT = "panel.txt";
