@@ -28,6 +28,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 public class GitManager {
 	private static final String COMMITED_DANGLING_CHANGES = "commited dangling changes";
 	private static final String DOCUMENT_TXT = "document.txt";
+	private static final String PANEL_TXT = "panel.txt";
 	/**
 	 * The path to the folder which should contain the tracking
 	 */
@@ -52,9 +53,10 @@ public class GitManager {
 
 			AddCommand add = git.add();
 			add.addFilepattern(DOCUMENT_TXT);
+			add.addFilepattern(PANEL_TXT);
 			add.call();
 			CommitCommand ci = git.commit();
-			ci.setMessage("test commit").call();
+			ci.setMessage("user interaction").call();
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -223,6 +225,7 @@ public class GitManager {
 		}
 		if (!myGit.status().call().isClean()) {
 			myGit.add().addFilepattern(DOCUMENT_TXT).call();
+			myGit.add().addFilepattern(PANEL_TXT).call();
 			myGit.commit().setAll(true)
 			.setMessage(COMMITED_DANGLING_CHANGES).call();
 		}
@@ -230,4 +233,5 @@ public class GitManager {
 
 		myGit.commit().setAll(true).setMessage("new session").call();
 	}
+
 }
