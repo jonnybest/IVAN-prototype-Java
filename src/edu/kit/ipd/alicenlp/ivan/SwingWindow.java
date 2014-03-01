@@ -879,6 +879,8 @@ public class SwingWindow {
 	 */
 	private void processText(String text) {
 
+		final IvanSpellchecker spellchecker = new IvanSpellchecker(text);
+		
 		final IvanPipeline task = new IvanPipeline(text);
 		task.addPropertyChangeListener(new PropertyChangeListener() {
 
@@ -920,7 +922,8 @@ public class SwingWindow {
 					// RecognitionStatePrinter(entitiesState);
 					// tell(emitterwriter.toString());
 
-					busyLabel.setBusy(false);
+					spellchecker.execute();
+					
 				}
 			}
 		});
@@ -932,15 +935,15 @@ public class SwingWindow {
 		// prepare the text with our pipeline
 		// Annotation doc = task.get();
 
-		final IvanSpellchecker spellchecker = new IvanSpellchecker(text);
+		
 		spellchecker.addPropertyChangeListener(new PropertyChangeListener() {
-
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
 				if ("state".equals(evt.getPropertyName()) && task.isDone()) {
 					try {
 						spellingErrors = spellchecker.get();
 						markSpelling();
+						busyLabel.setBusy(false);
 					} catch (InterruptedException | ExecutionException e) {
 						e.printStackTrace();
 					}

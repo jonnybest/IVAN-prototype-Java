@@ -3,8 +3,10 @@
  */
 package edu.kit.ipd.alicenlp.ivan;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -83,8 +85,7 @@ public class IvanSpellchecker extends SwingWorker<List<RuleMatch>, Object> {
 			
 			// load my custom rule set
 			log.info(JLanguageTool.getDataBroker().getResourceDir());
-			URL grammarrules = ClassLoader.getSystemResource("edu/kit/ipd/alicenlp/ivan/resources/grammar.xml");
-			List<PatternRule> loadPatternRules = languageTool.loadPatternRules(grammarrules.getPath());
+			List<PatternRule> loadPatternRules = languageTool.loadPatternRules(new File("grammar.xml").getAbsolutePath()); //grammarrules.getPath());
 			for (PatternRule patternRule : loadPatternRules) {
 				languageTool.addRule(patternRule);
 			}
