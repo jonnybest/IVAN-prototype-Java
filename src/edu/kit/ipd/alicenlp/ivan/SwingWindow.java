@@ -327,49 +327,6 @@ public class SwingWindow {
 		initialize();
 	}
 
-	/**
-	 * Invoke the spell checker
-	 * 
-	 * @param text
-	 *            input document
-	 */
-	public void checkSpelling(String text) {
-		// List<RuleMatch> matches = langTool.check("A sentence " +
-		// "with a error in the Hitchhiker's Guide tot he Galaxy");
-		final IvanSpellchecker speller = new IvanSpellchecker(text);
-		speller.execute();
-
-		speller.addPropertyChangeListener(new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				if ("state".equals(evt.getPropertyName()) && speller.isDone()) {
-
-					try {
-						spellingErrors = speller.get();
-
-						if (spellingErrors.size() > 0) {
-							isSpellingOkay = false;
-						} else {
-							isSpellingOkay = true;
-						}
-						if (isSpellingOkay) {
-							clearStyles();
-							markSpelling();
-							processText(txtEditor.getText());
-						} else {
-							clearStyles();
-							markSpelling();
-						}
-
-					} catch (InterruptedException | ExecutionException e) {
-						log.warning(e.toString());
-						e.printStackTrace();
-					}
-				}
-			}
-		});
-	}
-
 	private void clearStyles() {
 		txtEditor.getHighlighter().removeAllHighlights();
 		log.info("SwingWindow.clearStyles()");
