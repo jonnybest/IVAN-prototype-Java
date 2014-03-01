@@ -14,6 +14,12 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -904,7 +910,7 @@ public class SwingWindow {
 //						tell(new IvanDiscourseModelPrinter(entities).toString());
 						updateDocumentMarkers(doc);
 						updateSentenceMarkers(doc);
-
+						tracePanel();
 					} catch (IvanException e) {
 						log.warning(e.toString());
 						e.printStackTrace();
@@ -921,6 +927,10 @@ public class SwingWindow {
 					// RecognitionStatePrinter emitterwriter = new
 					// RecognitionStatePrinter(entitiesState);
 					// tell(emitterwriter.toString());
+ catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 
 					spellchecker.execute();
 					
@@ -950,6 +960,13 @@ public class SwingWindow {
 				}
 			}
 		});
+	}
+
+	protected void tracePanel() throws IOException {
+		
+		OpenOption[] oo = {java.nio.file.StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE};
+		log.info(containerTaskPanel.toString());
+		Files.write(Paths.get("tracking/panel.txt"), this.containerTaskPanel.toString().getBytes(StandardCharsets.UTF_8), oo);
 	}
 
 	/**

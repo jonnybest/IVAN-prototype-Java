@@ -35,6 +35,7 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
+import edu.stanford.nlp.io.EncodingPrintWriter.err;
 
 /**
  * This is a special JXTaskPaneContainer, which can display errors and warnings
@@ -168,21 +169,19 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// l.info();#
 		final String nl = "\n";
 		StringBuilder sb = new StringBuilder();
-
-		for (Entry<String, JXTaskPane> pane : mypanes.entrySet()) {
-			JXTaskPane pn = pane.getValue();
-			ActionMap am = Application.getInstance().getContext()
-					.getActionMap(pn);
-			if (am.size() == 0)
-				continue;
-			sb.append(pane.getKey());
-			sb.append(nl);
-			for (Object key : am.keys()) {
-				Action ac = am.get(key);
-				sb.append("\t");
-				sb.append(ac.toString());
-				// sb.append(nl);
-			}
+		log.info("now printing "+ mypanes.entrySet().size() + " panels");
+		log.info("actions: "+ Application.getInstance().getContext().getActionMap().size());
+		sb.append("panels: " + nl);
+		for (String panel : mypanes.keySet()) {
+			sb.append(panel  +nl);
+		}
+		sb.append(nl + "shown issues:" + nl);
+		for ( IvanErrorInstance err : this.bagofProblems) {
+			sb.append(err);
+		}
+		sb.append(nl + "ignored issues:" + nl);
+		for ( IvanErrorInstance err : this.ignoredProblems) {
+			sb.append(err);
 		}
 		return sb.toString();
 		// return super.toString();
