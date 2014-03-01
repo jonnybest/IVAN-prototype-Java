@@ -874,6 +874,7 @@ public class SwingWindow {
 						updateDocumentMarkers(doc);
 						updateSentenceMarkers(doc);
 						tracePanel();
+						commit(currentFileName != null ? currentFileName : "");
 					} catch (IvanException e) {
 						log.warning(e.toString());
 						e.printStackTrace();
@@ -989,7 +990,7 @@ public class SwingWindow {
 				// okay, even close() throws? That's messed up.
 			}
 		}
-		commit(outputfile.getName());
+		
 		return true;
 	}
 
