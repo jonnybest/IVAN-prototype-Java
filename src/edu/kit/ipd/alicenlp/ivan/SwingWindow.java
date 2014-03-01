@@ -1030,7 +1030,8 @@ public class SwingWindow {
 	}
 
 	private void tell(String output) {
-		this.emitterTextPane.setText(this.emitterTextPane.getText() + "\n" + output);
+		String seperator = this.emitterTextPane.getText().length() > 0 ? "\n" : "";
+		this.emitterTextPane.setText(this.emitterTextPane.getText() + seperator + output);
 	}
 
 	/**
