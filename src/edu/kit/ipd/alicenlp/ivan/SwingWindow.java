@@ -50,6 +50,8 @@ import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.Document;
 import javax.swing.text.StyleContext;
 
+import opennlp.tools.util.StringUtil;
+
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
@@ -60,8 +62,10 @@ import org.languagetool.rules.RuleMatch;
 
 import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
+import edu.kit.ipd.alicenlp.ivan.components.IvanDiscourseModelPrinter;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
+import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
@@ -75,6 +79,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.StringUtils;
 
 /**
  * This is the main class if IVAN. It creates the user interface and manages all
@@ -892,6 +897,9 @@ public class SwingWindow {
 					}
 
 					try {
+						emitterTextPane.setText(""); // remove old tells
+//						DiscourseModel entities = doc.get(IvanAnnotations.IvanEntitiesAnnotation.class);
+//						tell(new IvanDiscourseModelPrinter(entities).toString());
 						updateDocumentMarkers(doc);
 						updateSentenceMarkers(doc);
 
@@ -1021,9 +1029,8 @@ public class SwingWindow {
 		System.err.println("Stopwatch: " + (diff) + " ms.");
 	}
 
-	@SuppressWarnings("unused")
 	private void tell(String output) {
-		this.emitterTextPane.setText(output);
+		this.emitterTextPane.setText(this.emitterTextPane.getText() + "\n" + output);
 	}
 
 	/**
@@ -1041,6 +1048,7 @@ public class SwingWindow {
 		if (errors != null) {
 			// process document-wide errors
 			for (IvanErrorMessage documenterror : errors) {
+				tell(documenterror.toString());
 				String category = createCategory(documenterror.getType());
 				boolean showError = this.containerTaskPanel.createProblem(category, documenterror,
 						null);
