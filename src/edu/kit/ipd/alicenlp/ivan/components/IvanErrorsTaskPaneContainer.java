@@ -351,41 +351,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		if(error.Category.equals(CATEGORY_EFFECT) 
 				|| error.Category.equals(CATEGORY_GRAMMAR)
 				|| error.Category.equals(CATEGORY_STYLE)) // for sentences without effect only
-		{
-			String displayDescription = "Delete sentence " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new QuickfixDeleteSentence(this, displayDescription, error);
-			// make the error retrievable
-			myAction.putValue(QF_ERROR, error);
-			// set the shorthand notation for this qf
-			myAction.putValue(QF_NAME, "qf-delete");
-			myQuickfixesForThisError.add(myAction);
-		}
+		{}
 		
 		/* The ADD_SENTENCE action */
 		if(error.Category.equals(CATEGORY_LOCATION)) /* LOCATION */
-		{
-			String[] references = error.Reference;
-			String displayDescription = "Add a location after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new QuickfixAddLocation(this, displayDescription, error);
-			// make the error retrievable
-			myAction.putValue(QF_ERROR, error);
-			
-			// set the shorthand notation for this qf
-			myAction.putValue(QF_NAME, "qf-add"+ Arrays.toString(references));
-			myQuickfixesForThisError.add(myAction);
-		} 
+		{} 
 		else if(error.Category.equals(CATEGORY_DIRECTION)) /* DIRECTION */
-		{ 
-			String[] references = error.Reference;
-			String displayDescription = "Add a direction after " + error.Codepoints.get(0).x + "," + error.Codepoints.get(0).y + " '"+ref+"'";
-	        javax.swing.Action myAction = new QuickfixAddDirection(this, displayDescription, error);
-			// make the error retrievable
-			myAction.putValue(QF_ERROR, error);
-			
-			// set the shorthand notation for this qf
-			myAction.putValue(QF_NAME, "qf-add"+ Arrays.toString(references));
-			myQuickfixesForThisError.add(myAction);
-		}
+		{}
 				
 		/* The IGNORE action is almost always available */
 		if(!error.Category.equals(CATEGORY_META))
