@@ -847,7 +847,7 @@ public class SwingWindow {
 			throws BadLocationException {
 		// create a painter for lines
 		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(
-				Color.RED.brighter());
+				Color.GREEN);
 		// paint the highlights
 		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition,
 				sqpainter);
@@ -1110,7 +1110,7 @@ public class SwingWindow {
 				String category = createCategory(err.getType());
 				// create an error message inside the panel on the right hand
 				// side
-				this.containerTaskPanel
+				boolean ignored = this.containerTaskPanel
 						.createProblem(
 								category,
 								err,
@@ -1118,7 +1118,8 @@ public class SwingWindow {
 										sentence.get(CharacterOffsetBeginAnnotation.class),
 										sentence.get(CharacterOffsetEndAnnotation.class)));
 				// highlight the text at the error's location
-				markIvanError(err.getSpan().start(), err.getSpan().end());
+				if(!ignored)
+					markIvanError(err.getSpan().start(), err.getSpan().end());
 
 				break;
 			case EventDescription:
@@ -1143,7 +1144,7 @@ public class SwingWindow {
 				.get(IvanAnnotations.DocumentErrorAnnotation.class);
 		if (errors != null) {
 			for (IvanErrorMessage docer : errors) {
-				markIvanError(docer.getSpan().start(), docer.getSpan().end());
+				//markIvanError(docer.getSpan().start(), docer.getSpan().end());
 			}
 		}
 	}
