@@ -823,8 +823,9 @@ public class SwingWindow {
 		SquiggleUnderlineHighlightPainter sqpainter = new SquiggleUnderlineHighlightPainter(
 				Color.RED);
 		// paint the highlights
-		txtEditor.getHighlighter().addHighlight(beginPosition, endPosition,
+		Object tag = txtEditor.getHighlighter().addHighlight(beginPosition, endPosition,
 				sqpainter);
+		log.info(tag.toString());
 	}
 
 	void markSpelling() {
@@ -1041,8 +1042,13 @@ public class SwingWindow {
 			// process document-wide errors
 			for (IvanErrorMessage documenterror : errors) {
 				String category = createCategory(documenterror.getType());
-				this.containerTaskPanel.createProblem(category, documenterror,
+				boolean showError = this.containerTaskPanel.createProblem(category, documenterror,
 						null);
+				if(showError){
+					int length = documenterror.getSpan().end() - documenterror.getSpan().start();
+					log.info("Showing error for this word: "+ txtEditor.getText(documenterror.getSpan().start(), length));
+					markIvanError(documenterror.getSpan().start(), documenterror.getSpan().end());
+				}
 			}
 
 			// clear leftover errors from last run which may have been fixed by
@@ -1110,7 +1116,7 @@ public class SwingWindow {
 				String category = createCategory(err.getType());
 				// create an error message inside the panel on the right hand
 				// side
-				boolean ignored = this.containerTaskPanel
+				boolean showError = this.containerTaskPanel
 						.createProblem(
 								category,
 								err,
@@ -1118,7 +1124,7 @@ public class SwingWindow {
 										sentence.get(CharacterOffsetBeginAnnotation.class),
 										sentence.get(CharacterOffsetEndAnnotation.class)));
 				// highlight the text at the error's location
-				if(!ignored)
+				if(showError)
 					markIvanError(err.getSpan().start(), err.getSpan().end());
 
 				break;
@@ -1136,15 +1142,6 @@ public class SwingWindow {
 				break;
 			default:
 				break;
-			}
-		}
-
-		// paint errors over all previous markers
-		List<IvanErrorMessage> errors = doc
-				.get(IvanAnnotations.DocumentErrorAnnotation.class);
-		if (errors != null) {
-			for (IvanErrorMessage docer : errors) {
-				//markIvanError(docer.getSpan().start(), docer.getSpan().end());
 			}
 		}
 	}

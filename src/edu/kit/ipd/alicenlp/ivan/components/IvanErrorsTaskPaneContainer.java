@@ -301,7 +301,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 *            The error object retrieved from the annotations.
 	 * @param sentenceCodepoint
 	 *            The sentence's coordinates inside the text.
-	 * @return TRUE if the problem was inserted, otherwise FALSE.
+	 * @return TRUE if the problem should be shown to the user, otherwise FALSE.
 	 * @throws BadLocationException
 	 *             The given codepoints do not refer to valid coordinates inside
 	 *             the text.
@@ -340,12 +340,19 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 			// has the user previously ignored this error?
 			boolean ignored = this.ignoredProblems.contains(error);
 			if (!ignored) {
-				if (!CATEGORY_META.equals(category) // if this is a meta error,
+				if (CATEGORY_META.equals(category) // if this is a meta error,
 													// do not attempt to add it
-						&& !this.bagofProblems.add(error)) // is this error
-															// already listed?
+						) 
+															
 				{
 					return false;
+				}
+				else if(!this.bagofProblems.add(error))
+				{
+					// is this error
+					// already listed?
+					// if yes, do not add any quick fixes, but tell the swing window that this error should still be displayed
+					return true;
 				}
 				createQuickfixes(error);
 				return true;
