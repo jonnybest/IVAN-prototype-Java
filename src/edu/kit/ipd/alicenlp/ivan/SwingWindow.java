@@ -1136,9 +1136,10 @@ public class SwingWindow {
 										sentence.get(CharacterOffsetBeginAnnotation.class),
 										sentence.get(CharacterOffsetEndAnnotation.class)));
 				// highlight the text at the error's location
-				if(showError)
+				if(showError){
+					tell(err.toString());
 					markIvanError(err.getSpan().start(), err.getSpan().end());
-
+				}
 				break;
 			case EventDescription:
 				markText(root.beginPosition(), root.endPosition(), new Color(
