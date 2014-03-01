@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
 
+import edu.kit.ipd.alicenlp.ivan.SwingWindow;
+
 /** This action ignores all currently displayed problems and clears the panel 
  * 
  * @author Jonny
@@ -33,6 +35,8 @@ final class MetaActionIgnoreAll extends AbstractAction {
 				comp.getParent().remove(comp);
 			}
 			error.Components.clear();
+			
+			this.ivanErrorsTaskPaneContainer.removeHighlights();
 		}
 		this.ivanErrorsTaskPaneContainer.bagofProblems.clear();
 		this.ivanErrorsTaskPaneContainer.updateUI();

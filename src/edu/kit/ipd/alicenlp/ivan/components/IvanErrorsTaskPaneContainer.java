@@ -22,9 +22,12 @@ import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JLabel;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Highlighter;
+import javax.swing.text.Highlighter.Highlight;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
+import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ApplicationActionMap;
 import org.jdesktop.swingx.JXTaskPane;
@@ -567,6 +570,19 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		gen0.clear();
 		gen0.addAll(bagofProblems);
 		gen0.addAll(ignoredProblems);
+	}
+
+	/**
+	 * removes squiggly markers from the text
+	 */
+	public void removeHighlights() {
+		Highlighter hl = txtEditor.getHighlighter();
+		for (Highlight h : hl.getHighlights()) {
+			if(h.getPainter() instanceof SquiggleUnderlineHighlightPainter)
+			{
+				hl.removeHighlight(h);
+			}
+		}
 	}
 
 }
