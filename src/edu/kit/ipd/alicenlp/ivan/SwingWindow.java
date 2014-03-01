@@ -137,6 +137,7 @@ public class SwingWindow {
 			+ "The Frog disappears. A short time passes.";
 
 	private static final String DOCUMENT_TXT = "document.txt";
+	private static final String PANEL_TXT = "panel.txt";
 	private static Logger log = Logger.getLogger(SwingWindow.class.getName());
 	private static SwingWindow instance;
 
@@ -277,6 +278,10 @@ public class SwingWindow {
 		String documentpath = GitManager.TRACKINGPATH + DOCUMENT_TXT;
 		File what = new File(documentpath);
 		what.createNewFile();
+		
+		String panelpath = GitManager.TRACKINGPATH + PANEL_TXT;
+		File pf = new File(panelpath);
+		pf.createNewFile();
 
 		GitManager.safeInit();
 	}
