@@ -236,8 +236,7 @@ public class SwingWindow {
 
 		} catch (SecurityException | IOException e1) {
 			e1.printStackTrace();
-			System.err
-					.println("Warning: Failed to initialize java.util.logging. Logging is disabled.");
+			System.err.println("Warning: Failed to initialize java.util.logging. Logging is disabled.");
 		}
 
 		EventQueue.invokeLater(new Runnable() {
@@ -246,6 +245,7 @@ public class SwingWindow {
 					SwingWindow window = new SwingWindow();
 					window.frmvanInput.setVisible(true);
 				} catch (Exception e) {
+					log.log(Level.SEVERE,"General failure.", e);
 					e.printStackTrace();
 				}
 			}
@@ -259,8 +259,8 @@ public class SwingWindow {
 		try {
 			instance.processText(instance.txtEditor.getText());
 		} catch (Exception e) {
-			System.err
-					.println("The caller tried to process this text and caused an exception.");
+			log.severe("The caller tried to process this text and caused an exception.");
+			log.log(Level.SEVERE, "", e);
 			e.printStackTrace();
 		}
 	}
@@ -1010,7 +1010,7 @@ public class SwingWindow {
 	private void stopAndPrintStopWatch() {
 		org.joda.time.DateTime now = org.joda.time.DateTime.now();
 		long diff = now.getMillis() - stopwatch.getMillis();
-		System.err.println("Stopwatch: " + (diff) + " ms.");
+		log.warning("Stopwatch: " + (diff) + " ms.");
 	}
 
 	private void tell(String output) {
