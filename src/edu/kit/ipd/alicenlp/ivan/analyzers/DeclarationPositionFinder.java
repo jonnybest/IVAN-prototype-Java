@@ -226,7 +226,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * @param sentence
 	 * @return
 	 */
-	public static List<EntityInfo> findAll(CoreMap sentence) {
+	private static List<EntityInfo> findAll(CoreMap sentence) {
 		ArrayList<EntityInfo> infos = new ArrayList<EntityInfo>();
 		/*
 		 * If this was perfect, this is how'd you find all infos: 1. learn all
@@ -291,7 +291,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 				if (s.equals(originalToken.originalText())) {
 					begin = originalToken
 							.get(CharacterOffsetBeginAnnotation.class);
-					return Span.fromValues(begin, begin + n.length());
+					return Span.fromValues(begin, begin + s.length());
 				}
 			}
 		}
@@ -514,7 +514,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * 
 	 * @throws IvanException
 	 */
-	public void learnDeclarations(CoreMap sentence) throws IvanException {
+	private void learnDeclarations(CoreMap sentence) throws IvanException {
 		// TODO implement learnDecl
 		// learn names
 		List<EntityInfo> things = findAll(sentence);
