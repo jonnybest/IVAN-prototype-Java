@@ -105,53 +105,11 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 		return document;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#getDictionary()
-	 */
-
-	public Dictionary getDictionary() {
-		return mydictionary;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see edu.kit.alicenlp.konkordanz.IStanfordAnalyzer#getPipeline()
-	 */
-	public StanfordCoreNLP getPipeline() {
-		return mypipeline;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * edu.kit.alicenlp.konkordanz.IWordnetAnalyzer#setDictionary(net.sf.extjwnl
-	 * .dictionary.Dictionary)
-	 */
-
-	public void setDictionary(Dictionary dictionary) {
-		this.mydictionary = dictionary;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * edu.kit.alicenlp.konkordanz.IStanfordAnalyzer#setPipeline(edu.stanford
-	 * .nlp.pipeline.StanfordCoreNLP)
-	 */
-
-	public void setPipeline(StanfordCoreNLP mypipeline) {
-		this.mypipeline = mypipeline;
-	}
 
 	/**
 	 * 
 	 */
-	protected StanfordCoreNLP setupCoreNLP() {
+	private StanfordCoreNLP setupCoreNLP() {
 		StanfordCoreNLP pipeline;
 		if (mypipeline == null) {
 			// creates a StanfordCoreNLP object, with POS tagging,
@@ -212,6 +170,9 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 		DeclarationPositionFinder.myinstance = myinstance;
 	}
 
+	/**
+	 * @return A stand-alone instance of this analysis class
+	 */
 	public static DeclarationPositionFinder getInstance() {
 		if (myinstance == null) {
 			DeclarationPositionFinder.myinstance = new DeclarationPositionFinder();
@@ -226,7 +187,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * @param sentence
 	 * @return
 	 */
-	private static List<EntityInfo> findAll(CoreMap sentence) {
+	public static List<EntityInfo> findAll(CoreMap sentence) {
 		ArrayList<EntityInfo> infos = new ArrayList<EntityInfo>();
 		/*
 		 * If this was perfect, this is how'd you find all infos: 1. learn all
@@ -517,17 +478,16 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * Resets this classes' state to starting conditions.
 	 */
 	public void reset() {
-		// FIXME: I really hope the entities don't leak
 		mystate.clear();
 	}
 
 	/**
 	 * Analyzes the given sentences and persists the result in the interal state
+	 * @param sentence the given sentence
 	 * 
 	 * @throws IvanException
 	 */
-	private void learnDeclarations(CoreMap sentence) throws IvanException {
-		// TODO implement learnDecl
+	public void learnDeclarations(CoreMap sentence) throws IvanException {
 		// learn names
 		List<EntityInfo> things = findAll(sentence);
 		for (EntityInfo n : things) {
