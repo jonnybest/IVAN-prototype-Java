@@ -226,7 +226,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * @param sentence
 	 * @return
 	 */
-	public static List<EntityInfo> findAll(CoreMap sentence) {
+	private static List<EntityInfo> findAll(CoreMap sentence) {
 		ArrayList<EntityInfo> infos = new ArrayList<EntityInfo>();
 		/*
 		 * If this was perfect, this is how'd you find all infos: 1. learn all
@@ -424,6 +424,23 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 
 		IndexedWord head = BaseRule.getSubject(graph);
 
+		// bad verb
+		if(BaseRule.isPOSFamily(head, "VB"))
+		{
+			// try again with direct object
+			IndexedWord dob = BaseRule.getDirectObject(head, graph);
+			// we can only use nouns
+			if(dob != null && BaseRule.isPOSFamily(dob, "NN"))
+			{
+				// if it's a noun, use it
+				head = dob;
+			}
+			else {
+				// if it's anything else, this game is over
+				return names;
+			}
+		}
+		
 		// if the nominal subject is a plural word (like "characters" or
 		// "people"),
 		// try extracting the stuff elsewhere
@@ -446,13 +463,8 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 
 		// try to do something with the sentence and hope it is meaningful:
 		if (head == null) {
-			// second try: use the root in subject-less sentences
-			head = graph.getFirstRoot();
-			// check again:
-			if (head == null) {
-				// I'm out of ideas
-				return names;
-			}
+			// I'm out of ideas
+			return names;
 		}
 
 		// extract names:
@@ -514,7 +526,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 	 * 
 	 * @throws IvanException
 	 */
-	public void learnDeclarations(CoreMap sentence) throws IvanException {
+	private void learnDeclarations(CoreMap sentence) throws IvanException {
 		// TODO implement learnDecl
 		// learn names
 		List<EntityInfo> things = findAll(sentence);

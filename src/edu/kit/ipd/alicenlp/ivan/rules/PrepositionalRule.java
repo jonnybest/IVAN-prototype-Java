@@ -34,7 +34,13 @@ import edu.stanford.nlp.util.CoreMap;
 public class PrepositionalRule implements ISentenceRule
 {
 	private IndexedWord word = null;
+	/** The location's description 
+	 * 
+	 */
 	private List<Tree> locationtrees = new ArrayList<Tree>();
+	/** The words for this location
+	 * 
+	 */
 	private List<Tree> wordTrees = new ArrayList<Tree>();
 	
 	final private String[] protoPrepositions = {
@@ -61,8 +67,14 @@ public class PrepositionalRule implements ISentenceRule
 		IndexedWord subject = graph.getChildWithReln(root, nsubjreln);
 		
 		if(subject == null) {
-		    // okay, this sucks
+		    // okay, this sucks. let's try more subject-like syntax elements:
 			this.word = getSubject(graph);
+			
+			// getSubject returns the root if no subject is given, because subjects may get topicalized. we cannot work with verbs
+			if(BaseRule.isPOSFamily(word, "VB")){
+				// help us, direct object. you're our only hope!
+				this.word = BaseRule.getDirectObject(root, graph);
+			}
 		}
 		else {
 			this.word = subject;
@@ -72,12 +84,21 @@ public class PrepositionalRule implements ISentenceRule
 		hasLocation = hasLocation | apply(root, sentence);
 		
 		// and once for the subject (if different)
-		if(!root.equals(subject))
+		if(BaseRule.isPOSFamily(root, "NN") && !root.equals(subject))
 			hasLocation = hasLocation | apply(subject, sentence);
 		
 		// if we found nothing, stop right here
 		if(!hasLocation)
 			return false;
+		
+		// sort phrases by index
+		sortLocations();
+		
+		// if we found something, but we cannot attribute it, just return
+		if(word == null)
+		{
+			return true;
+		}
 		
 		// for now we only allow one referent per location, so we only return one. But we should want to know if there are more than one referents in this sentence.  
 		this.multipleReferents = BaseRule.resolveCc(word, sentence, null).size() > 1;
@@ -86,12 +107,15 @@ public class PrepositionalRule implements ISentenceRule
 		Tree mytree = sentence.get(TreeAnnotation.class);
 		wordTrees.add(match(word, mytree, "NP", false));
 		
-		// sort phrases by index
-		sort();
-		
 		return true;
 	}
 
+	/** Applies the prepositional rule to find locations. 
+	 * 
+	 * @param governor
+	 * @param sentence
+	 * @return
+	 */
 	public boolean apply(IndexedWord governor, CoreMap sentence)
 	{	
 		// ANALYSIS part
@@ -139,7 +163,7 @@ public class PrepositionalRule implements ISentenceRule
 	 */
 	public Tree getReferent()
 	{
-		return wordTrees.get(0);
+		return wordTrees.size() > 0 ? wordTrees.get(0) : null;
 	}
 
 	/** Creates a string from the modifiers which were found in this rule's sentence.
@@ -172,7 +196,7 @@ public class PrepositionalRule implements ISentenceRule
 		return multipleReferents;
 	}
 	
-	private void sort()
+	private void sortLocations()
 	{
 		java.util.Collections.sort(locationtrees, new Comparator<Tree>() {
 
