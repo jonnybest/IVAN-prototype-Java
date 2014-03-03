@@ -874,7 +874,7 @@ public class SwingWindow {
 						updateDocumentMarkers(doc);
 						updateSentenceMarkers(doc);
 						tracePanel();
-						commit(currentFileName != null ? currentFileName : "");
+						commit(currentFileName != null ? Paths.get(currentFileName).getFileName().toString() : "");
 					} catch (IvanException e) {
 						log.warning(e.toString());
 						e.printStackTrace();
