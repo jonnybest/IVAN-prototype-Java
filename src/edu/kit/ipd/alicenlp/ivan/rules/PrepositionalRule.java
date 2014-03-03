@@ -84,7 +84,7 @@ public class PrepositionalRule implements ISentenceRule
 		hasLocation = hasLocation | apply(root, sentence);
 		
 		// and once for the subject (if different)
-		if(BaseRule.isPOSFamily(root, "NN") && !root.equals(subject))
+		if(subject != null && BaseRule.isPOSFamily(subject, "NN") && !root.equals(subject))
 			hasLocation = hasLocation | apply(subject, sentence);
 		
 		// if we found nothing, stop right here
