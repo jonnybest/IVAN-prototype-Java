@@ -653,4 +653,20 @@ public class ImportantDeclarationsTest {
 		assertNotNull(state.getSingle("cat"));
 		assertThat(state.getSingle("cat").getDirection(), is("north"));
 	}
+	
+	/** Test for EntropyIncreasingEntity's "Behind the wizard and slightly to the left, stands a happy tree. "
+	 * 
+	 */
+	@Test
+	public void testEntropyIncreasingEntity()
+	{
+		String text = "Behind the wizard and slightly to the left, there stands a happy tree.";
+		Annotation doc = TestUtilities.annotateDeclarations(text);
+		DiscourseModel state = doc.get(IvanEntitiesAnnotation.class);
+		System.out.println(state.toString());
+		assertThat("tree does not exist in recognition", state.hasEntity("tree"), is(true));
+		System.out.println("There are " + state.size() + " entities in the sentence: '"+text+ "'" );
+		assertNotNull("no tree found", state.getSingle("tree"));
+		assertThat(state.getSingle("tree").getLocation(), is("Behind the wizard and slightly to the left"));
+	}
 }
