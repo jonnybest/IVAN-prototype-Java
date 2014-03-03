@@ -41,6 +41,53 @@ import edu.stanford.nlp.util.logging.Redwood;
  * 
  */
 public class ImportantClassificationTests {
+
+	/**
+	 * Root is a noun
+	 */
+	@Test
+	public void positiveHardSetupNounTest() {
+		{
+			Annotation doc = annotateClassifications("Rightmost of the stage, in the back, is a sunflower, facing towards the characters.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("sunflower sentence classified wrong",
+					sentence.get(SentenceClassificationAnnotation.class),
+					is(Classification.SetupDescription));
+		}
+		{
+			Annotation doc = annotateClassifications("At the start of the scene, on the left is a light bulb which is off.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("bulb sentence classified wrong",
+					sentence.get(SentenceClassificationAnnotation.class),
+					is(Classification.SetupDescription));
+		}
+		// Next to the bulb on the ground is a switch, with a brown monkey next
+		// to it, facing the button but slightly turned towards the viewer.
+		{
+			Annotation doc = annotateClassifications("Next to the bulb on the ground is a switch, "
+					+ "with a brown monkey next to it, facing the button but slightly turned "
+					+ "towards the viewer.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("switch sentence classified wrong",
+					sentence.get(SentenceClassificationAnnotation.class),
+					is(Classification.SetupDescription));
+		}
+	}
+
+	/**
+	 * Special verb: Depict
+	 */
+	@Test
+	public void positiveHardSetupDepictTest() {
+		{
+			Annotation doc = annotateClassifications("The start depicts a boy facing to the right of the screen, and a woman facing to the front.");
+			CoreMap sentence = doc.get(SentencesAnnotation.class).get(0);
+			assertThat("depicts sentence classified wrong",
+					sentence.get(SentenceClassificationAnnotation.class),
+					is(Classification.SetupDescription));
+		}
+	}
+
 	
 	/**
 	 * A positive test for ACTION annotations. If this test passes, the analyzer

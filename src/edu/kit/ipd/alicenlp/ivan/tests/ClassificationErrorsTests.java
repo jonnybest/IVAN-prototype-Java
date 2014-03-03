@@ -164,19 +164,19 @@ public class ClassificationErrorsTests {
 //			System.out.println(sentence.get(CollapsedCCProcessedDependenciesAnnotation.class));
 //		}
 	}
-	
-	@Test
-	public void testBadRoot() {
-		{
-			// the problem with this sentence is manyfold. For one, its root
-			// points to "going" instead of "says". Then the coref is wrong.
-			// Then there is an appos annotation which should be clausal
-			// complement (or something like that) instead.
-			String words = "While going to the bunny, Alice says: \"Okay.\"";
-			CoreMap tags = TestUtilities.annotateSingleClassification(words);
-			assertThat("", tags.get(SentenceClassificationAnnotation.class),
-					is(Classification.ErrorDescription));
-		}
-
-	}
+//	
+//	@Test
+//	public void testBadRoot() {
+//		{
+//			// the problem with this sentence is manyfold. For one, its root
+//			// points to "going" instead of "says". Then the coref is wrong.
+//			// Then there is an appos annotation which should be clausal
+//			// complement (or something like that) instead.
+//			String words = "While going to the bunny, Alice says: \"Okay.\"";
+//			CoreMap tags = TestUtilities.annotateSingleClassification(words);
+//			assertThat("", tags.get(SentenceClassificationAnnotation.class),
+//					is(Classification.ErrorDescription));
+//		}
+//
+//	}
 }
