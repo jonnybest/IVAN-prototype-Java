@@ -401,39 +401,36 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		// this list will contain the availale fixes
 		List<javax.swing.Action> myQuickfixesForThisError = new ArrayList<Action>();
 
-		/* The DELETE_SENTENCE action */
-		if (error.Category.equals(CATEGORY_EFFECT)
-				|| error.Category.equals(CATEGORY_GRAMMAR)
-				|| error.Category.equals(CATEGORY_STYLE)) // for sentences
-															// without effect
-															// only
-		{
-		}
+		/** SELECT action is available, too */
+		if (!error.Category.equals(CATEGORY_META)) {
+			// the description to display
+			String displayDescription = "Select text for "
+					+ error.Codepoints.get(0).x + ","
+					+ error.Codepoints.get(0).y + " '" + ref + "'";
 
-		/* The ADD_SENTENCE action */
-		if (error.Category.equals(CATEGORY_LOCATION)) /* LOCATION */
-		{
-		} else if (error.Category.equals(CATEGORY_DIRECTION)) /* DIRECTION */
-		{
+			String name = "qf-select";
+			javax.swing.Action myAction = new QuickfixSelectIssue(displayDescription, error, this.txtEditor);
+			// make the error retrievable
+			myAction.putValue(QF_ERROR, error);
+			// set the shorthand notation for this qf
+			myAction.putValue(QF_NAME, name);
+			myQuickfixesForThisError.add(myAction);			
 		}
-
+		
 		/* The IGNORE action is almost always available */
 		if (!error.Category.equals(CATEGORY_META)) {
-			// instance
-			final IvanErrorsTaskPaneContainer tp = this;
 			// the description to display
 			String displayDescription = "Ignore problem in "
 					+ error.Codepoints.get(0).x + ","
 					+ error.Codepoints.get(0).y + " '" + ref + "'";
 
 			javax.swing.Action myAction = new QuickfixIgnoreProblem(this,
-					displayDescription, error, tp);
+					displayDescription, error);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
 			myAction.putValue(QF_NAME, "qf-ignore");
-			myQuickfixesForThisError.add(myAction);
-		} else {
+			myQuickfixesForThisError.add(myAction);			
 		}
 
 		return myQuickfixesForThisError;

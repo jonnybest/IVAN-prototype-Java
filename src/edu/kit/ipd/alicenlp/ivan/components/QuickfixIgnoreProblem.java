@@ -16,13 +16,10 @@ final class QuickfixIgnoreProblem extends AbstractQuickfix {
 	 * 
 	 */
 	private final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
-	private final IvanErrorsTaskPaneContainer tp;
 
-	QuickfixIgnoreProblem(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error,
-			IvanErrorsTaskPaneContainer tp) {
+	QuickfixIgnoreProblem(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
 		super(name, error, ivanErrorsTaskPaneContainer.txtEditor, false);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
-		this.tp = tp;
 	}
 
 	@Override
@@ -42,7 +39,7 @@ final class QuickfixIgnoreProblem extends AbstractQuickfix {
 		// remove it from the problems which are currently of concern
 		this.ivanErrorsTaskPaneContainer.bagofProblems.remove(Error);
 		log.info("This action's error is " + getValue(IvanErrorsTaskPaneContainer.QF_ERROR));
-		log.info(tp.toString());
+		log.info(ivanErrorsTaskPaneContainer.toString());
 	}
 
 	@Override

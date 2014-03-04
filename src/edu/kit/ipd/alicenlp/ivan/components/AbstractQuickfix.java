@@ -2,6 +2,7 @@ package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -24,7 +25,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 
 	protected IvanErrorInstance Error;
 	
-	private JTextComponent txtEditor;
+	protected JTextComponent txtEditor;
 	final Logger log = Logger.getLogger(getClass().getName());
 	private List<Caret> carets = new LinkedList<Caret>();
 
@@ -40,7 +41,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 
 	/** Creates a new quick fix.
 	 * 
-	 * @param name The human-reable name of this quick fix 
+	 * @param name The human-reable display text of this quick fix 
 	 * @param error The relating error
 	 * @param txtEditor The text component where this quick fix is going to work
 	 * @param installQuickfix If TRUE, this quick fix needs to track text inside the text, which means that we install a Caret for each Codepooint. 
@@ -64,8 +65,14 @@ public abstract class AbstractQuickfix extends AbstractAction {
 	 */
 	protected Caret installCaret(CodePoint codep) {
 		// The caret will track the positions across the users' editings. 
-		DefaultCaret place = new DefaultCaret();
+		DefaultCaret place = new DefaultCaret();		
+		place.setUpdatePolicy(DefaultCaret.UPDATE_WHEN_ON_EDT);
 		place.install(txtEditor);
+		// remove mouse listeners from component, since we don't want the mouse to modify our caret
+		txtEditor.removeMouseListener(place);
+		txtEditor.removeMouseMotionListener(place);
+		txtEditor.removeFocusListener(place);
+		// configure visibility and set proper positions
 		place.setVisible(false);
 		place.setDot(codep.y);
 		place.moveDot(codep.x);
@@ -194,5 +201,11 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		if(carets.size()==0)
 			return null;
 		return carets.get(carets.size()-1);
+	}
+	
+	protected Caret getIssue(){
+		if(carets.size()==0)
+			return null;
+		return carets.get(0);
 	}
 }
