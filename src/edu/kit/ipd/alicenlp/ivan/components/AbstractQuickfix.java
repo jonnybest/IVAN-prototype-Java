@@ -1,9 +1,6 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;

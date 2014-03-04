@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.ScrollPane;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -52,6 +53,7 @@ import javax.swing.event.CaretListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.Document;
 import javax.swing.text.StyleContext;
@@ -658,9 +660,9 @@ public class SwingWindow {
 			@Override
 			public void caretUpdate(CaretEvent e) {
 				if (e.getDot() == e.getMark()) {
-					coords.setText(String.format("[%d]", e.getMark()));
+					coords.setText(String.format("cursor at [%d]", e.getMark()));
 				} else {
-					coords.setText(String.format("[%d,%d]", e.getMark(),
+					coords.setText(String.format("selection at [%d,%d]", e.getMark(),
 							e.getDot()));
 				}
 			}
@@ -670,7 +672,7 @@ public class SwingWindow {
 		horizontalGlue = Box.createHorizontalGlue();
 		menuBar.add(horizontalGlue);
 
-		coords = new JLabel("[…]");
+		coords = new JLabel("cursor position […]");
 		menuBar.add(coords);
 		menuBar.add(Box.createHorizontalStrut(6));
 
@@ -735,13 +737,18 @@ public class SwingWindow {
 		textfieldLayout.weightx = 0.5; // resizable
 		textfieldLayout.weighty = 0.5; // resizable
 		textfieldLayout.fill = GridBagConstraints.BOTH;
+		// fix size by putting it into a scroll pane
+		JScrollPane textfieldscroller = new JScrollPane(txtEditor);
+		//textfieldscroller.setFocusTraversalKeysEnabled(true);
+		
 		// add
-		contentPane.add(txtEditor, textfieldLayout);
+		contentPane.add( textfieldscroller, textfieldLayout);
+//		contentPane.add( txtEditor, textfieldLayout);
 
 		errorScrollPane = new JScrollPane(containerTaskPanel);
 		// prevent indefinite shrinking
-		errorScrollPane.setMinimumSize(new Dimension(222, 127));
-		errorScrollPane.setMaximumSize(new Dimension(222, 3000));
+//		errorScrollPane.setMinimumSize(new Dimension(222, 127));
+//		errorScrollPane.setMaximumSize(new Dimension(222, 3000));
 
 		GridBagConstraints scrollpanelLayout = new GridBagConstraints();
 		// middle, right
@@ -749,7 +756,7 @@ public class SwingWindow {
 		scrollpanelLayout.gridx = 1; // right row
 		scrollpanelLayout.gridy = 1; // center column
 		// stretch to fill
-		scrollpanelLayout.weightx = 0.5; // resizable
+		scrollpanelLayout.weightx = 0.2; // resizable
 		scrollpanelLayout.weighty = 0.5; // resizable
 		scrollpanelLayout.fill = GridBagConstraints.BOTH;
 		// add our controls to the visible world
