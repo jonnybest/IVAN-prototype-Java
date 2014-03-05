@@ -1101,11 +1101,8 @@ public class SwingWindow {
 			// color the sentence according to classification
 			switch (sentencetype) {
 			case SetupDescription:
-				// tell(depgraph.toString());
-				markText(root.beginPosition(), root.endPosition(), new Color(
-						0xB3C4FF));
-				// DeclarationPositionFinder.DeclarationQuadruple decl =
-				// mydeclarationfinder.findAll(root, sentence);
+//				markText(root.beginPosition(), root.endPosition(), new Color(
+//						0xB3C4FF));
 				break;
 			case ErrorDescription:
 				log.info("Error in text found: " + err + "; sentence: "
@@ -1130,16 +1127,16 @@ public class SwingWindow {
 				}
 				break;
 			case EventDescription:
-				markText(root.beginPosition(), root.endPosition(), new Color(
-						0xBF4889));
+//				markText(root.beginPosition(), root.endPosition(), new Color(
+//						0xBF4889));
 				break;
 			case TimeDescription:
-				markText(root.beginPosition(), root.endPosition(), new Color(
-						0x7E17ED));
+//				markText(root.beginPosition(), root.endPosition(), new Color(
+//						0x7E17ED));
 				break;
 			case ActionDescription:
-				markText(root.beginPosition(), root.endPosition(), new Color(
-						0xFFC4B3));
+//				markText(root.beginPosition(), root.endPosition(), new Color(
+//						0xFFC4B3));
 				break;
 			default:
 				break;
