@@ -50,9 +50,13 @@ public class IncompleteEntitiesErrorRule implements IDocumentRule
 		// get the list of unique entities
 		for (Pair<String, String> uniqueMapping : state.getEntityNames()) {
 			// 
-			String alias = uniqueMapping.second;
+			String alias = uniqueMapping.second();
 			// 
-			String entity = uniqueMapping.first;
+			String entity = uniqueMapping.first();
+			
+			// if the entity is well-known and ignorable, ignore it
+			if(BaseRule.isIgnoreable(entity))
+				continue;
 
 			// is properly initialized (pertaining to has-both-name-and-entity)
 			boolean initPresent = state.hasEntity(alias);

@@ -9,7 +9,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.sf.extjwnl.JWNLException;
 import net.sf.extjwnl.dictionary.Dictionary;
+import edu.kit.ipd.alicenlp.ivan.data.EntityInfo;
+import edu.kit.ipd.alicenlp.ivan.rules.NonEntitiesFilterRule.EntityType;
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -33,6 +36,7 @@ import edu.stanford.nlp.util.CoreMap;
 public abstract class BaseRule {
 
 	private static Dictionary dictionary = null;
+	private static NonEntitiesFilterRule _filterRule; 
 
 	/**
 	 * Provides a WordNET dictionary
@@ -440,5 +444,28 @@ public abstract class BaseRule {
 		}
 		// hope those are all
 		return names;
+	}
+
+	/** Certain well-known entities may be ignored by Ivan. This utility method answers the question "can this be ignored?"
+	 * @param thing
+	 * @return
+	 */
+	public static boolean isIgnoreable(String thing) {
+		try {
+			if (_filterRule == null)
+				_filterRule = new NonEntitiesFilterRule();
+			if (!_filterRule.apply(thing)) {
+				return false;
+			}
+			else {
+				// this rule has found something
+				EntityType res = _filterRule.getResult();
+				// everything that is not a model can be ignored
+				return res != EntityType.MODEL;
+			}
+		} catch (JWNLException e) {
+			// default answer to "can this be ignored?" is "no".
+			return false;
+		}
 	}
 }

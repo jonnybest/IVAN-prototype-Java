@@ -627,6 +627,8 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 			if (errors == null)
 				errors = new ArrayList<IvanErrorMessage>();
 			for (EntityInfo thing : epr.getResults()) {
+				if(BaseRule.isIgnoreable(thing.getEntity()))
+					continue;
 				IvanErrorMessage informationMissingError = new IvanErrorMessage(IvanErrorType.SINGLETON,
 						thing.getEntitySpan(),
 						String.format(
