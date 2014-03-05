@@ -3,10 +3,13 @@
  */
 package edu.kit.ipd.alicenlp.ivan.rules;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import net.sf.extjwnl.dictionary.Dictionary;
 import edu.stanford.nlp.ling.CoreAnnotations.BeginIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.EndIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.PartOfSpeechAnnotation;
@@ -29,6 +32,37 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public abstract class BaseRule {
 
+	private static Dictionary dictionary = null;
+
+	/**
+	 * Provides a WordNET dictionary
+	 * @return wordnet
+	 */
+	public static Dictionary setupWordNet() {
+		// set up properties file
+		String propsFile = "file_properties.xml";
+		FileInputStream properties = null;
+		try {
+			properties = new FileInputStream(propsFile);
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		}
+
+		// create a dictionary and run the analytics
+		try {
+
+			// run
+			if (dictionary == null) {
+				// new style, instance dictionary
+				dictionary = Dictionary.getInstance(properties);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+		return dictionary;
+	}
+	
 	/**
 	 * This method decides whether a given <code>verb</code> has a passive
 	 * subject or a passive auxiliary.

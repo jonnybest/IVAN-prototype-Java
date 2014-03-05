@@ -24,18 +24,26 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
+/** Implements a classification based on wordnet lexical files. 
+ * 
+ * @author Jonny
+ *
+ */
 public class LexnameRule implements ISentenceRule {
 
 	Logger log = Logger.getLogger(getClass().getName());
 	
-	private Dictionary dictionary;
+	private static Dictionary dictionary;
 
 	private Classification result;
 
+	/**
+	 * Create a new rule
+	 */
 	public LexnameRule() {
 		// prepare setup
 		if(dictionary == null)
-			setupWordNet();
+			dictionary = BaseRule.setupWordNet();
 	}
 
 	@Override
@@ -199,34 +207,6 @@ public class LexnameRule implements ISentenceRule {
 				return true;
 		} else
 			return true;
-	}
-
-	
-	/**
-	 * 
-	 */
-	protected void setupWordNet() {
-		// set up properties file
-		String propsFile = "file_properties.xml";
-		FileInputStream properties = null;
-		try {
-			properties = new FileInputStream(propsFile);
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		}
-
-		// create a dictionary and run the analytics
-		try {
-
-			// run
-			if (dictionary == null) {
-				// new style, instance dictionary
-				dictionary = Dictionary.getInstance(properties);
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(-1);
-		}
 	}
 
 	public Classification getResult() {
