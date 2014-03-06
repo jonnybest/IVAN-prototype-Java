@@ -3,11 +3,9 @@ package edu.kit.ipd.alicenlp.ivan;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.ScrollPane;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
@@ -15,7 +13,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
@@ -42,6 +39,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -53,14 +51,12 @@ import javax.swing.event.CaretListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.DefaultCaret;
 import javax.swing.text.DefaultHighlighter.DefaultHighlightPainter;
 import javax.swing.text.Document;
 import javax.swing.text.StyleContext;
 
-import opennlp.tools.util.StringUtil;
-
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.JGitInternalException;
 import org.fife.ui.rsyntaxtextarea.FileLocation;
 import org.fife.ui.rsyntaxtextarea.SquiggleUnderlineHighlightPainter;
 import org.fife.ui.rsyntaxtextarea.TextEditorPane;
@@ -68,12 +64,10 @@ import org.jdesktop.application.Application;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.languagetool.rules.RuleMatch;
 
-import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.analyzers.IvanAnalyzer.Classification;
-import edu.kit.ipd.alicenlp.ivan.components.IvanDiscourseModelPrinter;
+import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
-import edu.kit.ipd.alicenlp.ivan.data.DiscourseModel;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
@@ -87,7 +81,6 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.StringUtils;
 
 /**
  * This is the main class if IVAN. It creates the user interface and manages all
@@ -246,9 +239,15 @@ public class SwingWindow {
 				try {
 					SwingWindow window = new SwingWindow();
 					window.frmvanInput.setVisible(true);
-				} catch (Exception e) {
+				} catch (JGitInternalException e){
 					log.log(Level.SEVERE,"General failure.", e);
 					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Input & Verify AliceNLP could not be started due to a corrupt tracking file. Please remove the folder /tracking and try again. \nError: "+e.getMessage(), "Initialization failure", JOptionPane.ERROR_MESSAGE);
+				}
+				catch (Exception e) {
+					log.log(Level.SEVERE,"General failure.", e);
+					e.printStackTrace();
+					JOptionPane.showMessageDialog(null, "Input & Verify AliceNLP could not be started. \nError: "+e.getMessage(), "Initialization failure", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		});
