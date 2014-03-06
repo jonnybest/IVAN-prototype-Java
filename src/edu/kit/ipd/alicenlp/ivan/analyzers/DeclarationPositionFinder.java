@@ -408,7 +408,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 		if (head != null && head.tag().equals("NNS")) {
 			// we start looking for other mentions with the root (unless it
 			// already is the subject
-			if (!head.equals(graph.getFirstRoot())) {
+			if (!BaseRule.isPOSFamily(graph.getFirstRoot(), "VB")) {
 				head = graph.getFirstRoot();
 				log.info("Name recognition selected head: " + head);
 			} else {
