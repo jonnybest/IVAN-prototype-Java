@@ -69,6 +69,7 @@ import edu.kit.ipd.alicenlp.ivan.analyzers.StaticDynamicClassifier;
 import edu.kit.ipd.alicenlp.ivan.components.IvanErrorsTaskPaneContainer;
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations;
+import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.IvanEntitiesAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanAnnotations.SentenceClassificationAnnotation;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorType;
@@ -834,6 +835,7 @@ public class SwingWindow {
 				sqpainter);
 	}
 
+	@SuppressWarnings("unused")
 	private void markText(int beginPosition, int endPosition, Color color) {
 
 		DefaultHighlightPainter sqpainter = new DefaultHighlightPainter(color);
@@ -881,6 +883,7 @@ public class SwingWindow {
 						updateSentenceMarkers(doc);
 						tracePanel();
 						commit(currentFileName != null ? Paths.get(currentFileName).getFileName().toString() : "");
+						log.info(doc.get(IvanEntitiesAnnotation.class).toString());
 					} catch (IvanException e) {
 						log.warning(e.toString());
 						e.printStackTrace();
