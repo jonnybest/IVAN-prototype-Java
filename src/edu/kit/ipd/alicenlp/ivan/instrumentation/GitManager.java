@@ -3,6 +3,7 @@ package edu.kit.ipd.alicenlp.ivan.instrumentation;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.eclipse.jgit.api.AddCommand;
 import org.eclipse.jgit.api.CheckoutCommand;
@@ -34,6 +35,7 @@ public class GitManager {
 	 */
 	final public static String TRACKINGPATH = "tracking/";
 	private static Git myGit;
+	private static Logger log = Logger.getLogger("edu.kit.ipd.alicenlp.ivan.instrumentation.GitManager");;
 
 	/**
 	 * Commit to the current repository
@@ -49,7 +51,9 @@ public class GitManager {
 		try {
 			Git git = getGit();
 
-			checkout(branch, git);
+			log.info("Commiting to " + branch);
+			if(!isOnBranch(branch))
+				checkout(branch, git);
 
 			AddCommand add = git.add();
 			add.addFilepattern(DOCUMENT_TXT);
@@ -82,6 +86,12 @@ public class GitManager {
 		}
 
 		return false;
+	}
+
+	private static boolean isOnBranch(String branch) throws IOException {
+		String current = getGit().getRepository().getFullBranch();
+		String target = getGit().getRepository().getRef(branch).getTarget().getName();
+		return current.equals(target);
 	}
 
 	/**
