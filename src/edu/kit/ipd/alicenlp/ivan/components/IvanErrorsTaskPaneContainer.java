@@ -5,6 +5,7 @@ package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
 import java.awt.Font;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -404,12 +405,13 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		/** SELECT action is available, too */
 		if (!error.Category.equals(CATEGORY_META)) {
 			// the description to display
-			String displayDescription = "Select text for "
-					+ error.Codepoints.get(0).x + ","
-					+ error.Codepoints.get(0).y + " '" + ref + "'";
+			String nametemplate = "Select text for {0},{1} ''{2}''";
+			String displayDescription = MessageFormat.format(nametemplate,
+					error.Codepoints.get(0).x, error.Codepoints.get(0).y, ref);
 
 			String name = "qf-select";
-			javax.swing.Action myAction = new QuickfixSelectIssue(displayDescription, error, this.txtEditor);
+			AbstractQuickfix myAction = new QuickfixSelectIssue(displayDescription, error, this.txtEditor);
+			myAction.setNameTemplate(nametemplate);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf
@@ -420,12 +422,14 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 		/* The IGNORE action is almost always available */
 		if (!error.Category.equals(CATEGORY_META)) {
 			// the description to display
-			String displayDescription = "Ignore problem in "
-					+ error.Codepoints.get(0).x + ","
-					+ error.Codepoints.get(0).y + " '" + ref + "'";
+			String nametemplate = "Ignore problem in {0},{1} ''{2}''";
+			String displayDescription = MessageFormat.format(nametemplate,
+					error.Codepoints.get(0).x, error.Codepoints.get(0).y, ref);
 
-			javax.swing.Action myAction = new QuickfixIgnoreProblem(this,
+			AbstractQuickfix myAction = new QuickfixIgnoreProblem(this,
 					displayDescription, error);
+			myAction.setNameTemplate(nametemplate);
+
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);
 			// set the shorthand notation for this qf

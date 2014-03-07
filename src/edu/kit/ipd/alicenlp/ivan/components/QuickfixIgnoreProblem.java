@@ -18,7 +18,7 @@ final class QuickfixIgnoreProblem extends AbstractQuickfix {
 	private final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
 
 	QuickfixIgnoreProblem(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
-		super(name, error, ivanErrorsTaskPaneContainer.txtEditor, false);
+		super(name, error, ivanErrorsTaskPaneContainer.txtEditor, true);
 		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
 	}
 

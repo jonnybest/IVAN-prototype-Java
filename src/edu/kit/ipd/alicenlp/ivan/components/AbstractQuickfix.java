@@ -1,6 +1,7 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
 import java.awt.Component;
+import java.text.MessageFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -12,6 +13,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
+
+import org.apache.commons.lang.StringUtils;
 
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 
@@ -27,6 +30,11 @@ public abstract class AbstractQuickfix extends AbstractAction {
 	protected JTextComponent txtEditor;
 	final Logger log = Logger.getLogger(getClass().getName());
 	private List<Caret> carets = new LinkedList<Caret>();
+	private final AbstractQuickfix _instance;
+
+	private String nameTemplate;
+
+	private String refString;
 
 	/** This action implements an abstract quick fix.
 	 * 
@@ -56,6 +64,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 				carets.add(installCaret(cp));
 			}
 		}
+		_instance = this;
 	}
 
 	/**
@@ -73,6 +82,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		txtEditor.removeFocusListener(place);
 		// configure visibility and set proper positions
 		place.setVisible(false);
+		place.setSelectionVisible(false);
 		place.setDot(codep.y);
 		place.moveDot(codep.x);
 		log.info("Installed Caret for " + codep);
@@ -80,10 +90,28 @@ public abstract class AbstractQuickfix extends AbstractAction {
 			
 			@Override
 			public void stateChanged(ChangeEvent e) {
-				log.fine("at " + e.toString());				
+				log.fine(e.getSource() + " at " + e.toString());
+				updateName();
 			}
 		});
 		return place;
+	}
+
+	protected void updateName() {  
+		
+		int mark = this.getIssue().getMark();
+		int dot = this.getIssue().getDot();
+		String nm = MessageFormat.format(getNameTemplate(), mark < dot ? mark : dot, mark > dot ? mark : dot, getRef());
+		_instance.putValue(NAME, nm);
+	}
+
+	private String getRef() {
+		return StringUtils.abbreviate(
+				StringUtils.join(Error.Reference, ", "), 22);
+	}
+
+	private String getNameTemplate() {
+		return nameTemplate;
 	}
 
 	/** 
@@ -213,5 +241,12 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		if(carets.size()==0)
 			return null;
 		return carets.get(0);
+	}
+
+	/** A template for the MesssageFormat.format() function with up three arguments: StartPos, EndPos, Reference
+	 * @param nametemplate
+	 */
+	public void setNameTemplate(String nametemplate) {
+		nameTemplate = nametemplate;
 	}
 }
