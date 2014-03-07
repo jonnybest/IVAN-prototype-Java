@@ -36,6 +36,7 @@ public class QuickfixSelectIssue extends AbstractQuickfix {
 		Caret car = super.txtEditor.getCaret();
 		car.setDot(mark);
 		car.moveDot(dot);
+		super.txtEditor.requestFocus();
 	}
 
 }
