@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
@@ -74,6 +76,13 @@ public abstract class AbstractQuickfix extends AbstractAction {
 		place.setDot(codep.y);
 		place.moveDot(codep.x);
 		log.info("Installed Caret for " + codep);
+		place.addChangeListener(new ChangeListener() {
+			
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				log.fine("at " + e.toString());				
+			}
+		});
 		return place;
 	}
 
