@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -20,7 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.Action;
-import javax.swing.ActionMap;
 import javax.swing.JLabel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Highlighter;
@@ -36,7 +34,6 @@ import org.jdesktop.swingx.JXTaskPaneContainer;
 
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 import edu.kit.ipd.alicenlp.ivan.data.IvanErrorMessage;
-import edu.stanford.nlp.io.EncodingPrintWriter.err;
 
 /**
  * This is a special JXTaskPaneContainer, which can display errors and warnings
@@ -410,7 +407,7 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 					error.Codepoints.get(0).x, error.Codepoints.get(0).y, ref);
 
 			String name = "qf-select";
-			AbstractQuickfix myAction = new QuickfixSelectIssue(displayDescription, error, this.txtEditor);
+			AbstractQuickfix myAction = new QuickfixSelectIssue(displayDescription, error, this);
 			myAction.setNameTemplate(nametemplate);
 			// make the error retrievable
 			myAction.putValue(QF_ERROR, error);

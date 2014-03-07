@@ -34,34 +34,39 @@ public abstract class AbstractQuickfix extends AbstractAction {
 
 	private String nameTemplate;
 
-	private String refString;
+	/**
+	 * 
+	 */
+	protected final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
 
 	/** This action implements an abstract quick fix.
 	 * 
 	 * @param name
 	 * @param error 
-	 * @param txtEditor 
+	 * @param container where this issue resides 
 	 */
-	public AbstractQuickfix(String name, IvanErrorInstance error, JTextComponent txtEditor) {
-		this(name, error, txtEditor, true);
+	public AbstractQuickfix(String name, IvanErrorInstance error, IvanErrorsTaskPaneContainer container) {
+		this(name, error, container, true);
 	}
 
 	/** Creates a new quick fix.
 	 * 
 	 * @param name The human-reable display text of this quick fix 
 	 * @param error The relating error
-	 * @param txtEditor The text component where this quick fix is going to work
+	 * @param container The taskPanel container where this action is going to reside
 	 * @param installQuickfix If TRUE, this quick fix needs to track text inside the text, which means that we install a Caret for each Codepooint. 
 	 */
 	public AbstractQuickfix(final String name, final IvanErrorInstance error,
-			final JTextComponent txtEditor, final boolean installQuickfix) {
+			final IvanErrorsTaskPaneContainer container, final boolean installQuickfix) {
 		super(name);
-		this.txtEditor = txtEditor;
+		this.ivanErrorsTaskPaneContainer = container;
+		this.txtEditor = container.txtEditor;
 		this.Error = error;
 		if(installQuickfix && error.Codepoints.size() > 0)
 		{
 			for (CodePoint cp : error.Codepoints) {
-				carets.add(installCaret(cp));
+				if(cp.length() > 0)
+					carets.add(installCaret(cp));
 			}
 		}
 		_instance = this;
@@ -73,7 +78,7 @@ public abstract class AbstractQuickfix extends AbstractAction {
 	 */
 	protected Caret installCaret(CodePoint codep) {
 		// The caret will track the positions across the users' editings. 
-		DefaultCaret place = new DefaultCaret();		
+		final DefaultCaret place = new DefaultCaret();		
 		place.setUpdatePolicy(DefaultCaret.UPDATE_WHEN_ON_EDT);
 		place.install(txtEditor);
 		// remove mouse listeners from component, since we don't want the mouse to modify our caret
@@ -91,18 +96,23 @@ public abstract class AbstractQuickfix extends AbstractAction {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				log.fine(e.getSource() + " at " + e.toString());
+				// when the caret changes, update the display
 				updateName();
 			}
 		});
 		return place;
 	}
 
-	protected void updateName() {  
-		
+	protected void updateName() {
 		int mark = this.getIssue().getMark();
 		int dot = this.getIssue().getDot();
 		String nm = MessageFormat.format(getNameTemplate(), mark < dot ? mark : dot, mark > dot ? mark : dot, getRef());
+//		if (mark == dot) {
+//			log.warning("This caret folded into singularity: " + nm);
+//			log.fine("temporary singular state ignored");
+//		}
 		_instance.putValue(NAME, nm);
+		
 	}
 
 	private String getRef() {
@@ -248,5 +258,12 @@ public abstract class AbstractQuickfix extends AbstractAction {
 	 */
 	public void setNameTemplate(String nametemplate) {
 		nameTemplate = nametemplate;
+	}
+
+	/**
+	 * @return the ivanErrorsTaskPaneContainer
+	 */
+	protected IvanErrorsTaskPaneContainer getIvanErrorsTaskPaneContainer() {
+		return ivanErrorsTaskPaneContainer;
 	}
 }

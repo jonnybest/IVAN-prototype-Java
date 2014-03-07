@@ -1,6 +1,5 @@
 package edu.kit.ipd.alicenlp.ivan.components;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 
 import org.jdesktop.swingx.JXTaskPane;
@@ -12,38 +11,30 @@ import org.jdesktop.swingx.JXTaskPane;
  */
 final class QuickfixIgnoreProblem extends AbstractQuickfix {
 
-	/**
-	 * 
-	 */
-	private final IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer;
-
 	QuickfixIgnoreProblem(IvanErrorsTaskPaneContainer ivanErrorsTaskPaneContainer, String name, IvanErrorInstance error) {
-		super(name, error, ivanErrorsTaskPaneContainer.txtEditor, true);
-		this.ivanErrorsTaskPaneContainer = ivanErrorsTaskPaneContainer;
+		super(name, error, ivanErrorsTaskPaneContainer, true);
 	}
+
+
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		// only remove pertaining components 
-		for (Component co : Error.Components) {
-			co.getParent().remove(co);
-		}
-		Error.Components.clear(); // only you can prevent memory leaks :)
+		removeError(Error);
 		
 		// get this category panel
-		JXTaskPane panel = this.ivanErrorsTaskPaneContainer.mypanes.get(Error.Category);
+		JXTaskPane panel = this.getIvanErrorsTaskPaneContainer().mypanes.get(Error.Category);
 		// update visuals
 		panel.updateUI();
 		// save this problem as "ignored" 
-		this.ivanErrorsTaskPaneContainer.ignoredProblems.add(Error);
+		this.getIvanErrorsTaskPaneContainer().ignoredProblems.add(Error);
 		// remove it from the problems which are currently of concern
-		this.ivanErrorsTaskPaneContainer.bagofProblems.remove(Error);
+		this.getIvanErrorsTaskPaneContainer().bagofProblems.remove(Error);
 		log.info("This action's error is " + getValue(IvanErrorsTaskPaneContainer.QF_ERROR));
-		log.info(ivanErrorsTaskPaneContainer.toString());
+		log.info(getIvanErrorsTaskPaneContainer().toString());
 	}
 
 	@Override
 	public String toString() {
-		return this.ivanErrorsTaskPaneContainer.qfActionPrinter(this);
+		return this.getIvanErrorsTaskPaneContainer().qfActionPrinter(this);
 	}
 }

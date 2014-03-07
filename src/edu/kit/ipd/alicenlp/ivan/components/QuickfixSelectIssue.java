@@ -6,7 +6,6 @@ package edu.kit.ipd.alicenlp.ivan.components;
 import java.awt.event.ActionEvent;
 
 import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 
 /** Not an actual fix, but an action which allow the user to select the issue text inside text area. 
  * 
@@ -16,13 +15,12 @@ import javax.swing.text.JTextComponent;
 public class QuickfixSelectIssue extends AbstractQuickfix {
 
 	/** Creates a new quickfix object for selecting issue text in textfield
-	 * @param name
-	 * @param error
-	 * @param txtEditor
+	 * @param name intial display string
+	 * @param error the pertaining issue in the text 
+	 * @param container where this action resides
 	 */
-	public QuickfixSelectIssue(String name, IvanErrorInstance error,
-			JTextComponent txtEditor) {
-		super(name, error, txtEditor, true);
+	public QuickfixSelectIssue(String name, IvanErrorInstance error, IvanErrorsTaskPaneContainer container ) {
+		super(name, error, container, true);
 		
 	}
 
