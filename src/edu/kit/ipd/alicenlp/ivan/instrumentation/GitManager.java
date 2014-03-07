@@ -2,6 +2,7 @@ package edu.kit.ipd.alicenlp.ivan.instrumentation;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInputStream.GetField;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -20,8 +21,10 @@ import org.eclipse.jgit.api.errors.NoHeadException;
 import org.eclipse.jgit.api.errors.NoMessageException;
 import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
 import org.eclipse.jgit.api.errors.RefNotFoundException;
+import org.eclipse.jgit.api.errors.StashApplyFailureException;
 import org.eclipse.jgit.api.errors.UnmergedPathsException;
 import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -103,6 +106,19 @@ public class GitManager {
 	 * @throws CheckoutConflictException
 	 */
 	public static void checkout(String branch, Git git) {
+		boolean restoreStash = false;
+		// stash changes if not clean
+		try {
+ 			if(!getGit().status().call().isClean()){
+				getGit().stashCreate().setIndexMessage("branching").call();
+				restoreStash = true;
+			}
+		} catch (NoWorkTreeException | GitAPIException | IOException e2) {
+			log.warning("failed to stash save before checkout");
+			e2.printStackTrace();
+		}
+		
+		// do work
 		try {
 			if (git == null)
 				git = getGit();
@@ -126,6 +142,25 @@ public class GitManager {
 		} catch (GitAPIException | IOException e) {
 			System.err.println(branch);
 			e.printStackTrace();
+		}
+		
+		// restore stash if neccessary
+		if(restoreStash){
+			try {
+				getGit().stashApply().call();
+			} catch (IOException | WrongRepositoryStateException | NoHeadException e) {
+				log.warning("failed to apply stash after checkout");
+				e.printStackTrace();
+			} catch (StashApplyFailureException e) {
+				try {
+					log.warning("Failed to apply stash after checkout (from " + branch +" to "+getGit().getRepository().getBranch()+") because of a merge conflict. Changes remain in stash.");
+				} catch (IOException e1) {
+					log.warning("Failed to apply stash after checkout (from " + branch +") because of a merge conflict. Changes remain in stash.");
+				}
+			} catch (GitAPIException e) {
+				log.warning("failed to apply stash after checkout");
+				e.printStackTrace();
+			}
 		}
 	}
 
