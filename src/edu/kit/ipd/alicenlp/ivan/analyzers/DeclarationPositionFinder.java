@@ -55,6 +55,7 @@ import edu.stanford.nlp.util.CoreMap;
  */
 public class DeclarationPositionFinder extends IvanAnalyzer {
 
+	private static final String ERROR_PLEASE_DESCRIBE_THE_ENTITY_S_IN_MORE_DETAIL = "Please describe the entity '%s' in more detail. If this entity is not meant to be displayed, please click ignore instead.";
 	/**
 	 * This field contains the names and entities. The rules are: only one state
 	 * per analyzer.
@@ -632,7 +633,7 @@ public class DeclarationPositionFinder extends IvanAnalyzer {
 				IvanErrorMessage informationMissingError = new IvanErrorMessage(IvanErrorType.SINGLETON,
 						thing.getEntitySpan(),
 						String.format(
-								"Please describe the entity '%s' in more detail. If there is nothing more to say, please click ignore.",
+								ERROR_PLEASE_DESCRIBE_THE_ENTITY_S_IN_MORE_DETAIL,
 								thing.getEntity()));
 				errors.add(informationMissingError);
 			}

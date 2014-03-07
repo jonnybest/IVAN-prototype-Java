@@ -39,6 +39,15 @@ import edu.stanford.nlp.util.CoreMap;
  * 
  */
 public class ErrorRule implements ISentenceRule, IErrorRule {
+	
+	private static final String ERROR_THIS_IS_NOT_A_PROPER_SENTENCE = "This is not a proper sentence, because it has no root: '%s'";
+	private static final String ERROR_THIS_SENTENCE_NEEDS_A_VERB = "This sentence needs a verb. If the sentence already has a verb, we could not recognise it. Try using the verb's progressive form instead (with -ing). Text: '%s'";
+	private static final String ERROR_THIS_SENTENCE_IS_INTELLIGIBLE = "This sentence is intelligible. It probably needs to be longer.";
+	private static final String ERROR_TWO_VERBS_ONE_ENTITY = "The verbs in this sentence both refer to the same thing. Instead, please use one verb per sentence. Otherwise we'll probably get it wrong.";
+	private static final String ERROR_MORE_THAN_A_SINGLE_TOPIC = "IVAN cannot handle sentences with more than a single topic. Try splitting the sentence into two sentences.";
+	private static final String ERROR_SENTENCES_WITH_I = "We have trouble understanding sentences with \"I\". Please try not to use \"I\" in a sentence.";
+	private static final String ERROR_FRAGMENT = "This sentence seems to contain a fragment. The sentence is either incomplete or it contains parts which should go in their own sentence.";
+
 	private static Logger log = Logger.getLogger(ErrorRule.class.toString());
 
 	IvanErrorMessage msg;
@@ -166,8 +175,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 				msg = new IvanErrorMessage(
 						IvanErrorType.GRAPH,
 						Span.fromValues(tmpstart, tmpend),
-						"This sentence seems to contain a fragment. "
-								+ "The sentence is either incomplete or it contains parts which should go in their own sentence.");
+						ERROR_FRAGMENT);
 				return true;
 			}
 		}
@@ -184,8 +192,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 		if (ErrorRule.is1stPerson(sentence
 				.get(CollapsedCCProcessedDependenciesAnnotation.class))) {
 			error(IvanErrorType.STYLE,
-					"Sentences with \"I\" are difficult to understand. "
-							+ "Please try not to use \"I\" in a sentence.",
+					ERROR_SENTENCES_WITH_I,
 					sentence);
 			return true;
 		}
@@ -200,9 +207,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 		// conjoined verbs are not proper use and lead to parameter errors
 		if (hasCC(getMainVerb(sentence), sentence)) {
 			error(IvanErrorType.GRAPH,
-					"The verbs in this sentence both refer to the same thing."
-							+ " Instead, please use one verb per sentence."
-							+ " Otherwise we'll probably get it wrong.",
+					ERROR_TWO_VERBS_ONE_ENTITY,
 					sentence);
 			return true;
 		}
@@ -216,7 +221,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 	public boolean applyNeedsOneVerb(CoreMap sentence) {
 		// checking verbs. each sentence needs at least one
 		if ((getMainVerb(sentence) == null)) {
-			error(IvanErrorType.GRAPH, "This sentence needs a verb.", sentence);
+			error(IvanErrorType.GRAPH, String.format(ERROR_THIS_SENTENCE_NEEDS_A_VERB, sentence.toString()), sentence);
 			return true;
 		}
 		return false;
@@ -232,7 +237,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 		if (sentence.get(CollapsedCCProcessedDependenciesAnnotation.class)
 				.isEmpty()) {
 			error(IvanErrorType.GRAPH,
-					"This sentence is intelligible. It probably needs to be longer.",
+					ERROR_THIS_SENTENCE_IS_INTELLIGIBLE,
 					sentence);
 			return true;
 		}
@@ -248,15 +253,14 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 				BasicDependenciesAnnotation.class).getRoots();
 		// if the sentence has no root, it's an error
 		if (roots.size() == 0) {
-			error(IvanErrorType.GRAPH, "This is not a proper sentence.",
+			error(IvanErrorType.GRAPH, String.format(ERROR_THIS_IS_NOT_A_PROPER_SENTENCE, sentence.toString()),
 					sentence);
 			return true;
 		}
 		// if the sentence has more than one roots, we're probably missing out
 		else if (roots.size() > 1) {
 			error(IvanErrorType.STYLE,
-					"IVAN cannot handle sentences with more than a single topic."
-							+ " Try splitting the sentence into two sentences.",
+					ERROR_MORE_THAN_A_SINGLE_TOPIC,
 					sentence);
 			return true;
 		}
@@ -286,13 +290,6 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 			return w;
 		}
 		return null;
-	}
-
-	private void error(String message, CoreMap sentence) {
-		msg = new IvanErrorMessage(
-				sentence.get(CoreAnnotations.CharacterOffsetBeginAnnotation.class),
-				sentence.get(CoreAnnotations.CharacterOffsetEndAnnotation.class),
-				message);
 	}
 
 	private void error(IvanErrorType type, String message, CoreMap sentence) {
