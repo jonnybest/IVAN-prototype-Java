@@ -1043,11 +1043,11 @@ public class SwingWindow {
 		if (errors != null) {
 			// process document-wide errors
 			for (IvanErrorMessage documenterror : errors) {
-				tell(documenterror.toString());
 				String category = createCategory(documenterror.getType());
 				boolean showError = this.containerTaskPanel.createProblem(category, documenterror,
 						null);
 				if(showError){
+					tell(documenterror.toString());
 					int length = documenterror.getSpan().end() - documenterror.getSpan().start();
 					log.info("Showing error for this word: "+ txtEditor.getText(documenterror.getSpan().start(), length));
 					markIvanError(documenterror.getSpan().start(), documenterror.getSpan().end());
