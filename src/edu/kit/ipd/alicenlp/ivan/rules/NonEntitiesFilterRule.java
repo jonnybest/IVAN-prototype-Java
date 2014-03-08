@@ -61,7 +61,8 @@ public class NonEntitiesFilterRule {
 	static final String[] displaybase = { "foreground#n#1", "background#n#1", "background#n#2",
 			"background#n#8", "ground#n#1", "ground#n#3", "ground#n#5",
 			"ground#n#7", "ground#n#9", "ground#n#10", "ground#n#11", "sky#n",
-			"grass#n#1", "clothes#n#1" };	
+			"grass#n#1", "clothes#n#1", 
+			"scene#n#1", "scene#n#2", "scene#n#4", "scene#n#5", "scene#n#6", "scene#n#8", "scene#n#9", "scene#n#10" };	
 	static final HashSet<Synset> displaysenses = new HashSet<Synset>();
 	static final HashSet<String> displaywords = new HashSet<>();
 	
