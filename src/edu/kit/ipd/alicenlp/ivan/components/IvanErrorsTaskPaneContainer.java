@@ -9,6 +9,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -580,6 +581,27 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				hl.removeHighlight(h);
 			}
 		}
+	}
+
+	/** Resets this panel to a "clean" state
+	 * 
+	 */
+	public void clear() {
+		String[] keys = new String[]{};
+		keys = mypanes.keySet().toArray(keys);
+		
+		for (String cat : keys) {
+			if(!cat.equals(CATEGORY_META))
+			{
+				this.remove(mypanes.get(cat));
+				mypanes.remove(cat);
+			}
+		}
+		
+		this.bagofProblems.clear();
+		this.gen0.clear();
+		this.ignoredProblems.clear();
+
 	}
 
 }

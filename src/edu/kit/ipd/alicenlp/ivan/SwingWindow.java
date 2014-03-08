@@ -514,6 +514,7 @@ public class SwingWindow {
 					currentFileName = loadChooser.getSelectedFile()
 							.getAbsolutePath();
 					file = loadChooser.getSelectedFile();
+					containerTaskPanel.clear();
 					break;
 				default: // nothing to do
 					return;
