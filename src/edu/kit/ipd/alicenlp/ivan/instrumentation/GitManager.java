@@ -93,7 +93,10 @@ public class GitManager {
 
 	private static boolean isOnBranch(String branch) throws IOException {
 		String current = getGit().getRepository().getFullBranch();
-		String target = getGit().getRepository().getRef(branch).getTarget().getName();
+		Ref ref = getGit().getRepository().getRef(branch);
+		if(ref == null)
+			return false;
+		String target = ref.getTarget().getName();
 		return current.equals(target);
 	}
 
