@@ -11,7 +11,9 @@ import org.eclipse.jgit.api.CheckoutCommand;
 import org.eclipse.jgit.api.CommitCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListTagCommand;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.TagCommand;
+import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.CheckoutConflictException;
 import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -27,6 +29,8 @@ import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevFlag;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 public class GitManager {
@@ -113,7 +117,7 @@ public class GitManager {
 		// stash changes if not clean
 		try {
  			if(!getGit().status().call().isClean()){
-				getGit().stashCreate().setIndexMessage("branching").call();
+				RevCommit result = getGit().stashCreate().setIndexMessage("branching").call();
 				restoreStash = true;
 			}
 		} catch (NoWorkTreeException | GitAPIException | IOException e2) {
@@ -150,7 +154,8 @@ public class GitManager {
 		// restore stash if neccessary
 		if(restoreStash){
 			try {
-				getGit().stashApply().call();
+				if(getGit().stashList().call().size() > 0)
+					getGit().stashApply().call();
 			} catch (IOException | WrongRepositoryStateException | NoHeadException e) {
 				log.warning("failed to apply stash after checkout");
 				e.printStackTrace();
@@ -263,14 +268,17 @@ public class GitManager {
 	public static void safeInit() throws GitAPIException, IOException {
 		if (myGit != null)
 			return;
-
-		try {
-			myGit.status().call();
-		} catch (NullPointerException e) {
+		else 
+			myGit = getGit();
+		
+		if(myGit.branchList().call().size() == 0) {
 			// there is no git!
 			myGit = Git.init().setDirectory(new File(TRACKINGPATH))
 					.setBare(false).call();
+			RevCommit thing = myGit.commit().setMessage("initialized new repository").call();
+			myGit.tag().setObjectId(thing).setName("IvanBaseline").setMessage("This tag marks the ").call();
 		}
+		
 		if (!myGit.status().call().isClean()) {
 			myGit.add().addFilepattern(DOCUMENT_TXT).call();
 			myGit.add().addFilepattern(PANEL_TXT).call();
@@ -278,6 +286,7 @@ public class GitManager {
 			.setMessage(COMMITED_DANGLING_CHANGES).call();
 		}
 		checkout("master", myGit);
+		myGit.reset().setRef("IvanBaseline").setMode(ResetType.HARD).call();
 
 		myGit.commit().setAll(true).setMessage("new session").call();
 	}

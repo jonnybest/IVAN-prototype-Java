@@ -1005,6 +1005,8 @@ public class SwingWindow {
 			}
 		}
 		
+		commit(currentFileName != null ? Paths.get(currentFileName).getFileName().toString() : "");
+		
 		return true;
 	}
 
