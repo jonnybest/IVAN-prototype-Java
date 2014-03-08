@@ -15,6 +15,7 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.JTextComponent;
 
 import org.apache.commons.lang.StringUtils;
+import org.jdesktop.swingx.plaf.basic.BasicTaskPaneUI;
 
 import edu.kit.ipd.alicenlp.ivan.data.CodePoint;
 
@@ -111,6 +112,14 @@ public abstract class AbstractQuickfix extends AbstractAction {
 //			log.warning("This caret folded into singularity: " + nm);
 //			log.fine("temporary singular state ignored");
 //		}
+		for (Object co: Error.Components) {
+//			System.out.println(co.getClass());
+			
+		}
+		if(mark==dot)
+			this.setEnabled(false);
+		else 
+			this.setEnabled(true);
 		_instance.putValue(NAME, nm);
 		
 	}
