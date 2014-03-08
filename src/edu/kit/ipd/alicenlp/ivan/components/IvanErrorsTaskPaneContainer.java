@@ -90,6 +90,9 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 	 */
 	Set<IvanErrorInstance> ignoredProblems = new HashSet<IvanErrorInstance>();
 	Set<IvanErrorInstance> bagofProblems = new HashSet<IvanErrorInstance>();
+	/** this collection contains all the errors which survived the last "purge()"
+	 * 
+	 */
 	private Collection<IvanErrorInstance> gen0 = new HashSet<>();
 
 	/**
@@ -547,12 +550,12 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 
 	/**
 	 * Removes categories and "problems" which have not been updated recently.
-	 * More precisely, it maintains a list of generations and removes all
-	 * display things which are not a member of the recent generation.
+	 * More precisely, it maintains a list of old generations (gen0) and removes all
+	 * display things which are not a member of the recent generation (which is not being tracked).
 	 */
 	public void purge() {
 		log.info("purging");
-		log.log(Level.FINE, String.format(
+		log.log(Level.INFO, String.format(
 				"Generation 0: %d, all problems %d, and ignored problems %d ",
 				gen0.size(), bagofProblems.size(), ignoredProblems.size()));
 		for (IvanErrorInstance error : gen0) {
@@ -562,12 +565,15 @@ public class IvanErrorsTaskPaneContainer extends JXTaskPaneContainer {
 				log.fine("Component removed from " + error.Category);
 			}
 			error.Components.clear();
-			log.info("There are " + txtEditor.getCaretListeners().length
-					+ " caret listeners remaining.");
+			bagofProblems.remove(error);
+			ignoredProblems.remove(error);
 		}
+		// throw em away
 		gen0.clear();
+		// add survivors
 		gen0.addAll(bagofProblems);
 		gen0.addAll(ignoredProblems);
+		this.updateUI();
 	}
 
 	/**

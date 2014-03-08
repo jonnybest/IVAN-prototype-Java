@@ -882,6 +882,10 @@ public class SwingWindow {
 //						tell(new IvanDiscourseModelPrinter(entities).toString());
 						updateDocumentMarkers(doc);
 						updateSentenceMarkers(doc);
+						// clear leftover errors from last run which may have been fixed by
+						// now
+						containerTaskPanel.purge();
+						// write panel contents to tracking file
 						tracePanel();
 						commit(currentFileName != null ? Paths.get(currentFileName).getFileName().toString() : "");
 						log.info(doc.get(IvanEntitiesAnnotation.class).toString());
@@ -1045,7 +1049,7 @@ public class SwingWindow {
 			for (IvanErrorMessage documenterror : errors) {
 				String category = createCategory(documenterror.getType());
 				boolean showError = this.containerTaskPanel.createProblem(category, documenterror,
-						null);
+						new CodePoint(documenterror.getSpan()));
 				if(showError){
 					tell(documenterror.toString());
 					int length = documenterror.getSpan().end() - documenterror.getSpan().start();
@@ -1054,9 +1058,6 @@ public class SwingWindow {
 				}
 			}
 
-			// clear leftover errors from last run which may have been fixed by
-			// now
-			this.containerTaskPanel.purge();
 		}
 		if (errors != null)
 			log.log(Level.INFO, "Document wide errors: " + errors);
