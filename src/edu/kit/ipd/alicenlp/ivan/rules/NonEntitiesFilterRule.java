@@ -148,6 +148,7 @@ public class NonEntitiesFilterRule {
 	 * @throws JWNLException
 	 */
 	public boolean apply(String entity) throws JWNLException {
+		entity = entity == null ? null : entity.toLowerCase();
 		if(displaywords.contains(entity))
 		{
 			result = EntityType.DISPLAYABLE;

@@ -58,6 +58,12 @@ public class NonEntitiesFilterRuleTest {
 			assertFalse("tree not recognised", rule.apply("tree"));
 			assertThat("Wrong class for background", rule.getResult(), is(NonEntitiesFilterRule.EntityType.MODEL));
 		}		
+		{
+			// entity contained in word net
+			NonEntitiesFilterRule rule = new NonEntitiesFilterRule();
+			assertTrue("capital Time not recognised", rule.apply("Time"));
+			assertThat("Wrong class for capital Time", rule.getResult(), is(NonEntitiesFilterRule.EntityType.NONDISPLAYABLE));
+		}	
 	}
 
 }
