@@ -176,6 +176,8 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 						IvanErrorType.GRAPH,
 						Span.fromValues(tmpstart, tmpend),
 						ERROR_FRAGMENT);
+				log.info(ERROR_THIS_SENTENCE_NEEDS_A_VERB + "[" + sentence.get(TreeAnnotation.class).toString() + "]");
+
 				return true;
 			}
 		}
@@ -209,6 +211,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 			error(IvanErrorType.GRAPH,
 					ERROR_TWO_VERBS_ONE_ENTITY,
 					sentence);
+			log.info(ERROR_TWO_VERBS_ONE_ENTITY + "[" + sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).toString() + "]");
 			return true;
 		}
 		return false;
@@ -222,6 +225,7 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 		// checking verbs. each sentence needs at least one
 		if ((getMainVerb(sentence) == null)) {
 			error(IvanErrorType.GRAPH, String.format(ERROR_THIS_SENTENCE_NEEDS_A_VERB, sentence.toString()), sentence);
+			log.info(ERROR_THIS_SENTENCE_NEEDS_A_VERB + "[" + sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).toString() + "]");
 			return true;
 		}
 		return false;
@@ -239,6 +243,8 @@ public class ErrorRule implements ISentenceRule, IErrorRule {
 			error(IvanErrorType.GRAPH,
 					ERROR_THIS_SENTENCE_IS_INTELLIGIBLE,
 					sentence);
+			log.info(ERROR_THIS_SENTENCE_IS_INTELLIGIBLE + "[" + sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).toString() + "]");
+
 			return true;
 		}
 		return false;
